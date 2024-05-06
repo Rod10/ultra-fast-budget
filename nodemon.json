@@ -1,0 +1,14 @@
+{
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 500,
+  "ignore": [
+    "logs/*",
+    "public/documents/*"
+  ],
+  "watch": [
+    "dist/express/",
+    "dist/react/"
+  ]
+}

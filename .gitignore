@@ -1,0 +1,12 @@
+node_modules/
+bdd/
+schema bdd
+.idea/
+webres/public/images/asset/classimg_resize/
+express/config/classe.json
+items2.db
+public/
+logs/
+express/config/mails.json
+express/config/config.json
+dist/**

@@ -1,0 +1,18 @@
+{
+  "dataPath": "./data",
+  "jwt": {
+    "user": "`Q@/aM55RL^`k+fQKTE@kX+KCk8.n.Z^d78GWs#'ekU0cnnL$4NSMR%p/Wby6hdT",
+    "confirmation": "Rz4n%cdz!lMqkNbBLgCf8Fkk3GVD^5c?9GmHMmWx5MLDfEJoaqg8vLeZjkKdv668Zu"
+  },
+  "database": {
+    "development": {
+      "username": "ultrafastbudget",
+      "password": "ultrafastbudget",
+      "database": "ultrafastbudget",
+      "host": "127.0.0.1",
+      "dialect": "mysql",
+      "logging": false
+    }
+  },
+  "shouldDisplayErrors": true
+}

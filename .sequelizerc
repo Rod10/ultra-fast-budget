@@ -1,0 +1,10 @@
+const {resolve} = require("path");
+
+module.exports = {
+    "config": resolve("db", "config.js"),
+    "models-path": resolve("models"),
+    "seeders-path": resolve("db", "seeders"),
+    "migrations-path": resolve("db", "migrations"),
+};
+
+// vim: set filetype=javascript tabstop=2 softtabstop=2 shiftwidth=2
