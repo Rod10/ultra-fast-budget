@@ -1,0 +1,37 @@
+{{#section "head"}}
+  <link rel="stylesheet" type="text/css" href="/css/bulma-divider.min.css?t={{{preventCache}}}">
+{{/section}}
+
+<div id="navbar" class="newnavbar">{{{navbar}}}</div>
+
+<div class="body-content" id="reactRoot">{{{content}}}</div>
+
+{{#section "script"}}
+  {{#if opeData.operation}}
+      <script type="text/javascript" nonce="{{nonce}}">
+          window.opeData = {{{json opeData}}};
+      </script>
+      {{#if opeData.operatorList}}
+          <script type="text/javascript" src="/js/validator.js?t={{{preventCache}}}"></script>
+          <script type="text/javascript" src="/js/operatorlist.js?t={{{preventCache}}}"></script>
+      {{else if opeData.operators}}
+          <script type="text/javascript" src="/js/operationdashboard.js?t={{{preventCache}}}"></script>
+      {{else}}
+          <script type="text/javascript" src="/js/operationdocuments.js?t={{{preventCache}}}"></script>
+      {{/if}}
+  {{else}}
+      <script type="text/javascript" nonce="{{nonce}}">
+          window.data = {{{json data}}};
+      </script>
+  {{/if}}
+
+  {{#if preEdwin}}
+  <script type="text/javascript" src="/js/newprenavbar.js?t={{{preventCache}}}"></script>
+  {{else}}
+  <script type="text/javascript" src="/js/newnavbar.js?t={{{preventCache}}}"></script>
+  {{/if}}
+
+  {{#each components}}
+  <script type="text/javascript" src="/js/{{{this}}}.js?t={{{../preventCache}}}"></script>
+  {{/each}}
+{{/section}}

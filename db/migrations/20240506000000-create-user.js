@@ -1,5 +1,3 @@
-'use strict';
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable("USER", {
@@ -8,6 +6,11 @@ module.exports = {
       autoIncrement: true,
       primaryKey: true,
       type: Sequelize.INTEGER(20),
+    },
+    CIVILITY: {
+      allowNull: false,
+      defaultValue: "MADAME",
+      type: Sequelize.ENUM("MADAME", "MONSIEUR"),
     },
     FIRST_NAME: {
       allowNull: false,
@@ -23,17 +26,8 @@ module.exports = {
       unique: true,
     },
     PASSWORD: {
-      allowNull: true,
+      allowNull: false,
       type: Sequelize.STRING(100),
-    },
-    PHONE: {
-      allowNull: false,
-      type: Sequelize.STRING(45),
-    },
-    STATE: {
-      allowNull: false,
-      defaultValue: "ACTIVE",
-      type: Sequelize.ENUM("CREATED", "ACTIVE", "INACTIVE", "DELETED"),
     },
     CREATION_DATE: {
       allowNull: false,

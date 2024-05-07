@@ -1,0 +1,50 @@
+{{#section "head"}}
+<link rel="stylesheet" type="text/css" href="/css/login.css?t={{{preventCache}}}">
+<link rel="stylesheet" type="text/css" href="/css/style.css?t={{{preventCache}}}">
+<link rel="stylesheet" type="text/css" href="/css/modif.css?t={{{preventCache}}}">
+<style>
+  .navbar {
+    background-color: #939496 !important;
+  }
+</style>
+{{/section}}
+
+<nav class="navbar is-fixed-top is-transparent" role="navigation" data-reactroot="">
+  <div class="container is-fluid">
+    <div class="navbar-brand">
+      <a class="navbar-item logo" href="/">
+        <img src="/images/small_logo_light.png" alt="ultra-fast-budget" height="32">
+      </a>
+    </div>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="container is-fluid">
+    <div class="login-box">
+      <div class="quizz-box">
+        <h2 class="title">Quelque chose s'est mal passé 🫤</h2>
+        <h5 class="title is-5">{{message}}</h5>
+        <h2>{{error.status}}</h2>
+
+        {{#if details}}
+          <article class="message is-warning ">
+            <div class="message-body">
+              <pre>{{details}}{{error.stack}}</pre>
+          </article>
+        {{else if error.stack}}
+          <article class="message is-warning ">
+            <div class="message-body">
+              <pre>{{details}}{{error.stack}}</pre>
+          </article>
+        {{/if}}
+
+        <p>
+          Si besoin, n'hésitez pas à communiquer ce code pour aider à la résolution de l'erreur :
+          <span class="tag is-warning is-light">{{dt}}</span>
+        </p>
+
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,23 @@
+{{#section 'head'}}
+  <link rel="stylesheet" type="text/css" href="/css/login.css?t={{{preventCache}}}">
+  <link rel="stylesheet" type="text/css" href="/css/style.css?t={{{preventCache}}}">
+  <link rel="stylesheet" type="text/css" href="/css/modif.css?t={{{preventCache}}}">
+{{/section}}
+
+<nav class="navbar is-fixed-top is-transparent" role="navigation">
+  <div class="container is-fluid">
+    <div class="navbar-brand">
+      <a class="navbar-item logo" href="/">
+        <img src="/images/small_logo_light.png" alt="ultra-fast-budget" height="32">
+      </a>
+    </div>
+  </div>
+</nav>
+
+<section class="section" id="reactRoot">{{{data}}}</section>
+
+{{#section "script"}}
+  {{#each components}}
+    <script type="text/javascript" src="/js/{{{this}}}.js?t={{{../preventCache}}}"></script>
+  {{/each}}
+{{/section}}

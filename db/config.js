@@ -1,4 +1,4 @@
-const config = require("../express/config/config.json");
+const config = require("../config.json");
 
 Object.keys(config.database)
     .forEach(env => {

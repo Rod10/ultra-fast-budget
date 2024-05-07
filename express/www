@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+/* eslint-disable no-process-env, no-process-exit */
+
+/**
+ * Module dependencies.
+ */
+
+const http = require("http");
+const {logger} = require("./services/logger.js");
+const app = require("./app.js");
+
+const DELAY_FOR_FLUSH = 500;
+
+const normalizePort = val => {
+  const port = parseInt(val, 10);
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+  return false;
+};
+
+const port = normalizePort(process.env.PORT || "3001");
+app.set("port", port);
+const server = http.createServer(app);
+
+const onError = error => {
+  if (error.syscall !== "listen") {
+    throw error;
+  }
+
+  const bind = typeof port === "string"
+    ? `Pipe ${port}`
+    : `Port ${port}`;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+  case "EACCES":
+    logger.error(`${bind} requires elevated privileges`);
+    setTimeout(() => process.exit(1), DELAY_FOR_FLUSH);
+    break;
+  case "EADDRINUSE":
+    logger.error(`${bind} is already in use`);
+    setTimeout(() => process.exit(1), DELAY_FOR_FLUSH);
+    break;
+  default:
+    throw error;
+  }
+};
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+const onListening = () => {
+  const addr = server.address();
+  const bind = typeof addr === "string"
+    ? `pipe ${addr}`
+    : `port ${addr.port}`;
+  logger.info(`Listening on ${bind}`);
+
+  // notify pm2 that process is ready
+  process.send && process.send("ready");
+};
+
+const onInterrupt = () => {
+  server.close(err => {
+    logger.info("Receive SIGINT, stopping application");
+    setTimeout(() => process.exit(err ? 1 : 0), DELAY_FOR_FLUSH);
+  });
+};
+
+server.on("error", onError);
+server.on("listening", onListening);
+process.on("SIGINT", onInterrupt);
+server.listen(port);

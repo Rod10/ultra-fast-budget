@@ -12,8 +12,8 @@ const config = {
   mode: env,
   // webpack options
   entry: {
-    //"homepage": `${VIEWS}/homepage.js`,
-    //"navbar": `${VIEWS}/navbar.js`,
+    "homepage": `${VIEWS}/homepage.js`,
+    "navbar": `${VIEWS}/navbar.js`,
   },
   output: {
     path: path.resolve(__dirname, "dist", "public", "js"),
