@@ -1,0 +1,19 @@
+{{#section "head"}}
+  <link rel="stylesheet" type="text/css" href="/css/bulma-divider.min.css?t={{{preventCache}}}">
+{{/section}}
+
+<div id="navbar" class="newnavbar">{{{navbar}}}</div>
+
+<div class="body-content" id="reactRoot">{{{content}}}</div>
+
+{{#section "script"}}
+    <script type="text/javascript" nonce="{{nonce}}">
+        window.data = {{{json data}}};
+    </script>
+
+  <script type="text/javascript" src="/js/navbar.js?t={{{preventCache}}}"></script>
+
+  {{#each components}}
+  <script type="text/javascript" src="/js/{{{this}}}.js?t={{{../preventCache}}}"></script>
+  {{/each}}
+{{/section}}

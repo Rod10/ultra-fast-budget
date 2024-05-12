@@ -150,14 +150,10 @@ class Homepage extends React.Component {
 }
 Homepage.displayName = "HomePage";
 Homepage.propTypes = {
-  society: PropTypes.object,
-  user: PropTypes.object,
   notifs: PropTypes.array,
   graphs: PropTypes.array,
 };
 Homepage.defaultProps = {
-  society: undefined,
-  user: undefined,
   notifs: undefined,
   graphs: undefined,
 };

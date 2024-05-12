@@ -1,4 +1,3 @@
-/* TODO find a way to split this file in multiple files */
 /* eslint-disable max-lines */
 const assert = require("assert");
 const nodeCrypto = require("node:crypto");
@@ -16,9 +15,12 @@ const {
 const {FORBIDDEN} = require("../utils/error.js");
 const utils = require("../utils/index.js");
 
+const categorySrv = require("./category.js");
+const subCategoriesSrv = require("./subcategories.js");
 const mailSrv = require("./mail.js");
 const passwordSrv = require("./password.js");
 const {logger} = require("./logger.js");
+const subCatogeriesSrv = require("./subcategories.js");
 
 const userSrv = {};
 
@@ -37,18 +39,30 @@ const dataValidation = data => {
   );
 };
 
+/**
+ * Create a user
+ *
+ * @param {object} data - data of user
+ * @param {string} data.firstName - First name of the user
+ * @param {string} data.lastName - Last name of the user
+ * @param {string} data.email - Email of the user
+ * @param {string} data.civility - Civility of the user
+ */
 userSrv.create = async data => {
   logger.debug("create new user");
 
   dataValidation(data);
   const password = await passwordSrv.hash(data.password);
-  return User.create({
+  const user = await User.create({
     firstName: data.firstName,
     lastName: data.lastName,
     email: data.email,
     password,
     civility: data.civility,
   });
+  await categorySrv.createForNewUser(user);
+  await subCatogeriesSrv.createForNewUser(user);
+  return user;
 };
 
 userSrv.login = async data => {
@@ -67,6 +81,14 @@ userSrv.login = async data => {
 
 userSrv.getByEmail = async email => {
   const user = await User.findOne({where: {email}});
+  assert(user, "Contributor not found");
+  return user;
+};
+
+userSrv.get = async id => {
+  assert(id, "Id cannot be null");
+  logger.debug("Get user by id=[%s]", id);
+  const user = await User.findOne({where: {id}});
   assert(user, "Contributor not found");
   return user;
 };

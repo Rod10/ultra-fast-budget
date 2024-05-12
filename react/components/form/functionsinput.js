@@ -1,7 +1,7 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
-const FunctionsFull = require("../../../express/constants/functionsfull.js");
+const FunctionsFull = require("../../../express/constants/currenciesfull.js");
 const {
   getUntoggleableForSociety,
   getUntoggleableFunctionsSimple,

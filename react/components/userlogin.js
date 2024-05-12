@@ -30,7 +30,7 @@ class UserLogin extends React.Component {
 
           <form
             method="POST"
-            action={`/society/login${this.props.query}`}
+            action={`/login${this.props.query}`}
           >
             <Input
               label="Email"

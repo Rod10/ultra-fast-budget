@@ -17,7 +17,8 @@ const {
   UNPROCESSABLE_ENTITY,
 } = require("./utils/error.js");
 const {
-  DOCUMENTS,
+  CATEGORIES,
+  SUBCATEGORIES,
   LOGOS,
   PUBLIC,
   VIEWS,
@@ -74,7 +75,8 @@ app.use(bodyParser.urlencoded({limit: "200KB", extended: true}));
 app.use(cookieParser());
 
 app.use(express.static(PUBLIC));
-app.use("/documents", express.static(DOCUMENTS));
+app.use("/categories", express.static(CATEGORIES));
+app.use("/subcategories", express.static(SUBCATEGORIES));
 app.use("/logos", express.static(LOGOS));
 
 app.use(expressWinston);

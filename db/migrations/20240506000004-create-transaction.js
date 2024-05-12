@@ -1,5 +1,3 @@
-'use strict';
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable("TRANSACTION", {
@@ -51,11 +49,11 @@ module.exports = {
     },
     TO: {
       allowNull: true,
-      type: Sequelize.TEXT
+      type: Sequelize.TEXT,
     },
     OTHER: {
       allowNull: true,
-      type: Sequelize.TEXT
+      type: Sequelize.TEXT,
     },
     TRANSACTION_TYPE: {
       allowNull: false,

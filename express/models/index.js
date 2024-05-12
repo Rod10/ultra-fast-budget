@@ -9,6 +9,9 @@ Sequelize.useCLS(namespace);
 const env = require("../utils/env.js");
 const config = require("../utils/config.js").database[env];
 
+const Account = require("./account.js");
+const Category = require("./category.js");
+const SubCategory = require("./subcategory.js");
 const User = require("./user.js");
 
 if (config.logging) {
@@ -28,6 +31,9 @@ const sequelize = new Sequelize(
 const db = {};
 
 [
+  Account,
+  Category,
+  SubCategory,
   User,
 ].forEach(def => {
   const model = def(sequelize, Sequelize.DataTypes);

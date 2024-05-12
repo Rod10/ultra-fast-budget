@@ -9,11 +9,15 @@ const LOGS = path.resolve("logs");
 const dataPathAbs = dataPath[0] === "/"
   ? dataPath
   : path.resolve(dataPath);
-const DOCUMENTS = path.resolve(dataPathAbs, "documents");
+const CATEGORIES = path.resolve(dataPathAbs, "categories");
+const SUBCATEGORIES = path.resolve(dataPathAbs, "subcategories");
+const IMAGES = path.resolve(dataPathAbs, "images");
 const LOGOS = path.resolve(dataPathAbs, "logos");
 
 module.exports = {
-  DOCUMENTS,
+  CATEGORIES,
+  SUBCATEGORIES,
+  IMAGES,
   LOGOS,
   LOGS,
   PUBLIC,

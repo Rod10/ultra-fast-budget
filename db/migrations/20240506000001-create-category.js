@@ -1,5 +1,3 @@
-'use strict';
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable("CATEGORY", {
@@ -21,6 +19,14 @@ module.exports = {
     NAME: {
       allowNull: false,
       type: Sequelize.STRING(45),
+    },
+    TYPE: {
+      allowNull: false,
+      type: Sequelize.STRING(45),
+    },
+    IMAGE_PATH: {
+      allowNull: false,
+      type: Sequelize.TEXT,
     },
     CREATION_DATE: {
       allowNull: false,

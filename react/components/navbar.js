@@ -2,6 +2,7 @@ const React = require("react");
 const PropTypes = require("prop-types");
 
 const EdwinLinks = require("../../express/constants/edwinlinks.js");
+const SettingsLinks = require("../../express/constants/settingslinks.js");
 const NewBaseNavbar = require("./basenavbar.js");
 
 class Navbar extends React.Component {
@@ -26,7 +27,7 @@ class Navbar extends React.Component {
   }
 
   _renderModule(edwinModule) {
-    const actions = edwinModule.routes.reduce((acc, route) => {
+    const actions = Array.isArray(edwinModule.routes) ? edwinModule.routes.reduce((acc, route) => {
       if (!route.canAccess || route.canAccess(this.props.user, this.options)) {
         const href = route.query
           ? `${route.href}?${route.query}`
@@ -37,19 +38,25 @@ class Navbar extends React.Component {
         });
       }
       return acc;
-    }, []);
-    if (!actions.length) return null;
+    }, []) : null;
+    // if (!actions.length) return null;
 
     const img = edwinModule.logo;
-    const title = edwinModule.label;
+    const title = actions === null
+      ? <a
+          className="action menu-label"
+          href={edwinModule.routes}
+      >
+        {edwinModule.label}</a>
+      : edwinModule.label;
 
-    return <div key={`menu-label-${title}`}>
-      <p className="menu-label">
+    return <div key={`menu-label-${edwinModule.label}`}>
+      <p className="action menu-label">
         {img && <img src={img} />}
         {title}
       </p>
       <ul className={"menu-list marged"}>
-        {actions.map(action => <li
+        {actions !== null && actions.map(action => <li
           key={`${title}-${action.name}`}
           className={`action${action.disabled ? " disabled" : ""}`}
         >
@@ -70,34 +77,24 @@ class Navbar extends React.Component {
   }
 
   render() {
-    const mainDashboard = EdwinLinks.monitoring.routes[0];
+    const links = this.props.settings ? Object.keys(SettingsLinks) : Object.keys(EdwinLinks);
+    const test = this.props.settings ? SettingsLinks : EdwinLinks;
     return (<div>
       <NewBaseNavbar
         base={this.base}
         hasScrollBar
         scrollBarOpened={this.state.opened}
         scrollBarOnClick={this._handleScrollBarOpen}
-        hrefLogout="/society/logout"
+        hrefLogout="/logout"
         defaultLogo={"/images/small_logo_light.png"}
-        logo={this.props.society.logo}
+        // logo={this.props.society.logo}
         user={this.props.user}
       />
 
       <div className={this.state.opened ? "scrollbar opened" : "scrollbar"}>
         {this._renderHead()}
         <aside className="menu">
-
-          <div className="menu-list">
-            <a
-              className="action"
-              href={`${mainDashboard.href}?${mainDashboard.query}`}
-            >Opérations</a>
-          </div>
-
-          {this._renderModule(EdwinLinks.operations)}
-          {this._renderModule(EdwinLinks.operators)}
-          {this._renderModule(EdwinLinks.monitoring)}
-
+          {links.map(link => this._renderModule(test[link]))}
         </aside>
         <div className="bottom">
           {Navbar._renderCopyright()}
@@ -108,12 +105,12 @@ class Navbar extends React.Component {
 }
 Navbar.displayName = "Navbar";
 Navbar.propTypes = {
-  society: PropTypes.object,
   user: PropTypes.object,
+  settings: PropTypes.bool,
 };
 Navbar.defaultProps = {
-  society: undefined,
   user: undefined,
+  settings: false,
 };
 
 module.exports = Navbar;

@@ -44,17 +44,17 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
-  /*User.associate = models => {
-    User.hasMany(models.Category, {
+  User.associate = models => {
+    User.hasMany(models.Account, {
+      as: "account",
+      foreignKey: "userId",
+    });
+    /*User.hasMany(models.Category, {
       as: "category",
       foreignKey: "userId",
     });
     User.hasMany(models.SubCategory, {
       as: "subCategory",
-      foreignKey: "userId",
-    });
-    User.hasMany(models.Account, {
-      as: "account",
       foreignKey: "userId",
     });
     User.hasMany(models.Transaction, {
@@ -64,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.budget, {
       as: "budget",
       foreignKey: "userId",
-    });
+    });*/
   };
 
   User.prototype.toJSON = function toJSON() {
@@ -79,7 +79,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     return values;
-  };*/
+  };
 
   return User;
 };

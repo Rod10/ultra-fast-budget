@@ -55,6 +55,20 @@ class Basenavbar extends React.Component {
     </div>;
   }
 
+  _renderSettings() {
+    return <div className="navbar-item">
+      <Button
+        label={""}
+        icon={<Icon
+          icon="gear"
+          faSize="lg"
+          size="big"
+        />}
+        href="/settings"
+      />
+    </div>;
+  }
+
   _renderMenu() {
     const c = this.props.user;
     return <div className={"navbar-menu"}>
@@ -63,6 +77,7 @@ class Basenavbar extends React.Component {
       </div>
       {this.props.navbarCenter}
       <div className="navbar-end">
+        {this._renderSettings()}
         <span className="navbar-item is-hidden-touch">{Civilities[c.civility].short}. {c.firstName} {c.lastName}</span>
         {this.props.navbarRight}
         {this._renderLogout()}

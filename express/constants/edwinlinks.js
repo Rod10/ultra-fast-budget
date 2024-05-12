@@ -1,68 +1,75 @@
-const operations = {
-  label: "OPÉRATIONS",
+const homepage = {
+  label: "Vue d'ensemble",
   logo: "/images/svg/home_operation.svg",
-  routes: [
-    {
-      label: "Nouvelle opération",
-      href: "/society/operation/new",
-    },
-    {
-      label: "Historique",
-      href: "/society/dashboard",
-    },
-  ],
+  routes: "/",
 };
 
-const operators = {
-  label: "LISTE D'OPÉRATEURS",
+const summary = {
+  label: "Sommaire",
   logo: "/images/icons/worker.svg",
-  routes: [
-    {
-      label: "Liste des opérateurs / Ajout",
-      href: "/society/operator/",
-      query: new URLSearchParams({hasLeaved: false}).toString(),
-    },
-    {
-      label: "Archive",
-      href: "/society/operator/",
-      query: new URLSearchParams({hasLeaved: true}).toString(),
-    },
-    {
-      label: "Transfert",
-      href: "/society/operator/transfer",
-    },
-  ],
+  routes: "/summary",
 };
 
-const monitoring = {
-  label: "SUIVI",
+const transactions = {
+  label: "Transactions",
+  logo: "/images/svg/home_suivi.svg",
+  routes: "/transactions",
+};
+
+const transactionsPlanified = {
+  label: "Transactions Planifiées",
+  logo: "/images/svg/home_suivi.svg",
+  routes: "/transactions-planified",
+};
+
+const account = {
+  label: "Comptes",
+  logo: "/images/svg/home_suivi.svg",
+  routes: "/account",
+};
+
+const budget = {
+  label: "Budgets",
+  logo: "/images/svg/home_suivi.svg",
+  routes: "/budget",
+};
+
+const debt = {
+  label: "Dettes",
+  logo: "/images/svg/home_suivi.svg",
+  routes: "/debt",
+};
+
+const chart = {
+  label: "Graphiques",
   logo: "/images/svg/home_suivi.svg",
   routes: [
     {
-      label: "Tableau de bord",
-      href: "/society/dashboard",
+      label: "Catégories",
+      href: "/category",
     },
     {
-      label: "Travaux en cours",
-      href: "/society/dashboard",
+      label: "Temps",
+      href: "/time",
     },
-  ],
-};
-
-const statistic = {
-  label: "Statistique",
-  logo: "/images/svg/home_suivi.svg",
-  routes: [
     {
-      label: "Consultation",
-      href: "/society/stats",
+      label: "Futur",
+      href: "/future",
+    },
+    {
+      label: "Prévisions",
+      href: "/forecasts",
     },
   ],
 };
 
 module.exports = {
-  operations,
-  operators,
-  monitoring,
-  statistic,
+  homepage,
+  summary,
+  transactions,
+  transactionsPlanified,
+  account,
+  budget,
+  debt,
+  chart,
 };

@@ -66,7 +66,11 @@ router.get("/", (req, res) => {
 
   const navbar = renderSrv.navbar(res.locals);
   const content = renderSrv.homepage(data);
-  res.render("homepage", {navbar, data, content, components: ["homepage"]});
+  res.render("generic", {navbar, data, content, components: ["homepage"]});
+});
+
+router.get("/logout", async (req, res, next) => {
+
 });
 
 router.get("/hello", async (req, res) => {
@@ -79,15 +83,8 @@ router.get("/status", async (req, res) => {
   res.json({status});
 });
 
-router.get("/code/:code", (req, res, next) => {
-  shortLinkSrv.getLinkFromCode(req.params.code)
-    .then(link => {
-      if (link) {
-        return res.redirect(SEE_OTHER, link);
-      }
-      res.render("bad_code");
-    })
-    .catch(next);
-});
+router.use(authMid.strict);
+router.use("/account", require("./acount.js"));
+router.use("/settings", require("./settings/index.js"));
 
 module.exports = router;
