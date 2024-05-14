@@ -29,8 +29,8 @@ class CategoryModal extends React.Component {
       newCategory: {},
       subCategory: false,
       // eslint-disable-next-line camelcase
-      old_imagePath: null,
-      imagePath: null,
+      old_icon: null,
+      icon: null,
       visible: false,
       alert: false,
       pending: false,
@@ -57,8 +57,8 @@ class CategoryModal extends React.Component {
       category: item.category,
       subCategory: item.subCategory,
       type: item.type,
-      old_imagePath: item ? item.imagePath : null,
-      imagePath: item ? item.imagePath : null,
+      old_icon: item ? item.icon : null,
+      icon: item ? item.icon : null,
     }));
   }
 
@@ -93,7 +93,7 @@ class CategoryModal extends React.Component {
   handleImageFileChange(evt) {
     if (evt.target.files.length) {
       /* eslint-disable-next-line camelcase */
-      this.setState({imagePath: evt.target.files[0]});
+      this.setState({icon: evt.target.files[0]});
     }
   }
 
@@ -122,7 +122,7 @@ class CategoryModal extends React.Component {
 
     const categoriesGenre = Object.keys(CategoriesGenre).map(genre => ({
       value: genre,
-      label: genreName[genre].name,
+      label: genreName[genre],
     }));
 
     return <Modal
@@ -148,26 +148,26 @@ class CategoryModal extends React.Component {
         </Columns>
         <div>
           <div className="field">
-            <label className="label">Schéma électrique :</label>
+            <label className="label">Icon de la catégorie :</label>
             <div className="control">
               <FileInput
-                name="imagePath"
+                name="icon"
                 label="Glisser l'image de la catégorie'"
-                doc={this.state.imagePath}
+                doc={this.state.icon}
                 // accept={ValidFileTypes}
                 handleFileChange={this.handleImageFileChange}
               />
               <input
                 type="hidden"
-                name="old_imagePath"
-                defaultValue={this.state.old_imagePath
-                  ? this.state.old_imagePath.id
+                name="old_icon"
+                defaultValue={this.state.old_icon
+                  ? this.state.old_icon.id
                   : 0}
               />
-              {this.state.old_imagePath && <div className="level">
+              {this.state.old_icon && <div className="level">
                 <div className="level-left">
                   <a
-                    href={`${this.state.old_imagePath.path}`}
+                    href={`${this.state.old_icon.path}`}
                     target="_blank"
                     rel="noreferrer"
                   > Voir l'image </a>
