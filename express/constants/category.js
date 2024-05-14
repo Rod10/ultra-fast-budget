@@ -9,6 +9,9 @@ const Category = Object.freeze({
   PET: "PET",
   TRAVEL: "TRAVEL",
   OTHER: "OTHER",
+  FINANCIAL: "FINANCIAL",
+  INCOME: "INCOME",
+  OTHER_INCOME: "OTHER_INCOME",
 });
 
 module.exports = Category;

@@ -50,15 +50,12 @@
     axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
   </script>
 
-  {{#if htmlSociety}}
-    <script type="text/javascript" nonce="{{nonce}}">
-      window.edwinData = {
-        society: {{{json society}}},
-        user: {{{json user}}},
-        subsSocieties: {{{json subsSocieties}}}
-      };
-    </script>
-  {{/if}}
+  <script type="text/javascript" nonce="{{nonce}}">
+    window.edwinData = {
+      user: {{{json user}}},
+      testSettings: {{{json testSettings}}},
+    };
+  </script>
 
   {{{_sections.script}}}
   </body>

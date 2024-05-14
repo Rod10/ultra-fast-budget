@@ -11,9 +11,10 @@ const {logger} = require("./logger.js");
 
 const categorySrv = require("./category.js");
 const path = require("path");
-const {IMAGES} = require("../utils/paths.js");
+const {IMAGES, ICON} = require("../utils/paths.js");
 
 fs.existsSync(IMAGES) || fs.mkdirSync(IMAGES);
+fs.existsSync(ICON) || fs.mkdirSync(ICON);
 
 const subCategorySrv = {};
 
@@ -31,7 +32,7 @@ subCategorySrv.createForNewUser = async user => {
       try {
         const parentCategory = await categorySrv.getByType(user.id, category);
         if (parentCategory) {
-          const imagePath = `/images/subcategories/${user.id}/${value.imagePath}`;
+          const imagePath = `/icon/${dir}/${value.imagePath}`;
           SubCategory.create({
             userId: user.id,
             categoryId: parentCategory.id,
@@ -45,8 +46,8 @@ subCategorySrv.createForNewUser = async user => {
       }
     }
   }
-  fs.mkdirSync(path.resolve(IMAGES, dir), {recursive: true});
-  fs.cpSync(path.resolve(IMAGES, "base/subcategories"), path.resolve(IMAGES, dir), {recursive: true});
+  fs.mkdirSync(path.resolve(ICON, dir), {recursive: true});
+  fs.cpSync(path.resolve(ICON, "base/subcategories"), path.resolve(ICON, dir), {recursive: true});
   // Now you can safely proceed with bulk creation
   // await SubCategory.bulkCreate(subCategories);
 };

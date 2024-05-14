@@ -32,11 +32,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    modificationDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   }, {
     freezeTableName: true,
     tableName: "USER",
     createdAt: "creationDate",
-    updatedAt: false,
+    updatedAt: "modificationDate",
     getterMethods: {
       name: function name() {
         return `${this.getDataValue("firstName")} ${this.getDataValue("lastName")}`;
@@ -45,19 +49,19 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   User.associate = models => {
-    User.hasMany(models.Account, {
+    User.Account = User.hasMany(models.Account, {
       as: "account",
       foreignKey: "userId",
     });
-    /*User.hasMany(models.Category, {
-      as: "category",
+    User.Categories = User.hasMany(models.Category, {
+      as: "categories",
       foreignKey: "userId",
     });
-    User.hasMany(models.SubCategory, {
-      as: "subCategory",
+    User.SubCategories = User.hasMany(models.SubCategory, {
+      as: "subCategories",
       foreignKey: "userId",
     });
-    User.hasMany(models.Transaction, {
+    /* User.hasMany(models.Transaction, {
       as: "transaction",
       foreignKey: "userId",
     });

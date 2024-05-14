@@ -19,6 +19,8 @@ const {
 const {
   CATEGORIES,
   SUBCATEGORIES,
+  IMAGES,
+  ICON,
   LOGOS,
   PUBLIC,
   VIEWS,
@@ -55,6 +57,10 @@ hbs.registerHelper("eq", function eq(v1, v2, options) {
 });
 /* eslint-enable no-invalid-this */
 
+hbs.registerHelper("log", something => {
+  console.log(something);
+});
+
 const getAppVersion = () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
   return pkg.version;
@@ -77,6 +83,8 @@ app.use(cookieParser());
 app.use(express.static(PUBLIC));
 app.use("/categories", express.static(CATEGORIES));
 app.use("/subcategories", express.static(SUBCATEGORIES));
+app.use("/images", express.static(IMAGES));
+app.use("/icon", express.static(ICON));
 app.use("/logos", express.static(LOGOS));
 
 app.use(expressWinston);

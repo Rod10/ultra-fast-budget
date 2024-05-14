@@ -1,9 +1,9 @@
 /* global React ReactDOM */
 
-const Homepage = require("../../react/components/homepage.js");
+const SettingsHomepage = require("../../react/components/settingshomepage.js");
 
 ReactDOM.hydrate(
-  React.createElement(Homepage, {
+  React.createElement(SettingsHomepage, {
     ...window.data,
     ...window.edwinData,
   }),

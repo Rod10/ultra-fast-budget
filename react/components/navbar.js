@@ -77,8 +77,8 @@ class Navbar extends React.Component {
   }
 
   render() {
-    const links = this.props.settings ? Object.keys(SettingsLinks) : Object.keys(EdwinLinks);
-    const test = this.props.settings ? SettingsLinks : EdwinLinks;
+    const links = this.props.testSettings ? Object.keys(SettingsLinks) : Object.keys(EdwinLinks);
+    const navBarLinks = this.props.testSettings ? SettingsLinks : EdwinLinks;
     return (<div>
       <NewBaseNavbar
         base={this.base}
@@ -89,12 +89,13 @@ class Navbar extends React.Component {
         defaultLogo={"/images/small_logo_light.png"}
         // logo={this.props.society.logo}
         user={this.props.user}
+        settings={this.props.testSettings}
       />
 
       <div className={this.state.opened ? "scrollbar opened" : "scrollbar"}>
         {this._renderHead()}
         <aside className="menu">
-          {links.map(link => this._renderModule(test[link]))}
+          {links.map(link => this._renderModule(navBarLinks[link]))}
         </aside>
         <div className="bottom">
           {Navbar._renderCopyright()}
@@ -106,11 +107,11 @@ class Navbar extends React.Component {
 Navbar.displayName = "Navbar";
 Navbar.propTypes = {
   user: PropTypes.object,
-  settings: PropTypes.bool,
+  testSettings: PropTypes.bool,
 };
 Navbar.defaultProps = {
   user: undefined,
-  settings: false,
+  testSettings: false,
 };
 
 module.exports = Navbar;

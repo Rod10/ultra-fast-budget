@@ -3,9 +3,9 @@ const React = require("react");
 const PropTypes = require("prop-types");
 
 const {OK} = require("../../express/utils/error.js");
-const OrderDirection = require("../../express/constants/orderdirection.js");
+// const OrderDirection = require("../../express/constants/orderdirection.js");
 const {preventDefault} = require("../utils/html.js");
-const Navigation = require("./navigation.js");
+// const Navigation = require("./navigation.js");
 
 const DEFAULT_LIMIT = 15;
 const INPUT_TIMEOUT = 500;
@@ -58,7 +58,7 @@ class AsyncFilteredList extends React.Component {
     return {
       qId: 0,
       orderBy: this.props.query.orderBy || "id",
-      orderDirection: this.props.query.orderDirection || OrderDirection.DESC,
+      // orderDirection: this.props.query.orderDirection || OrderDirection.DESC,
       limit: this.props.query.limit,
       page: this.props.query.page,
       count: this.props.query.count,
@@ -163,21 +163,6 @@ class AsyncFilteredList extends React.Component {
         </div>
       </div>,
     );
-  }
-
-  _renderNavigation(content = null) {
-    return <Navigation
-      limit={this.state.limit}
-      page={this.state.page}
-      count={this.state.count}
-      onChange={this.handleChange}
-      query={this.getQueryObject()}
-      sort={this.sort}
-      orderBy={this.state.orderBy}
-      orderDirection={this.state.orderDirection}
-    >
-      {content}
-    </Navigation>;
   }
 }
 AsyncFilteredList.displayName = "AsyncFilteredList";

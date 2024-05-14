@@ -42,6 +42,10 @@ module.exports = {
       allowNull: false,
       type: Sequelize.DATE,
     },
+    MODIFICATION_DATE: {
+      allowNull: true,
+      type: Sequelize.DATE,
+    },
   }),
 
   down: (queryInterface, _Sequelize) => queryInterface.dropTable("ACCOUNT"),

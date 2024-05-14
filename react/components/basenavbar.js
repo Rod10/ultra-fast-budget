@@ -55,6 +55,7 @@ class Basenavbar extends React.Component {
     </div>;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   _renderSettings() {
     return <div className="navbar-item">
       <Button
@@ -69,6 +70,21 @@ class Basenavbar extends React.Component {
     </div>;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  _renderHome() {
+    return <div className="navbar-item">
+      <Button
+        label={""}
+        icon={<Icon
+          icon="house"
+          faSize="lg"
+          size="big"
+        />}
+        href="/"
+      />
+    </div>;
+  }
+
   _renderMenu() {
     const c = this.props.user;
     return <div className={"navbar-menu"}>
@@ -77,7 +93,7 @@ class Basenavbar extends React.Component {
       </div>
       {this.props.navbarCenter}
       <div className="navbar-end">
-        {this._renderSettings()}
+        {this.props.settings ? this._renderHome() : this._renderSettings()}
         <span className="navbar-item is-hidden-touch">{Civilities[c.civility].short}. {c.firstName} {c.lastName}</span>
         {this.props.navbarRight}
         {this._renderLogout()}
@@ -117,6 +133,7 @@ Basenavbar.propTypes = {
   navbarCenter: PropTypes.node,
   navbarRight: PropTypes.node,
   user: PropTypes.object,
+  settings: PropTypes.bool,
 };
 Basenavbar.defaultProps = {
   brandContent: undefined,
@@ -131,6 +148,7 @@ Basenavbar.defaultProps = {
   navbarCenter: undefined,
   navbarRight: undefined,
   user: undefined,
+  settings: false,
 };
 
 module.exports = Basenavbar;

@@ -10,12 +10,17 @@ const {
 
 const CategoryFull = require("../constants/categoryfull.js");
 const {
-  CATEGORIES,
+  ICON,
   IMAGES,
 } = require("../utils/paths.js");
 const {logger} = require("./logger.js");
 
+fs.existsSync(IMAGES) || fs.mkdirSync(IMAGES);
+fs.existsSync(ICON) || fs.mkdirSync(ICON);
+
 const categorySrv = {};
+
+categorySrv.ICON_DIR = ICON;
 
 /**
  * Add all the category for a new user into the database
@@ -27,16 +32,17 @@ categorySrv.createForNewUser = user => {
   const dir = `${user.id}-${user.lastName}/categories`;
 
   for (const [key, value] of Object.entries(CategoryFull)) {
-    const imagePath = `${dir}/${user.id}/${value.imagePath}`;
+    const imagePath = `/icon/${dir}/${value.imagePath}`;
     Category.create({
       userId: user.id,
       name: value.name,
       type: value.type,
+      genre: value.genre,
       imagePath,
     });
   }
-  fs.mkdirSync(path.resolve(IMAGES, dir), {recursive: true});
-  fs.cpSync(path.resolve(IMAGES, "base/categories"), path.resolve(IMAGES, dir), {recursive: true});
+  fs.mkdirSync(path.resolve(ICON, dir), {recursive: true});
+  fs.cpSync(path.resolve(ICON, "base/categories"), path.resolve(ICON, dir), {recursive: true});
 };
 
 categorySrv.getByType = (userId, type) => {
@@ -47,6 +53,18 @@ categorySrv.getByType = (userId, type) => {
       userId,
       type,
     },
+  });
+};
+
+categorySrv.getAll = userId => {
+  logger.debug("Find all categories for user=[%s]", userId);
+
+  return Category.findAndCountAll({
+    where: {userId},
+    include: [{
+      association: Category.SubCategory,
+      // where: {userId},
+    }],
   });
 };
 

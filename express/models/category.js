@@ -7,6 +7,11 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true,
     },
+    genre: {
+      type: DataTypes.ENUM,
+      values: ["INCOME", "OUTCOME"],
+      allowNull: false,
+    },
     userId: {
       type: DataTypes.INTEGER(20),
       allowNull: false,
@@ -27,21 +32,30 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    modificationDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   }, {
     freezeTableName: true,
     tableName: "CATEGORY",
     createdAt: "creationDate",
-    updatedAt: false,
+    updatedAt: "modificationDate",
   });
+
   Category.associate = models => {
-    Category.belongsTo(models.User, {
-      as: "category",
+    Category.User = Category.belongsTo(models.User, {
+      as: "user",
       foreignKey: {
         name: "userId",
         allowNull: false,
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
+    });
+    Category.SubCategory = Category.hasMany(models.SubCategory, {
+      as: "subCategories",
+      foreignKey: "categoryId",
     });
   };
   return Category;

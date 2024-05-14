@@ -1,25 +1,25 @@
 const tools = {
   label: "Outils",
   logo: "/images/svg/home_operation.svg",
-  routes: "/tools",
+  routes: "/settings/tools",
 };
 
 const user = {
   label: "Utilisateur",
   logo: "/images/svg/home_operation.svg",
-  routes: "/user",
+  routes: "/settings/user",
 };
 
 const preference = {
   label: "Préférence",
   logo: "/images/svg/home_operation.svg",
-  routes: "/preference",
+  routes: "/settings/preference",
 };
 
 const parameters = {
   label: "Paramètres",
-  logo: "images/svg/homt_operation.svg",
-  routes: "/parameters",
+  logo: "/images/svg/home_operation.svg",
+  routes: "/settings/parameters",
 };
 
 module.exports = {

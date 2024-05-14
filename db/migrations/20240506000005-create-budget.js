@@ -13,11 +13,15 @@ module.exports = {
     },
     TOTAL_AMOUNT: {
       allowNull: false,
-      type: Sequelize.INTEGER(100)
+      type: Sequelize.INTEGER(100),
     },
     DATA: {type: Sequelize.TEXT},
     CREATION_DATE: {
       allowNull: false,
+      type: Sequelize.DATE,
+    },
+    MODIFICATION_DATE: {
+      allowNull: true,
       type: Sequelize.DATE,
     },
   }),

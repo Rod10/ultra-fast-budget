@@ -37,11 +37,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    modificationDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   }, {
     freezeTableName: true,
     tableName: "ACCOUNT",
     createdAt: "creationDate",
-    updatedAt: false,
+    updatedAt: "modificationDate",
   });
   Account.associate = models => {
     Account.belongsTo(models.User, {

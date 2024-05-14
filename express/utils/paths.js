@@ -12,12 +12,14 @@ const dataPathAbs = dataPath[0] === "/"
 const CATEGORIES = path.resolve(dataPathAbs, "categories");
 const SUBCATEGORIES = path.resolve(dataPathAbs, "subcategories");
 const IMAGES = path.resolve(dataPathAbs, "images");
+const ICON = path.resolve(dataPathAbs, "icon");
 const LOGOS = path.resolve(dataPathAbs, "logos");
 
 module.exports = {
   CATEGORIES,
   SUBCATEGORIES,
   IMAGES,
+  ICON,
   LOGOS,
   LOGS,
   PUBLIC,

@@ -16,6 +16,10 @@ const config = {
     "navbar": `${VIEWS}/navbar.js`,
 
     "accountlist": `${VIEWS}/accountlist.js`,
+
+    "settingshomepage": `${VIEWS}/settingshomepage.js`,
+    "preference": `${VIEWS}/preference.js`,
+    "categorylist": `${VIEWS}/categorylist.js`,
   },
   output: {
     path: path.resolve(__dirname, "dist", "public", "js"),

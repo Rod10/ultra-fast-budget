@@ -16,6 +16,11 @@ module.exports = {
       },
       type: Sequelize.INTEGER(20),
     },
+    GENRE: {
+      allowNull: false,
+      defaultValue: "INCOME",
+      type: Sequelize.ENUM("INCOME", "OUTCOME"),
+    },
     NAME: {
       allowNull: false,
       type: Sequelize.STRING(45),
@@ -30,6 +35,10 @@ module.exports = {
     },
     CREATION_DATE: {
       allowNull: false,
+      type: Sequelize.DATE,
+    },
+    MODIFICATION_DATE: {
+      allowNull: true,
       type: Sequelize.DATE,
     },
   }),

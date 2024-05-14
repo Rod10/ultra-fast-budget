@@ -31,14 +31,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    modificationDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   }, {
     freezeTableName: true,
     tableName: "SUBCATEGORY",
     createdAt: "creationDate",
-    updatedAt: false,
+    updatedAt: "modificationDate",
   });
   SubCategory.associate = models => {
-    SubCategory.belongsTo(models.Category, {
+    SubCategory.Category = SubCategory.belongsTo(models.Category, {
       as: "category",
       foreignKey: {
         name: "categoryId",
@@ -47,7 +51,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       },
     });
-    SubCategory.belongsTo(models.User, {
+    SubCategory.User = SubCategory.belongsTo(models.User, {
       as: "user",
       foreignKey: {
         name: "userId",
