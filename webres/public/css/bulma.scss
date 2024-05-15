@@ -1,0 +1,30 @@
+// Bulma variables
+$menu-label-color: #e6e6e6;
+
+$menu-item-color: #fff;
+$menu-item-radius: 5px;
+
+$menu-item-hover-background-color: #00000030;
+$menu-item-active-background-color: #00000030;
+
+$menu-label-font-size: 1em;
+$menu-label-letter-spacing: 0;
+$menu-label-spacing: 0em;
+
+$radius: 6px;
+$box-padding: 1rem;
+
+// Bulma-steps
+$steps-completed-color: #009ee0;
+$steps-active-color: #009ee0;
+
+// Import the rest of Bulma
+@import "../../../node_modules/bulma/bulma";
+
+
+// Import Bulma-extensions
+@import "../../../node_modules/@creativebulma/bulma-tooltip/src/sass/index";
+
+@import "../../../node_modules/bulma-steps-component/bulma-steps.sass"
+
+// npx sass webres/public/css/bulma.scss:webres/public/css/bulma.css

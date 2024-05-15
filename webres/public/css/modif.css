@@ -1,0 +1,649 @@
+h2 {
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+    margin: 10px 0 !important;
+}
+
+.box {
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.15), 0 0px 0 1px rgba(10, 10, 10, 0.02);
+}
+
+.modal-card {
+    border-radius: 5px;
+}
+
+.graph-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.graph-container .pr-2,
+.graph-container .pb-2 {
+    box-sizing: border-box;
+    height: 100%;
+}
+
+.graph-box {
+    background-color: whitesmoke;
+    border-radius: 6px;
+    position: relative;
+    padding: 1.25rem 1.5rem 1.25rem 1.5rem;
+    height: 100%;
+}
+
+@media screen and (min-width: 1400px) {
+    .graph-container .is-1 {
+        flex: 50%;
+        max-width: 50%;
+    }
+
+    .graph-container .is-2 {
+        flex: 100%;
+        max-width: 100%;
+    }
+}
+
+@media screen and (max-width: 1400px) {
+    .graph-container .is-1 {
+        flex: 100%;
+        max-width: 100%;
+    }
+
+    .graph-container .is-2 {
+        flex: 100%;
+        max-width: 100%;
+    }
+}
+
+@media screen and (max-width: 769px) {
+    .container.is-fluid {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .modal-card {
+        top: 27px;
+    }
+}
+
+.modal-background {
+    backdrop-filter: blur(3px);
+}
+
+a.link {
+    color: var(--edwin);
+    border-bottom: 0px solid #0000;
+    transition: all .2s;
+    cursor: pointer;
+}
+
+a.link:hover {
+    border-bottom: 2px solid var(--edwin);
+    transition: all .2s;
+}
+
+.white-svg {
+    filter: invert(100%) sepia(93%) saturate(27%) hue-rotate(39deg) brightness(107%) contrast(107%);
+}
+
+.dark-svg {
+    filter: invert(0%) sepia(8%) saturate(0%) hue-rotate(83deg) brightness(96%) contrast(106%);
+}
+
+/* --- Head --- */
+.head {
+    display: flex;
+    align-items: baseline;
+}
+
+.head img {
+    max-width: 30px;
+    max-height: 30px;
+    margin-right: 10px;
+    filter: invert(100%) sepia(93%) saturate(27%) hue-rotate(39deg) brightness(107%) contrast(107%);
+    position: relative;
+    top: 5px;
+}
+
+/* --- --- */
+.is-rounded {
+    border-radius: 6px;
+}
+
+.test {
+    background-color: #59c64b;
+}
+
+/* --- New Bar --- */
+.newnavbar .navbar {
+    height: 52px;
+}
+
+.newnavbar .navbar-end {
+    justify-content: flex-end;
+    margin-left: auto;
+    align-items: stretch;
+    display: flex;
+    height: 52px;
+}
+
+.newnavbar .navbar-menu {
+    margin-left: auto;
+    display: flex !important;
+    align-items: stretch !important;
+    padding: 0;
+    box-shadow: none;
+}
+
+.newnavbar .navbar .container.is-fluid {
+    padding-left: 10px !important;
+}
+
+.newnavbar .navbar>.container {
+    display: flex !important;
+}
+
+/* Si moins de 1223px */
+@media screen and (min-width: 1224px) {
+    .search {
+        width: 25vw;
+        max-width: 400px;
+    }
+}
+
+.scrollbar {
+    top: 3.25rem;
+    left: 0;
+    width: 330px;
+    max-width: 100vw;
+    height: calc(100vh - 3.25rem);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    background-color: #006893;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .35);
+    z-index: 2;
+    transition: all .5s;
+}
+
+/* Si moins de 1223px */
+@media screen and (max-width: 1223px) {
+    .scrollbar {
+        left: -330px;
+        opacity: 0;
+        z-index: 10;
+    }
+}
+
+.scrollbar.opened {
+    left: 0;
+    opacity: 1;
+}
+
+.is-preedwin .scrollbar {
+    background-color: #a97400 !important;
+}
+
+.is-new .scrollbar {
+    background-color: #5c8e93 !important;
+}
+
+/* Si moins de 1223px */
+@media screen and (max-width: 1223px) {
+    .scrollbareditor {
+        left: 0 !important;
+        z-index: 15 !important;
+    }
+}
+
+.scrollbareditor {
+    top: 3.25rem;
+    left: 330px;
+    width: calc(100vw - 330px);
+    height: calc(100vh - 3.25rem);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    background-color: #006893;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .35);
+    z-index: 1;
+    transition: all .5s;
+}
+
+.scrollbareditor:not(.opened) {
+    left: 0;
+    opacity: 0;
+    transform: translate(-100%);
+}
+
+.is-preedwin .scrollbareditor {
+    background-color: #a97400 !important;
+}
+
+.is-new .scrollbareditor {
+    background-color: #5c8e93 !important;
+}
+
+.scrollbareditor .img {
+    width: 30px;
+    height: 30px;
+}
+
+.scrollbareditor .img img {
+    filter: invert(100%) sepia(93%) saturate(27%) hue-rotate(39deg) brightness(107%) contrast(107%);
+    max-width: 30px;
+    max-height: 30px;
+    margin: auto;
+}
+
+.scrollbar .menu-list a {
+    color: #fff !important;
+    padding: 10px;
+    transition: all .3s;
+}
+
+.scrollbar .logo {
+    max-width: 250px;
+}
+
+.head h2 {
+    margin-left: 10px;
+}
+
+/* --- --- */
+/* Si moins de 1223px */
+@media screen and (max-width: 1223px) {
+    .body-content {
+        left: 0;
+        width: 100vw;
+        height: calc(100vh - 3.5em);
+    }
+}
+
+/* Si plus de 1224px */
+@media screen and (min-width: 1224px) {
+    .body-content {
+        left: 330px;
+        width: calc(100vw - 330px);
+        height: calc(100vh - 3.5em);
+    }
+}
+
+.body-content {
+    position: fixed;
+    padding: 15px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: all .3s;
+}
+
+.menu {
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0 10px;
+}
+
+.bottom {
+    margin-top: auto;
+    background-color: #00000030;
+}
+
+.menu-label {
+    font-weight: bold;
+}
+
+.menu-label:not(:first-child) {
+    margin-top: 1em;
+}
+
+.menu-label img {
+    max-width: 35px;
+    max-height: 35px;
+    top: 11px;
+    position: relative;
+    margin-right: 1em;
+}
+
+.menu-list.marged {
+    margin-left: 30px;
+    margin-bottom: 1em;
+}
+
+.menu-list img {
+    max-width: 25px;
+    max-height: 25px;
+    margin-right: 1em;
+}
+
+.menu-list span {
+    position: relative;
+    top: -5px;
+}
+
+/* Hide scrollbar for Webkit, IE, Edge and Firefox */
+.menu::-webkit-scrollbar {
+    display: none;
+}
+
+.menu {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* --- Burger Button --- */
+/* Si moins de 1224px */
+@media screen and (min-width: 1224px) {
+    .scrollbar-button {
+        display: none;
+    }
+}
+
+.scrollbar-button {
+    margin: auto 20px auto 10px;
+    width: 20px;
+    height: 14px;
+    cursor: pointer;
+    position: relative;
+}
+
+.scrollbar-button span {
+    background-color: #fff;
+    height: 2px;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    transition: all 0.3s ease;
+}
+
+.scrollbar-button span:first-child {
+    top: 0;
+}
+
+.scrollbar-button span:nth-child(2) {
+    top: 6px;
+}
+
+.scrollbar-button span:last-child {
+    top: 12px;
+}
+
+.scrollbar-button.opened span:nth-child(2) {
+    opacity: 0;
+}
+
+.scrollbar-button.opened span:first-child,
+.scrollbar-button.opened span:last-child {
+    top: 6px;
+}
+
+.scrollbar-button.opened span:first-child {
+    transform: rotate(45deg);
+}
+
+.scrollbar-button.opened span:last-child {
+    transform: rotate(-45deg);
+}
+
+.graph {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.message {
+    border-radius: 6px !important;
+}
+
+.operator-list .box .levels {
+    display: inline-flex;
+}
+
+.operator-list .box .levels> :last-child {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 100%;
+    background-color: #d5202f;
+}
+
+.operator-list .box .levels.is-valid> :last-child {
+    background-color: #00e010;
+}
+
+.operator-list .box .levels.is-nearly-expired> :last-child {
+    background-color: #ffe08a;
+}
+
+.operator-list .box .levels> :last-child>a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+@media screen and (min-width: 769px) {
+    .operator-scrollblock {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: calc(100vh - 330px);
+    }
+}
+
+.operator-scrollblock {
+    animation: 0.8s ease 0s 1 normal none running slide-right;
+}
+
+/* --- --- */
+/* Si moins de 769px */
+@media screen and (max-width: 769px) {
+    .expand-operator {
+        position: fixed;
+        top: 52px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 52px);
+        z-index: 10;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .scrolltable {
+        max-height: 50vh;
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+}
+
+@keyframes slide-right {
+    0% {
+        margin-left: 50px;
+        margin-right: -50px;
+        opacity: 0;
+    }
+
+    100% {
+        margin-left: 0;
+        opacity: 1;
+    }
+}
+
+/* --- --- */
+.left-separator {
+    border-left: 1px solid #000;
+}
+
+.right-separator {
+    border-right: 1px solid #000;
+}
+
+.top-separator {
+    border-top: 1px solid #000;
+}
+
+.bottom-separator {
+    border-bottom: 1px solid #000;
+}
+
+tr th {
+    border: none !important;
+}
+
+table {
+    border-collapse: collapse;
+    border-radius: 6px;
+}
+
+.title {
+    border-radius: 5px;
+}
+
+/* --- --- */
+.is-edwin .box.panel-select.selected {
+    background-color: #7fceef;
+}
+
+.is-preedwin .box.panel-select.selected {
+    background-color: #fad37f;
+}
+
+.is-new .box.panel-select.selected {
+    background-color: #9ec9ce;
+}
+
+.is-edwin .box.panel-select.grey:not(.selected) {
+    background-color: whitesmoke
+}
+
+.panel-select {
+    transition: all 0.3s;
+}
+
+/* --- Habilitation colors --- */
+.electricity .title .title,
+.electricity table thead tr th {
+    background-color: #ffc5ab !important;
+    border-color: #ffc5ab !important;
+    color: #fff;
+}
+
+.electricity table tbody tr td {
+    background-color: #fff !important;
+    border-color: #ffc5ab;
+}
+
+.gas .title .title,
+.gas table thead tr th {
+    background-color: #a0c1ff !important;
+    border-color: #a0c1ff !important;
+    color: #fff;
+}
+
+.gas table tbody tr td {
+    background-color: #fff !important;
+    border-color: #a0c1ff;
+}
+
+.aipr .title .title,
+.aipr table thead tr th {
+    background-color: #c1e5b8 !important;
+    border-color: #c1e5b8 !important;
+    color: #fff;
+}
+
+.aipr table tbody tr td {
+    background-color: #fff !important;
+    border-color: #c1e5b8;
+}
+
+.caces .title .title,
+.caces table thead tr th {
+    background-color: #f1b3c4 !important;
+    border-color: #f1b3c4 !important;
+    color: #fff;
+}
+
+.caces table tbody tr td {
+    background-color: #fff !important;
+    border-color: #f1b3c4;
+}
+
+.electricity .title .title,
+.gas .title .title,
+.aipr .title .title,
+.caces .title .title {
+    margin-top: 1.75em
+}
+
+.selection {
+    padding-bottom: calc(0.5em - 1px);
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: calc(0.5em - 1px);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.selection * {
+    cursor: pointer;
+}
+
+.selection:hover {
+    background-color: #ddd;
+}
+
+.is-sub-category {
+    margin-top: 1rem;
+    background-color: rgba(196, 196, 196, 0.3)
+}
+
+.icon-category{
+     /* background-color: hsl(0, 0%, 100%);
+     border-radius: 6px;
+     box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
+     color: #dbdbdb4f; */
+     display: block;
+     padding: 1rem;
+ }
+
+/* --- --- */
+
+.is-flex figure {
+    margin: 0 !important;
+}
+
+.box.max-height {
+    height: 100%;
+}
+
+.slide-in {
+    animation: slide-in 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* ----------------------------------------------
+ * Generated by Animista on 2023-1-19 10:53:31
+ * Licensed under FreeBSD License.
+ * See http://animista.net/license for more info.
+ * w: http://animista.net, t: @cssanimista
+ * ---------------------------------------------- */
+/**
+ * ----------------------------------------
+ * animation slide-in
+ * ----------------------------------------
+ */
+@keyframes slide-in {
+    0% {
+        -webkit-transform: translateZ(600px);
+        transform: translateZ(600px);
+        opacity: 0;
+    }
+
+    100% {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        opacity: 1;
+    }
+}
+
+.brief .steps-content {
+    font-size: 0.9rem;
+}
