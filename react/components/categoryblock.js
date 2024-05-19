@@ -3,15 +3,31 @@ const PropTypes = require("prop-types");
 
 const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
-const Button = require("./bulma/button");
-const Icon = require("./bulma/icon");
+const Button = require("./bulma/button.js");
+const Icon = require("./bulma/icon.js");
+const {getElFromDataset} = require("../utils/html.js");
 
 class CategoryBlock extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.handleEditSubCategory = this.handleEditSubCategory.bind(this);
+  }
+
+  handleEditSubCategory(evt) {
+    evt.stopPropagation();
+    const el = getElFromDataset(evt, "subcategoryid");
+    const subCategoryId = parseInt(el.dataset.subcategoryid, 10);
+    const subCategory = this.props.category.subCategories.find(subCat => subCat.id === subCategoryId);
+    return this.props.onEditSubCategory(this.props.category, subCategory);
+  }
+
   render() {
     const expanded = (this.props.currentCategory !== null && this.props.currentCategory.name === this.props.category.name)
       && this.props.currentCategory.subCategories.map(subCategory => <div
         className="box is-sub-category"
         key={subCategory.id}
+        data-subcategoryid={subCategory.id}
       >
         <Columns className="is-flex">
           <Column className="is-narrow">
@@ -29,14 +45,14 @@ class CategoryBlock extends React.Component {
                 type="danger"
                 icon={<Icon size="small" icon="trash" />}
                 // label="Éditer"
-                // onClick={this.handleEditClick}
+                //onClick={this.handleEditClick}
               />
               <Button
                 className="ml-2 has-text-weight-bold"
                 type="themed"
                 icon={<Icon size="small" icon="pen" />}
                 // label="Éditer"
-                // onClick={this.handleEditClick}
+                onClick={this.handleEditSubCategory}
               />
             </div>
           </Column>
@@ -68,7 +84,7 @@ class CategoryBlock extends React.Component {
               type="themed"
               icon={<Icon size="small" icon="pen" />}
               // label="Éditer"
-              // onClick={this.handleEditClick}
+              onClick={this.props.onEditCategory}
             />
           </div>
         </Column>
@@ -97,6 +113,8 @@ CategoryBlock.displayName = "CategoryBlock";
 CategoryBlock.propTypes = {
   category: PropTypes.object.isRequired,
   onAddCategory: PropTypes.func.isRequired,
+  onEditCategory: PropTypes.func.isRequired,
+  onEditSubCategory: PropTypes.func.isRequired,
   currentCategory: PropTypes.object,
 };
 CategoryBlock.defaultProps = {currentCategory: null};

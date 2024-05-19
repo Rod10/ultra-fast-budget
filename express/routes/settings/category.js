@@ -4,10 +4,12 @@ const authMid = require("../../middlewares/user.js");
 
 // const accountSrv = require("../../services/account.js");
 const categorySrv = require("../../services/category.js");
+const subCategoriesSrv = require("../../services/subcategories.js");
 const renderSrv = require("../../services/render.js");
 const multer = require("multer");
 const moment = require("moment");
-// const {SEE_OTHER} = require("../../utils/error.js");
+const {logger} = require("../../services/logger.js");
+const {SEE_OTHER} = require("../../utils/error.js");
 
 const router = express.Router();
 
@@ -35,7 +37,40 @@ router.get("/list", async (req, res) => {
 });
 
 router.post("/new", upload.fields([{name: "icon", maxCount: 1}]), async (req, res, next) => {
-  console.log(req);
+  try {
+    const {user} = req;
+
+    await categorySrv.create(user, req.body, req.files.icon);
+
+    res.redirect(SEE_OTHER, "/list");
+  } catch (e) {
+    logger.error(e);
+    return next(e);
+  }
 });
+
+router.post("/:id/create-sub-category", upload.fields([{name: "icon", maxCount: 1}]), async (req, res, next) => {
+  try {
+    const {user} = req;
+    const category = await categorySrv.getById(req.params.id);
+    await subCategoriesSrv.create(user, category.id, req.body, req.files.icon);
+
+    res.redirect(SEE_OTHER, "/list");
+  } catch (e) {
+    logger.error(e);
+    return next(e);
+  }
+});
+
+router.post("/:id/edit", async (req, res, next) => {
+  try {
+    const {user} = req;
+    const data = req.body;
+    await categorySrv.edit(req.params.id, data);
+  } catch (e) {
+    logger.error(e);
+    return next(e);
+  }
+})
 
 module.exports = router;

@@ -47,19 +47,34 @@ class CategoryModal extends React.Component {
   componentDidMount() {
     window.openCategoryModal = this.openModal;
     if (this.props.onRegisterModal) {
-      this.props.onRegisterModal("mail", this.openModal);
+      this.props.onRegisterModal("category", this.openModal);
     }
   }
 
   openModal(item) {
-    this.setState(() => ({
-      visible: true,
-      category: item.category,
-      subCategory: item.subCategory,
-      type: item.type,
-      old_icon: item ? item.icon : null,
-      icon: item ? item.icon : null,
-    }));
+    this.setState(() => {
+      const newState = {
+        visible: true,
+        category: item.category,
+        subCategory: item.subCategory,
+        type: item.type,
+        // eslint-disable-next-line camelcase
+        // old_icon: item ? item.icon : null,
+        // icon: item ? item.icon : null,
+      };
+
+      if (item.type === "edit") {
+        if (item.subCategory) {
+          newState.newCategory = item.subCategory;
+        } else {
+          newState.newCategory = item.category;
+        }
+      } else {
+        newState.newCategory = {};
+      }
+
+      return newState;
+    });
   }
 
   handleChange(evt) {
@@ -86,7 +101,9 @@ class CategoryModal extends React.Component {
     this.setState({
       visible: false,
       category: undefined,
-      newCategory: {},
+      subCategory: undefined,
+      type: "create",
+      newCategory: null,
     });
   }
 
@@ -102,6 +119,7 @@ class CategoryModal extends React.Component {
     // if (!this.state.confirm) return null;
     const category = this.state.category;
     const newCategory = this.state.newCategory;
+    console.log(newCategory);
     let action = null;
     let title = null;
     if (this.state.type === "create") {
@@ -112,6 +130,15 @@ class CategoryModal extends React.Component {
       } else {
         action = "/settings/category/new";
         title = "Créer une catégorie";
+      }
+    } else if (this.state.type === "edit") {
+      /* if category then it's for creating a new sub-category */
+      if (this.state.subCategory) {
+        action = `/settings/category/${category.id}/sub-category/${this.state.subCategory.id}/edit`;
+        title = "Modifier une sous-catégorie";
+      } else {
+        action = `/settings/category/${category.id}/edit`;
+        title = "Modifier une catégorie";
       }
     }
 
@@ -152,7 +179,7 @@ class CategoryModal extends React.Component {
             <div className="control">
               <FileInput
                 name="icon"
-                label="Glisser l'image de la catégorie'"
+                label="Glisser l'image de la catégorie"
                 doc={this.state.icon}
                 // accept={ValidFileTypes}
                 handleFileChange={this.handleImageFileChange}
@@ -195,13 +222,13 @@ class CategoryModal extends React.Component {
             onChange={this.handleChange}
             horizontal
           />
-          <Select
+          {this.state.subCategory === null && <Select
             label="Genre"
             type="text"
             name="genre"
             defaultValue={newCategory ? newCategory.genre : ""}
             options={categoriesGenre}
-          />
+          />}
         </div>
         {/* <Columns>
           <Column>

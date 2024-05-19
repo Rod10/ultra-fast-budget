@@ -22,6 +22,8 @@ const categorySrv = {};
 
 categorySrv.ICON_DIR = ICON;
 
+const getDir = user => `${user.id}-${user.lastName}/categories`;
+
 /**
  * Add all the category for a new user into the database
  *
@@ -45,6 +47,12 @@ categorySrv.createForNewUser = user => {
   fs.cpSync(path.resolve(ICON, "base/categories"), path.resolve(ICON, dir), {recursive: true});
 };
 
+categorySrv.getById = id => {
+  logger.debug("Get the category with id=[%s]", id);
+
+  return Category.findOne({where: {id}});
+};
+
 categorySrv.getByType = (userId, type) => {
   logger.debug("Get the category for user=[%s] with type=[%s]", userId, type);
 
@@ -65,6 +73,28 @@ categorySrv.getAll = userId => {
       association: Category.SubCategory,
       // where: {userId},
     }],
+  });
+};
+
+categorySrv.create = (user, data, file) => {
+  logger.debug("Create category for user=[%s] with data=[%s]", user.id, data);
+
+  const dir = getDir(user);
+  const fileParts = file[0].originalname.split(".");
+  const extension = fileParts[1];
+  const imagePath = `/icon/${dir}/${data.type}.${extension}`;
+
+  fs.renameSync(
+    path.resolve(ICON, file[0].filename),
+    path.resolve(ICON, `${dir}/${data.type}.${extension}`),
+  );
+
+  return Category.create({
+    userId: user.id,
+    name: data.name,
+    type: data.type,
+    genre: data.genre,
+    imagePath,
   });
 };
 

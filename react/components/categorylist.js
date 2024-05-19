@@ -32,6 +32,7 @@ class CategoryList extends AsyncFilteredList {
 
     this.handleOpenDetails = this.handleOpenDetails.bind(this);
     this.handleAddCategory = this.handleAddCategory.bind(this);
+    this.handleEditCategory = this.handleEditCategory.bind(this);
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
   }
 
@@ -57,7 +58,20 @@ class CategoryList extends AsyncFilteredList {
     }
     const categoryId = parseInt(el.dataset.categoryid, 10);
     const category = this.props.categories.rows.find(cat => cat.id === categoryId);
-    window.openCategoryModal({category, subCategory: true, type: "create"});
+    window.openCategoryModal({category, subCategory: null, type: "create"});
+  }
+
+  handleEditCategory(evt) {
+    evt.stopPropagation();
+    const el = getElFromDataset(evt, "categoryid");
+    const categoryId = parseInt(el.dataset.categoryid, 10);
+    const category = this.props.categories.rows.find(cat => cat.id === categoryId);
+    window.openCategoryModal({category, subCategory: null, type: "edit"});
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  handleEditSubCategory(category, subCategory) {
+    window.openCategoryModal({category, subCategory, type: "edit"});
   }
 
   _renderFilters() {
@@ -85,6 +99,8 @@ class CategoryList extends AsyncFilteredList {
         data-categoryid={category.id}
         currentCategory={this.state.currentCategory}
         onAddCategory={this.handleAddCategory}
+        onEditCategory={this.handleEditCategory}
+        onEditSubCategory={this.handleEditSubCategory}
       />
     </div>);
 
@@ -97,7 +113,7 @@ class CategoryList extends AsyncFilteredList {
       <div>
         {this._renderFilters()}
       </div>
-      <hr/>
+      <hr />
       <Columns>
         <div className="column">
           <div className="content operator-scrollblock">
