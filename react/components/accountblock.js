@@ -22,17 +22,17 @@ class AccountBlock extends React.Component {
           </div>
         </div>
         <div className="column has-text-right">
-          {this._renderTag()}
+          {this._renderTag(this.props.account)}
         </div>
       </div>
     </div>;
   }
 
-  _renderTag() {
+  _renderTag(account) {
     return <span
-      className={`tag ${this.props.account.className} is-medium is-rounded`}
-      title={AccountsTypeFull[this.props.account.type].label}
-    >{this.props.account.type}</span>;
+      className={`tag ${AccountsTypeFull[account.type].className} is-medium is-rounded`}
+      title={AccountsTypeFull[account.type].label}
+    >{AccountsTypeFull[account.type].label}</span>;
   }
 
   handleExpandClick(evt) {

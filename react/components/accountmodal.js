@@ -54,10 +54,10 @@ class AccountModal extends React.Component {
     this.setState(() => ({
       visible: true,
       account,
-      name: account.name,
-      type: account.type,
-      initialBalance: account.initialBalance,
-      currency: account.currency,
+      name: account ? account.name : "",
+      type: account ? account.type : "",
+      initialBalance: account ? account.initialBalance : "",
+      currency: account ? account.currency : "",
     }));
   }
 

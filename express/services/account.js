@@ -9,7 +9,7 @@ const {logger} = require("./logger.js");
 const accountSrv = {};
 
 accountSrv.create = (userId, data) => {
-  logger.debug("Create account with data=[%s]", data);
+  logger.debug("Create account with data=[%s] for user=[%s]", data, userId);
 
   return Account.create({
     userId,

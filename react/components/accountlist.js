@@ -149,7 +149,7 @@ class AccountList extends React.Component {
               icon={<Icon size="small" icon="plus" />}
               label="Ajouter un compte"
               // onClick={this.handleOpenAccountModal}
-              onClick={() => this.openAccountModal({account: {}})}
+              onClick={() => this.openAccountModal()}
             />
           </div>
         </Column>
