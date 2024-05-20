@@ -32,7 +32,7 @@ class CategoryBlock extends React.Component {
         <Columns className="is-flex">
           <Column className="is-narrow">
             <div className="icon-category" style={{width: "200px"}}>
-              <img src={subCategory.imagePath} />
+              <img src={`/icon/${subCategory.imagePath}`} />
             </div>
           </Column>
           <Column>
@@ -45,7 +45,7 @@ class CategoryBlock extends React.Component {
                 type="danger"
                 icon={<Icon size="small" icon="trash" />}
                 // label="Éditer"
-                //onClick={this.handleEditClick}
+                href={`${this.props.base}/sub-category/${subCategory.id}/delete`}
               />
               <Button
                 className="ml-2 has-text-weight-bold"
@@ -63,7 +63,7 @@ class CategoryBlock extends React.Component {
       <Columns className="is-flex">
         <Column className="is-narrow">
           <div className="icon-category" style={{width: "200px"}}>
-            <img src={this.props.category.imagePath} />
+            <img src={`/icon/${this.props.category.imagePath}`} />
           </div>
         </Column>
         <Column>
@@ -77,7 +77,7 @@ class CategoryBlock extends React.Component {
               type="danger"
               icon={<Icon size="small" icon="trash" />}
               // label="Éditer"
-              // onClick={this.handleEditClick}
+              href={`${this.props.base}${this.props.category.id}/delete`}
             />
             <Button
               className="ml-2 has-text-weight-bold"
@@ -116,6 +116,7 @@ CategoryBlock.propTypes = {
   onEditCategory: PropTypes.func.isRequired,
   onEditSubCategory: PropTypes.func.isRequired,
   currentCategory: PropTypes.object,
+  base: PropTypes.string.isRequired,
 };
 CategoryBlock.defaultProps = {currentCategory: null};
 

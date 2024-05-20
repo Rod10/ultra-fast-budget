@@ -119,7 +119,7 @@ class CategoryModal extends React.Component {
     // if (!this.state.confirm) return null;
     const category = this.state.category;
     const newCategory = this.state.newCategory;
-    console.log(newCategory);
+    console.log(category);
     let action = null;
     let title = null;
     if (this.state.type === "create") {
@@ -134,7 +134,7 @@ class CategoryModal extends React.Component {
     } else if (this.state.type === "edit") {
       /* if category then it's for creating a new sub-category */
       if (this.state.subCategory) {
-        action = `/settings/category/${category.id}/sub-category/${this.state.subCategory.id}/edit`;
+        action = `/settings/category/sub-category/${this.state.subCategory.id}/edit`;
         title = "Modifier une sous-catégorie";
       } else {
         action = `/settings/category/${category.id}/edit`;
@@ -222,7 +222,7 @@ class CategoryModal extends React.Component {
             onChange={this.handleChange}
             horizontal
           />
-          {this.state.subCategory === null && <Select
+          {!this.state.category && <Select
             label="Genre"
             type="text"
             name="genre"

@@ -54,7 +54,7 @@ class CategoryList extends AsyncFilteredList {
     evt.stopPropagation();
     const el = getElFromDataset(evt, "categoryid");
     if (!el) {
-      window.openCategoryModal({type: "create"});
+      window.openCategoryModal({type: "create", subCategory: null});
     }
     const categoryId = parseInt(el.dataset.categoryid, 10);
     const category = this.props.categories.rows.find(cat => cat.id === categoryId);

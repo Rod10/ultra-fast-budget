@@ -34,7 +34,7 @@ categorySrv.createForNewUser = user => {
   const dir = `${user.id}-${user.lastName}/categories`;
 
   for (const [key, value] of Object.entries(CategoryFull)) {
-    const imagePath = `/icon/${dir}/${value.imagePath}`;
+    const imagePath = `${dir}/${value.imagePath}`;
     Category.create({
       userId: user.id,
       name: value.name,
@@ -96,6 +96,43 @@ categorySrv.create = (user, data, file) => {
     genre: data.genre,
     imagePath,
   });
+};
+
+categorySrv.edit = async (category, user, data, file) => {
+  logger.debug("Edit category=[%s] with data=[%s]", category.id, data);
+  const dir = getDir(user);
+
+  if (file) {
+    const fileParts = file[0].originalname.split(".");
+    const extension = fileParts[1];
+    const imagePath = `${dir}/${data.type}.${extension}`;
+
+    fs.unlinkSync(path.resolve(ICON, category.imagePath));
+
+    fs.renameSync(
+      path.resolve(ICON, file[0].filename),
+      path.resolve(ICON, `${dir}/${data.type}.${extension}`),
+    );
+    category.imagePath = imagePath;
+    category.save();
+  }
+
+  return Category.update(
+    {
+      name: data.name,
+      type: data.type,
+      genre: data.genre,
+    },
+    {where: {id: category.id}},
+  );
+};
+
+categorySrv.delete = async id => {
+  logger.debug("Delete category=[%s]", id);
+
+  const category = await categorySrv.getById(id);
+  fs.unlinkSync(path.resolve(ICON, category.imagePath));
+  return category.destroy();
 };
 
 module.exports = categorySrv;

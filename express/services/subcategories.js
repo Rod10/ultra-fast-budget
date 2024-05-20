@@ -11,8 +11,6 @@ const SubCategoriesFull = require("../constants/subcategoriesfull.js");
 const {IMAGES, ICON} = require("../utils/paths.js");
 const {logger} = require("./logger.js");
 
-const categorySrv = require("./category.js");
-
 fs.existsSync(IMAGES) || fs.mkdirSync(IMAGES);
 fs.existsSync(ICON) || fs.mkdirSync(ICON);
 
@@ -23,7 +21,7 @@ subCategorySrv.ICON_DIR = ICON;
 const getDir = user => `${user.id}-${user.lastName}/subcategories`;
 
 /**
- * Add all the subcategory for a new user into the database
+ * Add all the subsubCategory for a new user into the database
  *
  * @param {object} user - The id of the user
  */
@@ -32,21 +30,21 @@ subCategorySrv.createForNewUser = async user => {
   const dir = `${user.id}-${user.lastName}/subcategories`;
 
   for (const [key, value] of Object.entries(SubCategoriesFull)) {
-    for (const category of value.parent) {
+    for (const subCategory of value.parent) {
       try {
-        const parentCategory = await categorySrv.getByType(user.id, category);
+        const parentCategory = await subCategorySrv.getByType(user.id, subCategory);
         if (parentCategory) {
-          const imagePath = `/icon/${dir}/${value.imagePath}`;
+          const imagePath = `${dir}/${value.imagePath}`;
           SubCategory.create({
             userId: user.id,
-            categoryId: parentCategory.id,
+            subCategoryId: parentCategory.id,
             type: key,
             name: value.name,
             imagePath,
           });
         }
       } catch (error) {
-        logger.error("Error retrieving category:", error);
+        logger.error("Error retrieving subCategory:", error);
       }
     }
   }
@@ -56,13 +54,13 @@ subCategorySrv.createForNewUser = async user => {
   // await SubCategory.bulkCreate(subCategories);
 };
 
-subCategorySrv.create = (user, categoryId, data, file) => {
-  logger.debug("Create subcategory for user=[%s] and category=[%s] with data=[%s]", user.id, categoryId, data);
+subCategorySrv.create = (user, subCategoryId, data, file) => {
+  logger.debug("Create subsubCategory for user=[%s] and subCategory=[%s] with data=[%s]", user.id, subCategoryId, data);
 
   const dir = getDir(user);
   const fileParts = file[0].originalname.split(".");
   const extension = fileParts[1];
-  const imagePath = `/icon/${dir}/${data.type}.${extension}`;
+  const imagePath = `${dir}/${data.type}.${extension}`;
 
   fs.renameSync(
     path.resolve(ICON, file[0].filename),
@@ -71,11 +69,54 @@ subCategorySrv.create = (user, categoryId, data, file) => {
 
   return SubCategory.create({
     userId: user.id,
-    categoryId,
+    subCategoryId,
     name: data.name,
     type: data.type,
     imagePath,
   });
+};
+
+subCategorySrv.getById = id => {
+  logger.debug("Get the subCategory with id=[%s]", id);
+
+  return SubCategory.findOne({where: {id}});
+};
+
+subCategorySrv.edit = async (subCategory, user, data, file) => {
+  logger.debug("Edit subCategory=[%s] with data=[%s]", subCategory.id, data);
+  const dir = getDir(user);
+
+  if (file) {
+    const fileParts = file[0].originalname.split(".");
+    const extension = fileParts[1];
+    const imagePath = `${dir}/${data.type}.${extension}`;
+
+    fs.unlinkSync(path.resolve(ICON, subCategory.imagePath));
+
+    fs.renameSync(
+      path.resolve(ICON, file[0].filename),
+      path.resolve(ICON, `${dir}/${data.type}.${extension}`),
+    );
+    subCategory.imagePath = imagePath;
+    subCategory.save();
+  }
+
+  return SubCategory.update(
+    {
+      name: data.name,
+      type: data.type,
+      genre: data.genre,
+    },
+    {where: {id: subCategory.id}},
+  );
+};
+
+subCategorySrv.delete = async id => {
+  logger.debug("Delete subCategory=[%s]", id);
+
+  const subCategory = await subCategorySrv.getById(id);
+  fs.unlinkSync(path.resolve(ICON, subCategory.imagePath));
+  return SubCategory.destroy({where: {id}});
 };
 
 module.exports = subCategorySrv;
