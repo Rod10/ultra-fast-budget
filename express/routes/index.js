@@ -9,6 +9,7 @@ const shortLinkSrv = require("../services/shortlink.js");
 const tokenSrv = require("../services/token.js");
 const userSrv = require("../services/user.js");
 const {SEE_OTHER} = require("../utils/error.js");
+const {logger} = require("../services/logger.js");
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.get("/login", (req, res, next) => {
 
     res.render("login_society", {data});
   } catch (err) {
+    logger.error(err);
     return next(err);
   }
 });
@@ -85,6 +87,7 @@ router.get("/status", async (req, res) => {
 
 router.use(authMid.strict);
 router.use("/account", require("./acount.js"));
+router.use("/transaction", require("./transaction.js"));
 router.use("/settings", require("./settings/index.js"));
 
 module.exports = router;

@@ -145,8 +145,10 @@ class AccountModal extends React.Component {
               label="Type"
               type="text"
               name="type"
-              defaultValue={this.state.type}
+              value={this.state.type}
+              data-key={"type"}
               options={typeOptions}
+              onChange={this.handleChange}
             />
           </Column>
         </Columns>
@@ -162,6 +164,7 @@ class AccountModal extends React.Component {
             />
           </Column>
         </Columns>
+        {this.state.type && <p>Montant Maximal: {AccountTypeFull[this.state.type].maxAmount}</p>}
         <Columns>
           <Column>
             <Select

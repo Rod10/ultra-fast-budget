@@ -61,11 +61,11 @@ module.exports = (sequelize, DataTypes) => {
       as: "subCategories",
       foreignKey: "userId",
     });
-    /* User.hasMany(models.Transaction, {
+    User.Transaction = User.hasMany(models.Transaction, {
       as: "transaction",
       foreignKey: "userId",
     });
-    User.hasMany(models.budget, {
+    /* User.hasMany(models.budget, {
       as: "budget",
       foreignKey: "userId",
     });*/

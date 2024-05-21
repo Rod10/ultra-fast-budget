@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers, max-lines-per-function */
 module.exports = (sequelize, DataTypes) => {
-  const Account = sequelize.define("Account", {
+  const Transaction = sequelize.define("Transaction", {
     id: {
       type: DataTypes.INTEGER(20),
       allowNull: false,
@@ -11,27 +11,29 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER(20),
       allowNull: false,
     },
-    name: {
-      type: DataTypes.STRING(45),
-      allowNull: false,
+    data: {
+      type: DataTypes.TEXT,
+      get() {
+        const val = this.getDataValue("data");
+        if (!val || !val.length) return {};
+        return JSON.parse(val);
+      },
+      set(val) {
+        this.setDataValue("data", JSON.stringify(val));
+      },
     },
-    currency: {
-      type: DataTypes.ENUM,
-      values: ["EUR", "USD", "JPY", "CNY"],
-      allowNull: false,
+    to: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    other: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     type: {
       type: DataTypes.ENUM,
-      values: ["COURANT", "LIVRETA", "LDDS", "LEP", "LIVRETJ", "CEL", "PEL", "PERP", "CSL"],
+      values: ["INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT"],
       allowNull: false,
-    },
-    initialBalance: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-    balance: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
     },
     creationDate: {
       type: DataTypes.DATE,
@@ -43,12 +45,12 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     freezeTableName: true,
-    tableName: "ACCOUNT",
+    tableName: "TRANSACTION",
     createdAt: "creationDate",
     updatedAt: "modificationDate",
   });
-  Account.associate = models => {
-    Account.User = Account.belongsTo(models.User, {
+  Transaction.associate = models => {
+    Transaction.User = Transaction.belongsTo(models.User, {
       as: "user",
       foreignKey: {
         name: "userId",
@@ -58,5 +60,5 @@ module.exports = (sequelize, DataTypes) => {
       },
     });
   };
-  return Account;
+  return Transaction;
 };

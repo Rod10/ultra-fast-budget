@@ -119,7 +119,6 @@ class CategoryModal extends React.Component {
     // if (!this.state.confirm) return null;
     const category = this.state.category;
     const newCategory = this.state.newCategory;
-    console.log(category);
     let action = null;
     let title = null;
     if (this.state.type === "create") {

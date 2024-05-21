@@ -13,13 +13,13 @@ const summary = {
 const transactions = {
   label: "Transactions",
   logo: "/images/svg/home_suivi.svg",
-  routes: "/transactions",
+  routes: "/transaction",
 };
 
 const transactionsPlanified = {
   label: "Transactions Planifiées",
   logo: "/images/svg/home_suivi.svg",
-  routes: "/transactions-planified",
+  routes: "/transaction-planified",
 };
 
 const account = {
