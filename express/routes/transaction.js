@@ -3,6 +3,7 @@ const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
 const renderSrv = require("../services/render.js");
+const categorySrv = require("../services/category.js");
 const transactionSrv = require("../services/transaction.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
@@ -14,8 +15,10 @@ router.use(authMid.strict);
 router.get("/", async (req, res, next) => {
   try {
     const transaction = await transactionSrv.getAllByUser(req.user.id);
+    const categories = await categorySrv.getAll(req.user.id);
     const data = {
       transaction,
+      categories,
       user: req.user,
     };
     const navbar = renderSrv.navbar(res.locals);

@@ -1,6 +1,7 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
+const axios = require("axios");
 const TransactionType = require("../../../express/constants/transactiontype.js");
 
 const {getElFromDataset, preventDefault} = require("../../utils/html.js");
@@ -15,6 +16,8 @@ const Title = require("../bulma/title.js");
 
 const {addKeyToArray} = require("../utils.js");
 
+const RateModal = require("./ratemodal.js");
+
 class TransactionModal extends React.Component {
   static handleAlertClick() {
     /* eslint-disable-next-line no-self-assign */
@@ -25,8 +28,8 @@ class TransactionModal extends React.Component {
     return {
       key,
       amount: "",
-      categoryId: "",
-      subCategoryId: "",
+      category: null,
+      subCategory: null,
     };
   }
 
@@ -35,6 +38,7 @@ class TransactionModal extends React.Component {
 
     this.state = {
       transaction: {},
+      categories: {},
       data: [],
       visible: false,
       alert: false,
@@ -46,6 +50,8 @@ class TransactionModal extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleListChange = this.handleListChange.bind(this);
     this.handleConfirmClick = this.handleConfirmClick.bind(this);
+    this.handleOpenCurrenyRateModal = this.handleOpenCurrenyRateModal.bind(this);
+    this.handleCurrenyRate = this.handleCurrenyRate.bind(this);
     this.transactionFormRef = React.createRef();
   }
 
@@ -65,6 +71,7 @@ class TransactionModal extends React.Component {
         transaction,
         visible: true,
         data,
+        categories: transaction.categories,
       };
     });
   }
@@ -95,43 +102,72 @@ class TransactionModal extends React.Component {
     const list = el.dataset.list;
     const key = parseInt(el.dataset.key, 10);
     const propName = el.dataset.propname;
-    /* this.setState(prevState => ({
+    this.setState(prevState => ({
       [list]: prevState[list].map(entry => {
         if (entry.key === key) {
-          return {[propName]: evt.target.value};
+          return {
+            ...entry,
+            [propName]: evt.target.value,
+          };
         }
-        // return entry;
+        return entry;
       }),
-    }));*/
+    }));
+  }
+
+  handleOpenCurrenyRateModal() {
+    this.setState({modal: "rate"});
+  }
+
+  handleCurrenyRate(amount, currency) {
+    axios.get("/api/currency-rate", {
+      params: {
+        amount,
+        currency,
+      },
+    })
+      .then(response => {
+        console.log(response);
+      })
+      .catch(error => new Error(error));
+    this.setState({modal: null});
   }
 
   _renderSubTransactionsRow(item, index) {
+    const iconButton = item.category ? <img src={`/icon/${item.category.imagePath}`} />
+      : <Icon size="small" icon="magnifying-glass" />;
+    const labelButton = item.category ? name : "Choisir une catégorie";
     return <div key={item.key}>
-      <input
-        className={"is-hidden"}
-        name={`data[${index}][categoryId]`}
-        defaultValue={item.categoryId ? item.categoryId : 0}
-        readOnly
-      />
-      <input
-        className={"is-hidden"}
-        name={`data[${index}][subCategoryId]`}
-        defaultValue={item.subCategoryId ? item.subCategoryId : 0}
-        readOnly
-      />
-      <Columns>
+      <Columns className="is-variable is-1">
         <Column>
           <Input
             className="input"
-            label="Montant"
+            placeholder="Montant"
             type="text"
-            name="amount"
+            name={`data[${index}][amount]`}
             value={item.amount}
             data-list="data"
             data-propname="amount"
             data-key={item.key}
             onChange={this.handleListChange}
             horizontal
+          />
+        </Column>
+        <Column className="is-1">
+          {<Button
+            label={""}
+            icon={<Icon
+              icon="euro-sign"
+              faSize="lg"
+              size="big"
+            />}
+            onClick={this.handleOpenCurrenyRateModal}
+          />}
+        </Column>
+        <Column>
+          <Button
+            label={labelButton}
+            icon={iconButton}
           />
         </Column>
       </Columns>
@@ -178,6 +214,10 @@ class TransactionModal extends React.Component {
         </Columns>
         {this.state.data.map((row, index) => this._renderSubTransactionsRow(row, index))}
       </form>
+      <RateModal
+        visible={this.state.modal === "rate"}
+        onConfirm={this.handleCurrenyRate}
+      />
     </Modal>;
   }
 

@@ -9,6 +9,7 @@ const {
 
 const SubCategoriesFull = require("../constants/subcategoriesfull.js");
 const {IMAGES, ICON} = require("../utils/paths.js");
+const categorySrv = require("./category.js");
 const {logger} = require("./logger.js");
 
 fs.existsSync(IMAGES) || fs.mkdirSync(IMAGES);
@@ -24,27 +25,23 @@ const getDir = user => `${user.id}-${user.lastName}/subcategories`;
  * Add all the subsubCategory for a new user into the database
  *
  * @param {object} user - The id of the user
+ * @param {object} categories - The categories of the user
  */
-subCategorySrv.createForNewUser = async user => {
+subCategorySrv.createForNewUser = async (user, categories) => {
   logger.debug("Create all subcategories for new user=[%s]", user.id);
   const dir = `${user.id}-${user.lastName}/subcategories`;
-
   for (const [key, value] of Object.entries(SubCategoriesFull)) {
-    for (const subCategory of value.parent) {
-      try {
-        const parentCategory = await subCategorySrv.getByType(user.id, subCategory);
-        if (parentCategory) {
-          const imagePath = `${dir}/${value.imagePath}`;
-          SubCategory.create({
-            userId: user.id,
-            subCategoryId: parentCategory.id,
-            type: key,
-            name: value.name,
-            imagePath,
-          });
-        }
-      } catch (error) {
-        logger.error("Error retrieving subCategory:", error);
+    for (const parent of value.parent) {
+      const category = categories.find(c => c.type === parent);
+      if (category) {
+        const imagePath = `${dir}/${value.imagePath}`;
+        SubCategory.create({
+          userId: user.id,
+          categoryId: category.id,
+          type: key,
+          name: value.name,
+          imagePath,
+        });
       }
     }
   }
@@ -54,8 +51,8 @@ subCategorySrv.createForNewUser = async user => {
   // await SubCategory.bulkCreate(subCategories);
 };
 
-subCategorySrv.create = (user, subCategoryId, data, file) => {
-  logger.debug("Create subsubCategory for user=[%s] and subCategory=[%s] with data=[%s]", user.id, subCategoryId, data);
+subCategorySrv.create = (user, categoryId, data, file) => {
+  logger.debug("Create subCategory for user=[%s] and category=[%s] with data=[%s]", user.id, categoryId, data);
 
   const dir = getDir(user);
   const fileParts = file[0].originalname.split(".");
@@ -69,7 +66,7 @@ subCategorySrv.create = (user, subCategoryId, data, file) => {
 
   return SubCategory.create({
     userId: user.id,
-    subCategoryId,
+    categoryId,
     name: data.name,
     type: data.type,
     imagePath,

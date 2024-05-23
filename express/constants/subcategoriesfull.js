@@ -1,4 +1,4 @@
-    const Category = require("./category.js");
+const Category = require("./category.js");
 const SubCategories = require("./subcategories.js");
 
 const SubCategoriesFull = Object.freeze({

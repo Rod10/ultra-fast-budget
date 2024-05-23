@@ -32,10 +32,10 @@ const getDir = user => `${user.id}-${user.lastName}/categories`;
 categorySrv.createForNewUser = user => {
   logger.debug("Create all category for new user=[%s]", user.id);
   const dir = `${user.id}-${user.lastName}/categories`;
-
+  const categoriesToCreate = [];
   for (const [key, value] of Object.entries(CategoryFull)) {
     const imagePath = `${dir}/${value.imagePath}`;
-    Category.create({
+    categoriesToCreate.push({
       userId: user.id,
       name: value.name,
       type: value.type,
@@ -45,6 +45,7 @@ categorySrv.createForNewUser = user => {
   }
   fs.mkdirSync(path.resolve(ICON, dir), {recursive: true});
   fs.cpSync(path.resolve(ICON, "base/categories"), path.resolve(ICON, dir), {recursive: true});
+  return Category.bulkCreate(categoriesToCreate);
 };
 
 categorySrv.getById = id => {

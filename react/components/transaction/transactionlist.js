@@ -152,7 +152,7 @@ class TransactionList extends React.Component {
               icon={<Icon size="small" icon="arrow-trend-up" />}
               label="Ajouter un nouveau revenu"
               // onClick={this.handleOpenAccountModal}
-              onClick={() => this.openTransactionModal({type: "INCOME", transaction: null})}
+              onClick={() => this.openTransactionModal({type: "INCOME", transaction: null, categories: this.props.categories})}
             />
             <Button
               className="has-text-weight-bold mr-3"
@@ -160,7 +160,7 @@ class TransactionList extends React.Component {
               icon={<Icon size="small" icon="arrow-trend-down" />}
               label="Ajouter une nouvelle dépense"
               // onClick={this.handleOpenAccountModal}
-              onClick={() => this.openTransactionModal({type: "EXPENSE", transaction: null})}
+              onClick={() => this.openTransactionModal({type: "EXPENSE", transaction: null, categories: this.props.categories})}
             />
           </div>
         </Column>
@@ -181,6 +181,7 @@ TransactionList.displayName = "TransactionList";
 TransactionList.propTypes = {
   user: PropTypes.object.isRequired,
   transaction: PropTypes.object.isRequired,
+  categories: PropTypes.object.isRequired,
   graphs: PropTypes.array,
 };
 TransactionList.defaultProps = {graphs: undefined};

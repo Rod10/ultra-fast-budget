@@ -50,6 +50,12 @@ const CategoryFull = Object.freeze({
     imagePath: "travel.png",
     genre: CategoryGenre.OUTCOME,
   },
+  [Category.PET]: {
+    name: "Animaux de compagnie",
+    type: Category.PET,
+    imagePath: "pet.png",
+    genre: CategoryGenre.OUTCOME,
+  },
   [Category.OTHER]: {
     name: "Autre (Dépenses)",
     type: Category.OTHER,

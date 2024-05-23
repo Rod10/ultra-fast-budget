@@ -60,8 +60,8 @@ userSrv.create = async data => {
     password,
     civility: data.civility,
   });
-  await categorySrv.createForNewUser(user);
-  await subCatogeriesSrv.createForNewUser(user);
+  const categories = await categorySrv.createForNewUser(user);
+  await subCatogeriesSrv.createForNewUser(user, categories);
   return user;
 };
 
