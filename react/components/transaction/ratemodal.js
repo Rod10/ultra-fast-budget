@@ -37,7 +37,8 @@ class RateModal extends React.Component {
 
     this.state = {
       amount: 0,
-      currency: "EUR",
+      from: "USD",
+      to: "EUR",
       alert: false,
       pending: false,
     };
@@ -46,8 +47,9 @@ class RateModal extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  handleConfirmClick() {
-    return this.props.onConfirm(this.state.amount, this.state.currency);
+  handleConfirmClick(evt) {
+    preventDefault(evt);
+    return this.props.onConfirm(this.state.amount, this.state.from, this.state.to);
   }
 
   handleClose(evt) {
@@ -62,17 +64,17 @@ class RateModal extends React.Component {
 
   /* eslint-disable-next-line max-lines-per-function */
   _renderConfirm() {
-    const currenciesOptions = Object.keys(Currencies).map(currency => ({
-      value: currency,
-      label: CurrenciesFull[currency].name,
+    const currenciesOptions = Object.keys(Currencies).map(from => ({
+      value: from,
+      label: CurrenciesFull[from].name,
     }));
     return <Modal
       visible={this.props.visible}
       pending={this.state.pending}
       type="confirm"
       cancelText="Annuler"
-      confirmText="Créer"
-      onClose={this.handleClose}
+      confirmText="Convertir"
+      onClose={this.props.onClose}
       onConfirm={this.handleConfirmClick}
       iconType="is-info"
     >
@@ -88,12 +90,34 @@ class RateModal extends React.Component {
             onChange={this.handleChange}
             horizontal
           />
+        </Column>
+      </Columns>
+      <Columns>
+        <Column>
           <Select
             label="Devise"
             type="text"
-            name="currency"
-            defaultValue={this.state.currency}
-            data-propname={"currency"}
+            name="from"
+            defaultValue={this.state.from}
+            data-propname={"from"}
+            onChange={this.handleChange}
+            options={currenciesOptions}
+          />
+        </Column>
+        <Column>
+          <div className="field">
+            <span className="icon is-small">
+              <i className="fa fa-arrow-right" />
+            </span>
+          </div>
+        </Column>
+        <Column>
+          <Select
+            label="Devise"
+            type="text"
+            name="to"
+            defaultValue={this.state.to}
+            data-propname={"to"}
             onChange={this.handleChange}
             options={currenciesOptions}
           />
@@ -121,6 +145,7 @@ RateModal.displayName = "RateModal";
 RateModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   onConfirm: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 // RateModal.defaultProps = {transaction: undefined};
 

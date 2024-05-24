@@ -580,9 +580,9 @@ table tbody td.orange {
   color: green;
 }
 
-.operationDashboard .icon .fa.fa-times,
-table .icon .fa.fa-times,
-table .icon .fa.fa-trash {
+.icon .fa.fa-times,
+.icon .fa.fa-times,
+.icon .fa.fa-trash {
   color: tomato;
 }
 
