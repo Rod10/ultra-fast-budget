@@ -16,10 +16,7 @@ module.exports = {
       },
       type: Sequelize.INTEGER(20),
     },
-    DATA: {
-      allowNull: false,
-      type: Sequelize.TEXT,
-    },
+    DATA: {type: Sequelize.TEXT},
     TO: {
       allowNull: true,
       type: Sequelize.TEXT,
@@ -27,6 +24,10 @@ module.exports = {
     OTHER: {
       allowNull: true,
       type: Sequelize.TEXT,
+    },
+    TRANSACTION_DATE: {
+      allowNull: false,
+      type: Sequelize.DATE,
     },
     TYPE: {
       allowNull: false,

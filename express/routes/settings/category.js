@@ -7,7 +7,7 @@ const loggerMid = require("../../middlewares/logger.js");
 
 // const accountSrv = require("../../services/account.js");
 const categorySrv = require("../../services/category.js");
-const subCategoriesSrv = require("../../services/subcategories.js");
+const subCategoriesSrv = require("../../services/subcategory.js");
 const renderSrv = require("../../services/render.js");
 const {logger} = require("../../services/logger.js");
 const {SEE_OTHER} = require("../../utils/error.js");

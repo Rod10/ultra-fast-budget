@@ -20,4 +20,17 @@ transactionSrv.getAllByUser = userId => {
   return Transaction.findAndCountAll({where: {userId}});
 };
 
+transactionSrv.create = (userId, transactionData) => {
+  logger.debug("Create transaction for user=[%s] with data=[%s]", userId, transactionData);
+
+  return Transaction.create({
+    userId,
+    data: transactionData.data,
+    to: transactionData.to,
+    other: transactionData.notes,
+    // transactionDate: transactionData.date,
+    type: transactionData.type,
+  });
+};
+
 module.exports = transactionSrv;

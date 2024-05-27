@@ -1,5 +1,6 @@
 const React = require("react");
 const PropTypes = require("prop-types");
+const dateFns = require("date-fns");
 
 const axios = require("axios");
 const TransactionType = require("../../../express/constants/transactiontype.js");
@@ -13,6 +14,7 @@ const Icon = require("../bulma/icon.js");
 const Input = require("../bulma/input.js");
 const Select = require("../bulma/select.js");
 const Title = require("../bulma/title.js");
+const DatePicker = require("../datepicker.js");
 
 const {addKeyToArray} = require("../utils.js");
 
@@ -41,8 +43,12 @@ class TransactionModal extends React.Component {
       transaction: {},
       categories: {rows: []},
       data: [],
+      date: "",
+      account: "",
+      notes: "",
       dataLastKey: 0,
       currentKey: 0,
+      accounts: [],
       visible: false,
       alert: false,
       pending: false,
@@ -60,6 +66,7 @@ class TransactionModal extends React.Component {
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
     this.handleCloseModal = this.handleCloseModal.bind(this);
     this.handleRemoveFromList = this.handleRemoveFromList.bind(this);
+    this.handleDateChange = this.handleDateChange.bind(this);
     this.transactionFormRef = React.createRef();
   }
 
@@ -79,6 +86,7 @@ class TransactionModal extends React.Component {
         transaction,
         visible: true,
         data,
+        accounts: transaction.accounts,
         dataLastKey: data.length - 1,
         categories: transaction.categories,
       };
@@ -86,8 +94,8 @@ class TransactionModal extends React.Component {
   }
 
   handleChange(evt) {
-    const el = getElFromDataset(evt, "key");
-    const key = el.dataset.key;
+    const el = getElFromDataset(evt, "propname");
+    const key = el.dataset.propname;
     this.setState({[key]: evt.target.value});
   }
 
@@ -182,8 +190,8 @@ class TransactionModal extends React.Component {
         if (entry.key === prevState.currentKey) {
           return {
             ...entry,
-            category,
-            subCategory,
+            category: category.id,
+            subCategory: subCategory.id,
           };
         }
         return entry;
@@ -210,57 +218,95 @@ class TransactionModal extends React.Component {
     });
   }
 
+  handleDateChange() {
+    return date => {
+      this.setState({date});
+    };
+  }
+
   _renderSubTransactionsRow(item, index) {
     const iconButton = item.subCategory ? <img src={`/icon/${item.subCategory.imagePath}`} style={{maxWidth: "15%", marginRight: "1rem"}} />
       : <Icon size="small" icon="magnifying-glass" />;
     const labelButton = item.subCategory ? item.subCategory.name : "Choisir une catégorie";
-    return <div key={item.key}>
-      <Columns className="is-variable is-1">
-        <Column>
-          <Input
-            className="input"
-            placeholder="Montant"
-            type="text"
-            name={`data[${index}][amount]`}
-            value={item.amount}
-            data-list="data"
-            data-propname="amount"
-            data-key={item.key}
-            onChange={this.handleListChange}
-            horizontal
-          />
-        </Column>
-        <Column className="is-1">
-          {<Button
-            label={""}
-            icon={<Icon
-              icon="euro-sign"
-              faSize="lg"
-              size="big"
-            />}
-            data-key={item.key}
-            onClick={this.handleOpenCurrenyRateModal}
+    return <Columns key={item.key}>
+      <input
+        className="is-hidden"
+        name={`data[${index}][category]`}
+        defaultValue={item.category}
+        readOnly
+      />
+      <input
+        className="is-hidden"
+        name={`data[${index}][subCategory]`}
+        defaultValue={item.subCategory}
+        readOnly
+      />
+      <Column>
+        <Input
+          className="input"
+          placeholder="Montant"
+          type="text"
+          name={`data[${index}][amount]`}
+          value={item.amount}
+          data-list="data"
+          data-propname="amount"
+          data-key={item.key}
+          onChange={this.handleListChange}
+          horizontal
+        />
+      </Column>
+      <Column>
+        {<Button
+          label={""}
+          icon={<Icon
+            icon="euro-sign"
+            faSize="lg"
+            size="big"
           />}
-        </Column>
-        <Column>
+          data-key={item.key}
+          onClick={this.handleOpenCurrenyRateModal}
+        />}
+      </Column>
+      <Column>
+        <Button
+          label={labelButton}
+          icon={iconButton}
+          data-key={item.key}
+          onClick={this.handleOpenCategoryModal}
+        />
+      </Column>
+      <Column>
+        <Button
+          label={""}
+          icon={<Icon
+            icon="times"
+            faSize="lg"
+            size="big"
+          />}
+          data-key={item.key}
+          data-btn="remove"
+          onClick={this.handleRemoveFromList}
+        />
+      </Column>
+    </Columns>;
+  }
+
+  _renderData() {
+    return <div>
+      {this.state.data.map((row, index) => this._renderSubTransactionsRow(row, index))}
+      <hr />
+      <Columns>
+        <Column offset={Column.Offsets.fourFifths}>
           <Button
-            label={labelButton}
-            icon={iconButton}
-            data-key={item.key}
-            onClick={this.handleOpenCategoryModal}
-          />
-        </Column>
-        <Column>
-          <Button
-            label={""}
+            label=""
             icon={<Icon
-              icon="times"
+              icon="plus"
               faSize="lg"
-              size="big"
+              size="small"
             />}
-            data-key={item.key}
-            data-btn="remove"
-            onClick={this.handleRemoveFromList}
+            data-btn="add"
+            data-list="data"
+            onClick={this.handleRowToData}
           />
         </Column>
       </Columns>
@@ -285,6 +331,12 @@ class TransactionModal extends React.Component {
       action = "/transaction/new";
     }
 
+    // TODO: replace € with actual account currency
+    const accountsOptions = this.state.accounts.map(account => ({
+      value: account.id,
+      label: `${account.name}: ${account.balance} €`,
+    }));
+
     return <Modal
       visible={this.state.visible}
       pending={this.state.pending}
@@ -300,25 +352,68 @@ class TransactionModal extends React.Component {
         method="POST"
         action={action}
       >
+        <input
+          className="is-hidden"
+          name={"type"}
+          defaultValue={transaction.type}
+          readOnly
+        />
         <Columns>
           <Column>
             <Title size={4} className="mb-2">{title}</Title>
           </Column>
         </Columns>
-        {this.state.data.map((row, index) => this._renderSubTransactionsRow(row, index))}
-        <hr />
+        {this._renderData()}
         <Columns>
-          <Column offset={Column.Offsets.fourFifths}>
-            <Button
-              label=""
-              icon={<Icon
-                icon="plus"
-                faSize="lg"
-                size="small"
-              />}
-              data-btn="add"
-              data-list="data"
-              onClick={this.handleRowToData}
+          <Column>
+            <Select
+              label="Compte"
+              type="text"
+              name="account"
+              defaultValue={this.state.account}
+              data-propname={"account"}
+              onChange={this.handleChange}
+              options={accountsOptions}
+            />
+          </Column>
+          <Column>
+            <div>
+              <div className="field">
+                <label className="label">Date de la transaction</label>
+                <DatePicker
+                  name="date"
+                  required
+                  selected={this.state.date}
+                  showTimeSelect
+                  onChangeLegacy={this.handleDateChange()}
+                />
+              </div>
+            </div>
+          </Column>
+        </Columns>
+        <Columns>
+          <Column>
+            <Input
+              className="input"
+              placeholder="A:"
+              label="A:"
+              type="text"
+              name={"to"}
+              value={this.state.to}
+              data-propname="to"
+              onChange={this.handleChange}
+            />
+          </Column>
+          <Column>
+            <Input
+              className="input"
+              placeholder="Notes"
+              label="Notes:"
+              type="text"
+              name={"notes"}
+              value={this.state.notes}
+              data-propname="notes"
+              onChange={this.handleChange}
             />
           </Column>
         </Columns>

@@ -23,11 +23,15 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     to: {
-      type: DataTypes.TEXT,
       allowNull: true,
+      type: DataTypes.TEXT,
     },
     other: {
+      allowNull: true,
       type: DataTypes.TEXT,
+    },
+    transactionDate: {
+      type: DataTypes.DATE,
       allowNull: true,
     },
     type: {
