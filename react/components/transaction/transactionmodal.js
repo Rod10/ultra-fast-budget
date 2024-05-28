@@ -218,10 +218,8 @@ class TransactionModal extends React.Component {
     });
   }
 
-  handleDateChange() {
-    return date => {
-      this.setState({date});
-    };
+  handleDateChange(result) {
+    this.setState({date: result.target.value});
   }
 
   _renderSubTransactionsRow(item, index) {
@@ -385,7 +383,7 @@ class TransactionModal extends React.Component {
                   required
                   selected={this.state.date}
                   showTimeSelect
-                  onChangeLegacy={this.handleDateChange()}
+                  onChange={this.handleDateChange}
                 />
               </div>
             </div>

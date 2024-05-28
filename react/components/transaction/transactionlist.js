@@ -111,18 +111,13 @@ class TransactionList extends React.Component {
   }
 
   render() {
-    const totalAmount = this.props.transaction.rows.map(transaction => transaction.balance).reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0,
-    );
-
     const list = this.props.transaction.rows.map(transaction => <div
       className="mb-2"
       data-transactionid={transaction.id}
       onClick={this.handleOpenDetails}
       key={transaction.id}
     >
-      <TransactionList
+      <TransactionBlock
         base={this.base}
         user={this.props.user}
         key={transaction.id}

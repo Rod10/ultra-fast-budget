@@ -1,4 +1,5 @@
 const assert = require("assert");
+const df = require("dateformat");
 
 const AccountsTypeFull = require("../constants/accountstypefull.js");
 
@@ -9,6 +10,7 @@ const {
   Op,
 } = require("../models/index.js");
 const {logger} = require("./logger.js");
+const moment = require("moment");
 
 const transactionSrv = {};
 
@@ -17,7 +19,13 @@ transactionSrv.getAllByUser = userId => {
 
   assert(userId, "User Id cannot be null");
 
-  return Transaction.findAndCountAll({where: {userId}});
+  return Transaction.findAndCountAll({
+    where: {userId},
+    include: [{
+      association: Transaction.Account,
+      // where: {userId},
+    }],
+  });
 };
 
 transactionSrv.create = (userId, transactionData) => {
@@ -25,10 +33,11 @@ transactionSrv.create = (userId, transactionData) => {
 
   return Transaction.create({
     userId,
+    accountId: transactionData.account,
     data: transactionData.data,
     to: transactionData.to,
     other: transactionData.notes,
-    // transactionDate: transactionData.date,
+    transactionDate: new Date(transactionData.date),
     type: transactionData.type,
   });
 };

@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER(20),
       allowNull: false,
     },
+    accountId: {
+      type: DataTypes.INTEGER(20),
+      allowNull: false,
+    },
     data: {
       type: DataTypes.TEXT,
       get() {
@@ -36,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     type: {
       type: DataTypes.ENUM,
-      values: ["INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT"],
+      values: ["INCOME", "EXPECTED_INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT"],
       allowNull: false,
     },
     creationDate: {
@@ -58,6 +62,15 @@ module.exports = (sequelize, DataTypes) => {
       as: "user",
       foreignKey: {
         name: "userId",
+        allowNull: false,
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+    });
+    Transaction.Account = Transaction.belongsTo(models.Account, {
+      as: "account",
+      foreignKey: {
+        name: "accountId",
         allowNull: false,
         onUpdate: "CASCADE",
         onDelete: "CASCADE",

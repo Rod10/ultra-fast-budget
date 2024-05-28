@@ -16,6 +16,15 @@ module.exports = {
       },
       type: Sequelize.INTEGER(20),
     },
+    ACCOUNT_ID: {
+      allowNull: false,
+      onDelete: "CASCADE",
+      references: {
+        model: "ACCOUNT",
+        key: "ID",
+      },
+      type: Sequelize.INTEGER(20),
+    },
     DATA: {type: Sequelize.TEXT},
     TO: {
       allowNull: true,
@@ -32,7 +41,7 @@ module.exports = {
     TYPE: {
       allowNull: false,
       defaultValue: "EXPENSE",
-      type: Sequelize.ENUM("INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT"),
+      type: Sequelize.ENUM("INCOME", "EXPECTED_INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT"),
     },
     CREATION_DATE: {
       allowNull: false,

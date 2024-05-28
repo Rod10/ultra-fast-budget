@@ -1,6 +1,6 @@
-const dateFormat = "dd/MM/yyyy";
+const dateFormat = "yyyy-MM-dd";
 const timeFormat = "HH:mm";
-const dateTimeFormat = `${dateFormat} - ${timeFormat}`;
+const dateTimeFormat = `${dateFormat} ${timeFormat}:ss`;
 
 module.exports = {
   dateFormat,

@@ -2,7 +2,7 @@ const express = require("express");
 const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
-const accountSrv = require("../services/account");
+const accountSrv = require("../services/account.js");
 const renderSrv = require("../services/render.js");
 const categorySrv = require("../services/category.js");
 const subCategorySrv = require("../services/subcategory.js");
@@ -17,6 +17,7 @@ router.use(authMid.strict);
 router.get("/", async (req, res, next) => {
   try {
     const transaction = await transactionSrv.getAllByUser(req.user.id);
+    console.log(transaction.rows[0]);
     const categories = await categorySrv.getAll(req.user.id);
     const accounts = await accountSrv.getAllByUser(req.user.id);
     const data = {
@@ -41,6 +42,7 @@ router.post("/new", async (req, res, next) => {
       data.subCategory = await subCategorySrv.getById(data.subCategory);
     }
     await transactionSrv.create(req.user.id, req.body);
+    res.redirect(SEE_OTHER, "./");
   } catch (e) {
     logger.error(e);
     return next(e);
