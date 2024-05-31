@@ -147,6 +147,36 @@ const SubCategoriesFull = Object.freeze({
     imagePath: "cigarettes.png",
     parent: [Category.OTHER],
   },
+  [SubCategories.INCOME]: {
+    name: "Revenues financiers",
+    imagePath: "financial.png",
+    parent: [Category.FINANCIAL],
+  },
+  [SubCategories.SALARY]: {
+    name: "Salaire",
+    imagePath: "salary.png",
+    parent: [Category.INCOME],
+  },
+  [SubCategories.SMALLJOB]: {
+    name: "Petits boulots",
+    imagePath: "smalljob.png",
+    parent: [Category.INCOME],
+  },
+  [SubCategories.PENSION]: {
+    name: "Pension",
+    imagePath: "pension.png",
+    parent: [Category.INCOME],
+  },
+  [SubCategories.OTHERS]: {
+    name: "Autre (Revenues)",
+    imagePath: "other_income.png",
+    parent: [Category.OTHER_INCOME],
+  },
+  [SubCategories.SAVING]: {
+    name: "Epargne",
+    imagePath: "saving.png",
+    parent: [Category.OTHER_INCOME],
+  },
 });
 
 module.exports = SubCategoriesFull;

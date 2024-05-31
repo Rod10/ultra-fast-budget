@@ -88,6 +88,7 @@ router.get("/status", async (req, res) => {
 router.use(authMid.strict);
 router.use("/account", require("./acount.js"));
 router.use("/transaction", require("./transaction.js"));
+router.use("/planned-transaction", require("./planned-transaction.js"));
 router.use("/settings", require("./settings/index.js"));
 router.use("/api", require("./api.js"));
 

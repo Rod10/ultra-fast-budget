@@ -14,10 +14,17 @@ const router = express.Router();
 
 router.use(authMid.strict);
 
+const prepareCategoryData = async transactionData => {
+  for (const data of transactionData.data) {
+    data.category = await categorySrv.getById(data.category);
+    data.subCategory = await subCategorySrv.getById(data.subCategory);
+  }
+  return transactionData;
+};
+
 router.get("/", async (req, res, next) => {
   try {
     const transaction = await transactionSrv.getAllByUser(req.user.id);
-    console.log(transaction.rows[0]);
     const categories = await categorySrv.getAll(req.user.id);
     const accounts = await accountSrv.getAllByUser(req.user.id);
     const data = {
@@ -37,12 +44,9 @@ router.get("/", async (req, res, next) => {
 
 router.post("/new", async (req, res, next) => {
   try {
-    for (const data of req.body.data) {
-      data.category = await categorySrv.getById(data.category);
-      data.subCategory = await subCategorySrv.getById(data.subCategory);
-    }
-    await transactionSrv.create(req.user.id, req.body);
-    res.redirect(SEE_OTHER, "./");
+    const data = await prepareCategoryData(req.body);
+    await transactionSrv.create(req.user.id, data);
+    res.redirect(SEE_OTHER, "/transaction");
   } catch (e) {
     logger.error(e);
     return next(e);
@@ -51,10 +55,25 @@ router.post("/new", async (req, res, next) => {
 
 router.post("/:id/edit", async (req, res, next) => {
   try {
+    const data = await prepareCategoryData(req.body);
+    await transactionSrv.update(req.params.id, data);
+    res.redirect(SEE_OTHER, "/transaction");
   } catch (e) {
     logger.error(e);
     return next(e);
   }
 });
+router.get(
+  "/:id/delete",
+  async (req, res, next) => {
+    try {
+      await transactionSrv.delete(req.params.id);
+      res.redirect(SEE_OTHER, "../list");
+    } catch (e) {
+      logger.error(e);
+      return next(e);
+    }
+  },
+);
 
 module.exports = router;

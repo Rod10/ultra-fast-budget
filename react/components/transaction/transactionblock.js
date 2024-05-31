@@ -12,14 +12,15 @@ class TransactionBlock extends React.Component {
   }
 
   render() {
-    const amount = this.props.transaction.data.map(account => parseInt(account.amount, 10)).reduce(
+    const amount = Math.round(this.props.transaction.data.map(account => parseFloat(account.amount)).reduce(
       (accumulator, currentValue) => accumulator + currentValue,
       0,
-    );
+    ) * 100) / 100;
+    const expandedWith = this.props.expanded ? "175%" : "100%";
     return <div className="box slide-in is-clickable">
       <div className="columns is-flex">
-        <div className="column">
-          <div className="icon-category" style={{width: "200px"}}>
+        <div className="column is-1">
+          <div className="icon-category" style={{width: expandedWith}}>
             <img src={`/icon/${this.props.transaction.data[0].subCategory.imagePath}`} />
           </div>
         </div>
@@ -31,11 +32,8 @@ class TransactionBlock extends React.Component {
             <p>{this.props.transaction.account.name}</p>
           </div>
         </div>
-        <div className="column has-text-right">
-          <b>{amount} €</b>
-        </div>
-        <div className="column has-text-right">
-          {this._renderTag(this.props.transaction)}
+        <div className="column has-text-right ">
+          {amount} € {this._renderTag(this.props.transaction)}
         </div>
       </div>
     </div>;
@@ -84,6 +82,9 @@ class TransactionBlock extends React.Component {
 }
 
 TransactionBlock.displayName = "TransactionBlock";
-TransactionBlock.propTypes = {transaction: PropTypes.object.isRequired};
+TransactionBlock.propTypes = {
+  transaction: PropTypes.object.isRequired,
+  expanded: PropTypes.bool.isRequired,
+};
 
 module.exports = TransactionBlock;

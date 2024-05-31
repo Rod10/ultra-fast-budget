@@ -28,7 +28,7 @@ const AccounstTypesFull = {
   [AccountsTypes.LEP]: {
     label: "Livret dépargne populaire",
     type: "LEP",
-    className: "is-dark",
+    className: "is-warning",
     maxAmount: 10000,
   },
   [AccountsTypes.LIVRETJ]: {

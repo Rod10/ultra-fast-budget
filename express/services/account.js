@@ -8,10 +8,21 @@ const {
   Account,
   Op,
 } = require("../models/index.js");
+const TransactionTypes = require("./../constants/transactiontype.js");
 const {logger} = require("./logger.js");
 
 const accountSrv = {};
 
+/**
+ * Create a new account
+ * @param {int} userId - ID of the user
+ * @param {object} data - data of user
+ * @param {string} data.name - name of the account
+ * @param {string} data.currency - Currency of the account
+ * @param {string} data.type - Type of the account
+ * @param {string} data.initialBalance - Initial balance of the account
+ * @returns {object} user - User instance
+ */
 accountSrv.create = (userId, data) => {
   logger.debug("Create account with data=[%s] for user=[%s]", data, userId);
   // if (AccountsTypeFull[data.type].maxAmount !== 0) {
@@ -41,14 +52,60 @@ accountSrv.getAllByUser = userId => {
 /**
  * update the account with the data provided
  * @param {number} userId - The user Id
- * @param {object} account - The account that need to me modified
- * @param {object} data - The new data
+ * @param {int} accountId - The account that need to me modified
+ * @param {object} data - The transaction data
  */
-accountSrv.updateData = (userId, account, data) => {
-  logger.debug("Update user=[%s] account with data=[%s]", userId, data);
-  // TODO: recalculate balance with all the transactions
-  account.set(data);
+accountSrv.updateData = async (userId, accountId, data) => {
+  logger.debug("Update user=[%s] account=[%s] with data=[%s]", userId, accountId, data);
+  assert(userId, "UserId cannot be null");
+  assert(accountId, "AccountId cannot be null");
+  assert(data, "Data cannot be null");
+
+  const account = await Account.findOne({where: {id: accountId, userId}});
+  let newAccountAmount = 0;
+
+  if (data.type === TransactionTypes.INCOME || data.type === TransactionTypes.EXPECTED_INCOME) {
+    newAccountAmount = account.balance + data.data.map(row => parseFloat(row.amount)).reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0,
+    );
+    assert(
+      parseInt(newAccountAmount, 10) > AccountsTypeFull[account.type].maxAmount,
+      "Balance cannot be more than the maximum amount allowed for an manual transaction",
+    );
+  } else if (data.type === TransactionTypes.EXPECTED_EXPENSE || data.type === TransactionTypes.EXPENSE) {
+    newAccountAmount = account.balance - data.data.map(row => parseFloat(row.amount)).reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0,
+    );
+  }
+  account.balance = newAccountAmount;
   return account.save();
+};
+
+accountSrv.rebalance = async (accountId, transactions) => {
+  logger.debug("Rebalance account=[%s]", accountId);
+  const account = await accountSrv.get(accountId);
+  let newAccountBalance = account.initialBalance;
+  for (const transaction of transactions.rows) {
+    if (transaction.type === TransactionTypes.INCOME || transaction.type === TransactionTypes.EXPECTED_INCOME) {
+      newAccountBalance += transaction.data.map(row => parseFloat(row.amount)).reduce(
+        (accumulator, currentValue) => accumulator + currentValue,
+        0,
+      );
+      assert(
+        parseInt(newAccountBalance, 10) > AccountsTypeFull[account.type].maxAmount,
+        "Balance cannot be more than the maximum amount allowed for an manual transaction",
+      );
+    } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE || transaction.type === TransactionTypes.EXPENSE) {
+      newAccountBalance -= transaction.data.map(row => parseFloat(row.amount)).reduce(
+        (accumulator, currentValue) => accumulator + currentValue,
+        0,
+      );
+    }
+  }
+  account.balance = newAccountBalance;
+  account.save();
 };
 
 module.exports = accountSrv;

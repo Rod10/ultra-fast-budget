@@ -28,6 +28,11 @@ const SubCategories = Object.freeze({
   OTHERS: "OTHERS",
   TAX: "TAX",
   CIGARETTE: "CIGARETTE",
+  INCOME: "INCOME",
+  SALARY: "SALARY",
+  SMALLJOB: "SMALLJOB",
+  PENSION: "PENSION",
+  SAVING: "SAVING",
 });
 
 module.exports = SubCategories;

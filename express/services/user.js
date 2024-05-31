@@ -45,6 +45,7 @@ const dataValidation = data => {
  * @param {object} data - data of user
  * @param {string} data.firstName - First name of the user
  * @param {string} data.lastName - Last name of the user
+ * @param {string} data.password - Password of the user
  * @param {string} data.email - Email of the user
  * @param {string} data.civility - Civility of the user
  */

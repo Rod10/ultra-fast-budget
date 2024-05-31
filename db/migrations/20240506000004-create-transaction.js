@@ -41,7 +41,7 @@ module.exports = {
     TYPE: {
       allowNull: false,
       defaultValue: "EXPENSE",
-      type: Sequelize.ENUM("INCOME", "EXPECTED_INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT"),
+      type: Sequelize.ENUM("INCOME", "EXPECTED_INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT", "INTEREST"),
     },
     CREATION_DATE: {
       allowNull: false,

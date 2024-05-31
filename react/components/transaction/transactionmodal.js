@@ -40,12 +40,19 @@ class TransactionModal extends React.Component {
     super(props);
 
     this.state = {
-      transaction: {},
+      transaction: {
+        data: [],
+        date: "",
+        account: "",
+        notes: "",
+        to: "",
+      },
       categories: {rows: []},
       data: [],
       date: "",
       account: "",
       notes: "",
+      to: "",
       dataLastKey: 0,
       currentKey: 0,
       accounts: [],
@@ -79,13 +86,22 @@ class TransactionModal extends React.Component {
 
   openModal(transaction) {
     this.setState(() => {
-      const data = transaction.data
-        ? addKeyToArray(transaction.data)
+      const data = transaction.transaction
+        ? addKeyToArray(transaction.transaction.data)
         : [TransactionModal.newRow()];
+      const date = transaction.transaction ? new Date(transaction.transaction.transactionDate)
+        : new Date();
+      const account = transaction.transaction ? transaction.transaction.account.toString() : "0";
+      const notes = transaction.transaction ? transaction.transaction.other : "";
+      const to = transaction.transaction ? transaction.transaction.to : "";
       return {
         transaction,
         visible: true,
         data,
+        date,
+        account,
+        notes,
+        to,
         accounts: transaction.accounts,
         dataLastKey: data.length - 1,
         categories: transaction.categories,
@@ -230,13 +246,13 @@ class TransactionModal extends React.Component {
       <input
         className="is-hidden"
         name={`data[${index}][category]`}
-        defaultValue={item.category}
+        defaultValue={item.category?.id === undefined ? item.category : item.category.id}
         readOnly
       />
       <input
         className="is-hidden"
         name={`data[${index}][subCategory]`}
-        defaultValue={item.subCategory}
+        defaultValue={item.subCategory?.id === undefined ? item.subCategory : item.subCategory.id}
         readOnly
       />
       <Column>
@@ -314,7 +330,9 @@ class TransactionModal extends React.Component {
   /* eslint-disable-next-line max-lines-per-function */
   _renderConfirm() {
     // if (!this.state.confirm) return null;
-    const transaction = this.state.transaction;
+    const transaction = this.state.transaction?.transaction
+      ? this.state.transaction.transaction : null;
+    if (!transaction) return null;
     let action = null;
     let title = null;
     if (transaction.id) {
@@ -331,7 +349,7 @@ class TransactionModal extends React.Component {
 
     // TODO: replace € with actual account currency
     const accountsOptions = this.state.accounts.map(account => ({
-      value: account.id,
+      value: parseInt(account.id, 10),
       label: `${account.name}: ${account.balance} €`,
     }));
 

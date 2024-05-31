@@ -19,7 +19,7 @@ const transactions = {
 const transactionsPlanified = {
   label: "Transactions Planifiées",
   logo: "/images/svg/home_suivi.svg",
-  routes: "/transaction-planified",
+  routes: "/planned-transaction",
 };
 
 const account = {

@@ -5,6 +5,7 @@ const TransactionType = Object.freeze({
   EXPECTED_EXPENSE: "EXPECTED_EXPENSE",
   TRANSFER: "TRANSFER",
   EXPECTED_TRANSFERT: "EXPECTED_TRANSFERT",
+  INTEREST: "INTEREST",
 });
 
 module.exports = TransactionType;

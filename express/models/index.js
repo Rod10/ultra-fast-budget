@@ -13,6 +13,7 @@ const Account = require("./account.js");
 const Category = require("./category.js");
 const SubCategory = require("./subcategory.js");
 const Transaction = require("./transaction.js");
+const PlannedTransaction = require("./plannedtransaction.js");
 const User = require("./user.js");
 
 if (config.logging) {
@@ -36,6 +37,7 @@ const db = {};
   Category,
   SubCategory,
   Transaction,
+  PlannedTransaction,
   User,
 ].forEach(def => {
   const model = def(sequelize, Sequelize.DataTypes);

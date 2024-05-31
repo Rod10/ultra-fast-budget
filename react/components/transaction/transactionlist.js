@@ -21,6 +21,7 @@ const Column = require("../bulma/column.js");
 // const AccountModal = require("../transactionmodal.js");
 const utils = require("../utils.js");
 const TransactionBlock = require("./transactionblock.js");
+const TransactionExpanded = require("./transactionexpand.js");
 // const AccountExpand = require("../transactionexpand.js");
 
 const TransactionModal = require("./transactionmodal.js");
@@ -28,7 +29,7 @@ const TransactionModal = require("./transactionmodal.js");
 class TransactionList extends React.Component {
   constructor(props) {
     super(props);
-    this.base = `/transaction/${this.props.user.id}`;
+    this.base = "/transaction/";
     this.charts = [];
     if (this.props.graphs) {
       this.props.graphs.forEach(graph => {
@@ -122,17 +123,19 @@ class TransactionList extends React.Component {
         user={this.props.user}
         key={transaction.id}
         transaction={transaction}
+        expanded={this.state.currentTransaction !== null}
       />
     </div>);
 
-    /* const expanded = this.state.currentTransaction !== null
-        && <AccountExpand
+    const expanded = this.state.currentTransaction !== null
+        && <TransactionExpanded
           base={this.base}
           key={this.state.currentTransaction.id}
           transaction={this.state.currentTransaction}
           onClose={this.handleCloseDetails}
-          onClick={() => this.openTransactionModal(this.state.currentTransaction)}
-        />;*/
+          user={this.props.user}
+          onClick={() => this.openTransactionModal({type: this.state.currentTransaction.type, transaction: this.state.currentTransaction, categories: this.props.categories, accounts: this.props.accounts.rows})}
+        />;
 
     return <div className="body-content">
       <Columns>
@@ -167,6 +170,7 @@ class TransactionList extends React.Component {
             {list}
           </div>
         </div>
+        {expanded}
       </Columns>
       <TransactionModal onRegisterModal={this.handleRegisterModal} />
     </div>;
