@@ -40,13 +40,7 @@ class TransactionModal extends React.Component {
     super(props);
 
     this.state = {
-      transaction: {
-        data: [],
-        date: "",
-        account: "",
-        notes: "",
-        to: "",
-      },
+      id: null,
       categories: {rows: []},
       data: [],
       date: "",
@@ -84,27 +78,36 @@ class TransactionModal extends React.Component {
     }
   }
 
-  openModal(transaction) {
+  openModal(items) {
     this.setState(() => {
-      const data = transaction.transaction
-        ? addKeyToArray(transaction.transaction.data)
+      const data = items.transaction
+        ? addKeyToArray(items.transaction.data)
         : [TransactionModal.newRow()];
-      const date = transaction.transaction ? new Date(transaction.transaction.transactionDate)
+      const date = items.transaction ? new Date(items.transaction.transactionDate)
         : new Date();
-      const account = transaction.transaction ? transaction.transaction.account.toString() : "0";
-      const notes = transaction.transaction ? transaction.transaction.other : "";
-      const to = transaction.transaction ? transaction.transaction.to : "";
+      const account = items.transaction ? items.transaction.account.toString() : "0";
+      const notes = items.transaction ? items.transaction.other : "";
+      const to = items.transaction ? items.transaction.to : "";
+      const id = items.transaction ? items.transaction.id : 0;
+      const unit = items.transaction ? items.transaction.unit : "month";
+      const occurence = items.transaction ? items.transaction.occurence : "0";
+      const number = items.transaction ? items.transaction.number : "0";
       return {
-        transaction,
+        id,
+        transaction: items.transaction,
+        type: items.type,
         visible: true,
         data,
         date,
         account,
         notes,
         to,
-        accounts: transaction.accounts,
+        occurence,
+        unit,
+        number,
+        accounts: items.accounts,
         dataLastKey: data.length - 1,
-        categories: transaction.categories,
+        categories: items.categories,
       };
     });
   }
@@ -329,19 +332,16 @@ class TransactionModal extends React.Component {
 
   /* eslint-disable-next-line max-lines-per-function */
   _renderConfirm() {
-    // if (!this.state.confirm) return null;
-    const transaction = this.state.transaction?.transaction
-      ? this.state.transaction.transaction : null;
-    if (!transaction) return null;
+    if (this.state.id === null) return null;
     let action = null;
     let title = null;
-    if (transaction.id) {
-      action = `/transaction/${transaction.id}/edit`;
+    if (this.state.id !== 0) {
+      action = `/transaction/${this.state.id}/edit`;
       title = "Modifier la transaction";
     } else {
-      if (transaction.type === TransactionType.INCOME) {
+      if (this.state.type === TransactionType.INCOME) {
         title = "Créer un revenu";
-      } else {
+      } else if (this.state.type === TransactionType.EXPENSE) {
         title = "Créer une dépense";
       }
       action = "/transaction/new";
@@ -371,7 +371,7 @@ class TransactionModal extends React.Component {
         <input
           className="is-hidden"
           name={"type"}
-          defaultValue={transaction.type}
+          defaultValue={this.state.type}
           readOnly
         />
         <Columns>
@@ -444,7 +444,7 @@ class TransactionModal extends React.Component {
         onConfirm={this.handleCategoryChange}
         onClose={this.handleCloseModal}
         categories={this.state.categories}
-        genre={transaction.type === "EXPENSE" ? "OUTCOME" : transaction.type}
+        genre={this.state.type === "EXPENSE" ? "OUTCOME" : this.state.type}
       />
     </Modal>;
   }

@@ -16,6 +16,7 @@ const config = {
     "navbar": `${VIEWS}/navbar.js`,
 
     "accountlist": `${VIEWS}/accountlist.js`,
+    "accountdetails": `${VIEWS}/accountdetails.js`,
     "transactionlist": `${VIEWS}/transactionlist.js`,
     "plannedtransactionlist": `${VIEWS}/plannedtransactionlist.js`,
 

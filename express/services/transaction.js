@@ -1,15 +1,11 @@
 const assert = require("assert");
-const df = require("dateformat");
-
-const moment = require("moment");
-const AccountsTypeFull = require("../constants/accountstypefull.js");
-
 const {
   sequelize,
   Sequelize,
   Transaction,
   Op,
 } = require("../models/index.js");
+const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
 const accountSrv = require("./account.js");
 
@@ -31,12 +27,16 @@ transactionSrv.getAllByUser = userId => {
       association: Transaction.Account,
       // where: {userId},
     }],
+    order: [["transactionDate", OrderDirection.DESC]],
   });
 };
 
 transactionSrv.getAllByAccount = accountId => {
   logger.debug("Get all transactions by account=[%s]", accountId);
-  return Transaction.findAndCountAll({where: {accountId}});
+  return Transaction.findAndCountAll({
+    where: {accountId},
+    order: [["transactionDate", OrderDirection.DESC]],
+  });
 };
 
 transactionSrv.create = async (userId, transactionData) => {
@@ -51,8 +51,8 @@ transactionSrv.create = async (userId, transactionData) => {
     transactionDate: new Date(transactionData.date),
     type: transactionData.type,
   });
-
-  await accountSrv.updateData(userId, transaction.accountId, transaction);
+  const transactions = await transactionSrv.getAllByAccount(transaction.accountId);
+  return accountSrv.rebalance(transaction.accountId, transactions);
 };
 
 transactionSrv.update = async (id, data) => {

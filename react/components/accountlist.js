@@ -1,14 +1,6 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
-const {
-  Chart, CategoryScale,
-  LinearScale,
-  BarController,
-  BarElement,
-  registerables,
-} = require("chart.js");
-
 const {getElFromDataset} = require("../utils/html.js");
 const Button = require("./bulma/button.js");
 const Icon = require("./bulma/icon.js");
@@ -19,6 +11,7 @@ const Column = require("./bulma/column.js");
 const AccountModal = require("./accountmodal.js");
 const AccountBlock = require("./accountblock.js");
 const AccountExpand = require("./accountexpand.js");
+const TransferModal = require("./transfermodal.js");
 
 const utils = require("./utils.js");
 
@@ -26,12 +19,6 @@ class AccountList extends React.Component {
   constructor(props) {
     super(props);
     this.base = `/account/${this.props.user.id}`;
-    this.charts = [];
-    if (this.props.graphs) {
-      this.props.graphs.forEach(graph => {
-        this.charts[graph.label] = React.createRef();
-      });
-    }
 
     this.state = {
       modal: "",
@@ -45,46 +32,11 @@ class AccountList extends React.Component {
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
   }
 
-  componentDidMount() {
-    Chart.register(CategoryScale);
-    Chart.register(LinearScale);
-    Chart.register(BarController);
-    Chart.register(BarElement);
-    Chart.register(...registerables);
-
-    if (this.props.graphs) {
-      this.props.graphs.forEach(graph => {
-        if (graph.type === "pie") {
-          this.createPieChart(graph, this.charts[graph.label].current.getContext("2d"));
-        } else {
-          this.createLineChart(graph, this.charts[graph.label].current.getContext("2d"));
-        }
-      });
-    }
-  }
-
-  createPieChart(graph, chart) {
-    this.context = chart;
-    const {label, labels, backgroundColor} = graph;
-    const data = {
-      labels,
-      datasets: [{
-        label,
-        data: graph.data,
-        backgroundColor,
-        hoverOffset: 4,
-      }],
-    };
-    new Chart(this.context.canvas, {
-      type: "pie",
-      data,
-      options: {responsive: true},
-    });
-  }
-
   handleRegisterModal(modal, fn) {
     if (modal === "account") {
       this.openAccountModal = fn;
+    } else if (modal === "transfer") {
+      this.openTransferModal = fn;
     }
   }
 
@@ -103,17 +55,17 @@ class AccountList extends React.Component {
   handleOpenDetails(evt) {
     const el = getElFromDataset(evt, "accountid");
     const accountId = parseInt(el.dataset.accountid, 10);
-    const account = this.props.userAccount.rows.find(acc => acc.id === accountId);
+    const account = this.props.userAccounts.rows.find(acc => acc.id === accountId);
     this.setState({currentAccount: account});
   }
 
   render() {
-    const totalAmount = this.props.userAccount.rows.map(account => account.balance).reduce(
+    const totalAmount = this.props.userAccounts.rows.map(account => account.balance).reduce(
       (accumulator, currentValue) => accumulator + currentValue,
       0,
     );
 
-    const list = this.props.userAccount.rows.map(account => <div
+    const list = this.props.userAccounts.rows.map(account => <div
       className="mb-2"
       data-accountid={account.id}
       onClick={this.handleOpenDetails}
@@ -133,6 +85,13 @@ class AccountList extends React.Component {
           account={this.state.currentAccount}
           onClose={this.handleCloseDetails}
           onClick={() => this.openAccountModal(this.state.currentAccount)}
+          openTransferModal={() => this.openTransferModal({
+            currentAccount: this.state.currentAccount,
+            accounts: this.props.userAccounts,
+            transfer: null,
+          })}
+          graphs={this.props.graphs}
+          userAccounts={this.props.userAccounts}
         />;
 
     return <div className="body-content">
@@ -164,14 +123,15 @@ class AccountList extends React.Component {
         {expanded}
       </Columns>
       <AccountModal onRegisterModal={this.handleRegisterModal} />
+      <TransferModal onRegisterModal={this.handleRegisterModal} />
     </div>;
   }
 }
 AccountList.displayName = "AccountList";
 AccountList.propTypes = {
   user: PropTypes.object.isRequired,
-  userAccount: PropTypes.object.isRequired,
-  graphs: PropTypes.array,
+  userAccounts: PropTypes.object.isRequired,
+  graphs: PropTypes.object,
 };
 AccountList.defaultProps = {graphs: undefined};
 

@@ -34,7 +34,7 @@ router.get("/", async (req, res, next) => {
       user: req.user,
     };
     const navbar = renderSrv.navbar(res.locals);
-    const content = renderSrv.PlannedTransactionList(data);
+    const content = renderSrv.plannedTransactionList(data);
     res.render("generic", {navbar, data, content, components: ["plannedtransactionlist"]});
   } catch (e) {
     logger.error(e);

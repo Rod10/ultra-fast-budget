@@ -332,7 +332,6 @@ class PlannedTransactionModal extends React.Component {
 
   /* eslint-disable-next-line max-lines-per-function */
   _renderConfirm() {
-    // if (!this.state.confirm) return null;
     if (this.state.id === null) return null;
     let action = null;
     let title = null;

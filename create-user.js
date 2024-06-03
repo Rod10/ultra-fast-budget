@@ -64,7 +64,7 @@ const createUser = async () => {
 };
 
 createUser()
-  .then(result => {
+  .then(() => {
     console.log("Creation done");
     // eslint-disable-next-line no-process-exit
     process.exit(0);

@@ -2,6 +2,8 @@ const express = require("express");
 const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
+const TransactionTypes = require("../constants/transactiontype.js");
+
 const accountSrv = require("../services/account.js");
 const renderSrv = require("../services/render.js");
 const categorySrv = require("../services/category.js");
@@ -44,6 +46,10 @@ router.get("/", async (req, res, next) => {
 
 router.post("/new", async (req, res, next) => {
   try {
+    if (req.body.type === TransactionTypes.TRANSFER) {
+      console.log(req.body);
+      return res.redirect(SEE_OTHER, "/transaction");
+    }
     const data = await prepareCategoryData(req.body);
     await transactionSrv.create(req.user.id, data);
     res.redirect(SEE_OTHER, "/transaction");

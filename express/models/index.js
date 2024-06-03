@@ -13,6 +13,7 @@ const Account = require("./account.js");
 const Category = require("./category.js");
 const SubCategory = require("./subcategory.js");
 const Transaction = require("./transaction.js");
+const Transfer = require("./transfer.js");
 const PlannedTransaction = require("./plannedtransaction.js");
 const User = require("./user.js");
 
@@ -35,9 +36,10 @@ const db = {};
 [
   Account,
   Category,
+  PlannedTransaction,
   SubCategory,
   Transaction,
-  PlannedTransaction,
+  Transfer,
   User,
 ].forEach(def => {
   const model = def(sequelize, Sequelize.DataTypes);
