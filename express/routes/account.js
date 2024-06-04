@@ -50,7 +50,7 @@ router.get("/", async (req, res, next) => {
       const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const outcomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      totalBalance[new moment(account.creationDate).month()] = account.initialBalance;
+      totalBalance[new moment(account.creationDate).month() - 1] = account.initialBalance;
       const transactions = await transactionSrv.getAllByAccount(account.id);
       const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
       for (const transaction of transactions.rows) {
@@ -149,17 +149,25 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
     const transactions = await transactionSrv.getAllByAccount(account.id);
     const transfers = await transferSrv.getAllByAccount(account.id);
     const currentMonth = new moment().month();
+    console.log(currentMonth);
+    const currentYear = new moment().year();
     const graphs = [];
     const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const outcomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    totalBalance[new moment(account.creationDate).month()] = account.initialBalance;
+    if (new moment(account.creationDate).year() === currentYear) {
+      totalBalance[new moment(account.creationDate).month() - 1] = account.initialBalance;
+    }
     const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+    const transfersByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
     for (const transaction of transactions.rows) {
       transactionsByMonth[new moment(transaction.transactionDate).month()].push(transaction);
     }
+    for (const transfer of transfers.rows) {
+      transfersByMonth[new moment(transfer.transactionDate).month()].push(transfer);
+    }
     // eslint-disable-next-line no-magic-numbers
-    for (let month = 0; month <= 11; month++) {
+    for (let month = 0; month <= currentMonth; month++) {
       let balanceAccount = totalBalance[month];
       if (transactionsByMonth.length > 0) {
         for (const transaction of transactionsByMonth[month]) {
@@ -194,11 +202,11 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
         data: [incomeTransactions[month], outcomeTransactions[month]],
       });
     }
-
     const data = {
       account,
-      transactions,
-      transfers,
+      totalBalance: totalBalance.splice(0, currentMonth + 1).reverse(),
+      transactionsByMonth: transactionsByMonth.reverse(),
+      transfersByMonth: transfersByMonth.reverse(),
       graphs: graphs.reverse(),
     };
 

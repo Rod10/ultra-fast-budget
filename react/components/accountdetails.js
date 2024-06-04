@@ -16,6 +16,14 @@ const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
 
 class AccountDetails extends React.Component {
+  static splitArrayIntoChunks(array, chunkSize) {
+    const result = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      result.push(array.slice(i, i + chunkSize));
+    }
+    return result;
+  }
+
   constructor(props) {
     super(props);
 
@@ -25,6 +33,8 @@ class AccountDetails extends React.Component {
         this.charts[graph.label] = React.createRef();
       });
     }
+    this.balance = AccountDetails.splitArrayIntoChunks(this.props.totalBalance, 4);
+    console.log(this.balance);
   }
 
   componentDidMount() {
@@ -119,8 +129,10 @@ class AccountDetails extends React.Component {
     </div>;
   }
 
-  _renderGraph(graph) {
+  _renderGraph(graph, row, index) {
     return <Column size={Column.Sizes.oneQuarter}>
+      <p>Solde du compte: ${this.balance[row][index]}</p>
+      <p>Période du compte: XXXXX€</p>
       <div className="is-flex graph-container">
         <div key={graph.label} className={`is-${graph.column} is-flex-grow-${graph.column}`}>
           <div className="pr-2 pb-2">
@@ -137,31 +149,20 @@ class AccountDetails extends React.Component {
   }
 
   render() {
-    let divider = 0;
-
-    for (let i = 0.0; i < this.props.graphs.length; i += 0.1) {
-      const test = Math.floor(i * 100) / 100;
-      if (this.props.graphs.length / test === 4) {
-        divider = Math.floor(i * 100) / 100;
-        break;
-      }
-    }
+    const transactions = AccountDetails.splitArrayIntoChunks(this.props.graphs, 4);
 
     return <div className="body-content">
       <Column className="has-text-centered">
         <Title size={5}>Détails du compte: {this.props.account.name}</Title>
       </Column>
       <Columns>
-        {this.props.graphs.slice(0, this.props.graphs.length / divider)
-          .map((col, i) => this._renderGraph(col))}
+        {transactions[0].length > 0 && transactions[0].map((col, i) => this._renderGraph(col, 0, i))}
       </Columns>
       <Columns>
-        {this.props.graphs.slice(this.props.graphs.length / divider, (this.props.graphs.length))
-          .map((col, i) => this._renderGraph(col))}
+        {transactions[1] && transactions[1].length > 0 && transactions[1].map((col, i) => this._renderGraph(col, 1, i))}
       </Columns>
       <Columns>
-        {this.props.graphs.slice((this.props.graphs.length - divider) - 1, (this.props.graphs.length))
-          .map((col, i) => this._renderGraph(col))}
+        {transactions[2] && transactions[2].length > 0 && transactions[2].map((col, i) => this._renderGraph(col, 2, i))}
       </Columns>
     </div>;
   }
@@ -171,6 +172,7 @@ AccountDetails.propTypes = {
   notifs: PropTypes.array,
   graphs: PropTypes.array,
   account: PropTypes.object.isRequired,
+  totalBalance: PropTypes.array.isRequired,
 };
 AccountDetails.defaultProps = {
   notifs: undefined,
