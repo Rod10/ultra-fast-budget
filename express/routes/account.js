@@ -14,6 +14,21 @@ const TransactionTypes = require("../constants/transactiontype.js");
 
 const router = express.Router();
 
+const Months = [
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Aout",
+  "Setpembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
+]
+
 router.use(authMid.strict);
 
 const calculateAmount = data => data.map(row => parseFloat(row.amount)).reduce(
@@ -68,20 +83,7 @@ router.get("/", async (req, res, next) => {
         label: "Récapitulatif de la balance et des transactions",
         column: 2,
         data: {
-          labels: [
-            "Janvier",
-            "Février",
-            "Mars",
-            "Avril",
-            "Mai",
-            "Juin",
-            "Juillet",
-            "Aout",
-            "Setpembre",
-            "Octobre",
-            "Novembre",
-            "Décembre",
-          ],
+          labels: Months,
           datasets: [
             {
               label: "Balance du compte",
@@ -146,7 +148,7 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
     const account = await accountSrv.get(req.params.id);
     const transactions = await transactionSrv.getAllByAccount(account.id);
     const transfers = await transferSrv.getAllByAccount(account.id);
-
+    const currentMonth = new moment().month();
     const graphs = [];
     const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -179,12 +181,12 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
       }
       graphs.push({
         type: "pie",
-        label: "Revenue/Dépense",
+        label: Months[month],
         labels: [
           "Revenue",
           "Dépense",
         ],
-        column: 1,
+        column: 4,
         backgroundColor: [
           "#48c78e",
           "#f14668",
@@ -197,7 +199,7 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
       account,
       transactions,
       transfers,
-      graphs,
+      graphs: graphs.reverse(),
     };
 
     const navbar = renderSrv.navbar(res.locals);

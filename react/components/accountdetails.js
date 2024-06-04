@@ -137,13 +137,30 @@ class AccountDetails extends React.Component {
   }
 
   render() {
-    const divider = 4;
+    let divider = 0;
+
+    for (let i = 0.0; i < this.props.graphs.length; i += 0.1) {
+      const test = Math.floor(i * 100) / 100;
+      if (this.props.graphs.length / test === 4) {
+        divider = Math.floor(i * 100) / 100;
+        break;
+      }
+    }
+
     return <div className="body-content">
       <Column className="has-text-centered">
         <Title size={5}>Détails du compte: {this.props.account.name}</Title>
       </Column>
       <Columns>
         {this.props.graphs.slice(0, this.props.graphs.length / divider)
+          .map((col, i) => this._renderGraph(col))}
+      </Columns>
+      <Columns>
+        {this.props.graphs.slice(this.props.graphs.length / divider, (this.props.graphs.length))
+          .map((col, i) => this._renderGraph(col))}
+      </Columns>
+      <Columns>
+        {this.props.graphs.slice((this.props.graphs.length - divider) - 1, (this.props.graphs.length))
           .map((col, i) => this._renderGraph(col))}
       </Columns>
     </div>;
