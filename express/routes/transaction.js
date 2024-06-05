@@ -47,7 +47,6 @@ router.get("/", async (req, res, next) => {
 router.post("/new", async (req, res, next) => {
   try {
     if (req.body.type === TransactionTypes.TRANSFER) {
-      console.log(req.body);
       return res.redirect(SEE_OTHER, "/transaction");
     }
     const data = await prepareCategoryData(req.body);

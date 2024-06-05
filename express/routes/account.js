@@ -1,6 +1,7 @@
 const assert = require("assert");
 const express = require("express");
 const moment = require("moment");
+const React = require("react");
 const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
@@ -27,7 +28,7 @@ const Months = [
   "Octobre",
   "Novembre",
   "Décembre",
-]
+];
 
 router.use(authMid.strict);
 
@@ -143,22 +144,40 @@ router.post("/:id/edit", async (req, res, next) => {
   }
 });
 
+const groupByDays = (month, data) => {
+  const days = Array.from({
+    length: new moment().month(month)
+      .daysInMonth(),
+  }, () => []);
+  if (data.length > 0) {
+    for (const transaction of data) {
+      days[new moment(transaction.transactionDate).day()].push(transaction);
+    }
+  }
+  days.reverse();
+  return days.filter(day => day.length > 0);
+};
+// transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
+
 router.get("/:userId/detail/:id", async (req, res, next) => {
   try {
     const account = await accountSrv.get(req.params.id);
     const transactions = await transactionSrv.getAllByAccount(account.id);
     const transfers = await transferSrv.getAllByAccount(account.id);
     const currentMonth = new moment().month();
-    console.log(currentMonth);
     const currentYear = new moment().year();
     const graphs = [];
     const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const outcomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const incomeTransfers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const outcomeTransfers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const period = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     if (new moment(account.creationDate).year() === currentYear) {
       totalBalance[new moment(account.creationDate).month() - 1] = account.initialBalance;
     }
     const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+    const transactionsByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
     const transfersByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
     for (const transaction of transactions.rows) {
       transactionsByMonth[new moment(transaction.transactionDate).month()].push(transaction);
@@ -169,44 +188,85 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
     // eslint-disable-next-line no-magic-numbers
     for (let month = 0; month <= currentMonth; month++) {
       let balanceAccount = totalBalance[month];
+      let periodByMonth = 0;
       if (transactionsByMonth.length > 0) {
+        transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
         for (const transaction of transactionsByMonth[month]) {
           if (transaction.type === TransactionTypes.INCOME
             || transaction.type === TransactionTypes.EXPECTED_INCOME) {
             incomeTransactions[month] = calculateAmount(transaction.data);
             balanceAccount += calculateAmount(transaction.data);
+            periodByMonth += calculateAmount(transaction.data);
           } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
             || transaction.type === TransactionTypes.EXPENSE) {
             outcomeTransactions[month] = calculateAmount(transaction.data);
             balanceAccount -= calculateAmount(transaction.data);
+            periodByMonth -= calculateAmount(transaction.data);
           }
         }
+
+        if (transfersByMonth.length > 0) {
+          transactionsByMonthAndDays[month] = groupByDays(month, transfersByMonth[month]);
+          for (const transfer of transfersByMonth[month]) {
+            if (account.id === transfer.senderId) {
+              outcomeTransfers[month] += parseFloat(transfer.amount);
+              periodByMonth -= parseFloat(transfer.amount);
+            } else {
+              incomeTransfers[month] += parseFloat(transfer.amount);
+              periodByMonth += parseFloat(transfer.amount);
+            }
+          }
+        }
+        period[month] = periodByMonth;
         if (month === 0) {
           totalBalance[month] = balanceAccount;
         } else {
           totalBalance[month] = balanceAccount + totalBalance[month - 1];
         }
       }
-      graphs.push({
-        type: "pie",
-        label: Months[month],
-        labels: [
-          "Revenue",
-          "Dépense",
-        ],
-        column: 4,
-        backgroundColor: [
-          "#48c78e",
-          "#f14668",
-        ],
-        data: [incomeTransactions[month], outcomeTransactions[month]],
-      });
+      if (incomeTransactions[month] > 0 || outcomeTransactions[month] > 0) {
+        const color = period[month] > 0 ? "has-text-success" : "has-text-danger";
+        graphs.push({
+          type: "pie",
+          label: [Months[month], totalBalance[month], period[month]],
+          labels: [
+            "Revenue",
+            "Dépense",
+            "Virement reçus",
+            "Virement émis",
+          ],
+          column: 4,
+          backgroundColor: [
+            "#48c78e",
+            "#f14668",
+            "#d5ffea",
+            "#ffc6cf",
+          ],
+          data: [incomeTransactions[month], outcomeTransactions[month], incomeTransfers[month], outcomeTransfers[month]],
+        });
+      } else {
+        graphs.push({
+          type: "pie",
+          label: [Months[month], totalBalance[month], period[month]],
+          labels: [
+            "Aucune Données",
+          ],
+          column: 4,
+          backgroundColor: [
+            "#c7c7c7",
+          ],
+          data: [1],
+        });
+      }
     }
+
     const data = {
       account,
       totalBalance: totalBalance.splice(0, currentMonth + 1).reverse(),
-      transactionsByMonth: transactionsByMonth.reverse(),
-      transfersByMonth: transfersByMonth.reverse(),
+      transactionsByMonth: transactionsByMonth.splice(0, currentMonth + 1).reverse(),
+      transactionsByMonthAndDays: transactionsByMonthAndDays.splice(0, currentMonth + 1).reverse(),
+      transfersByMonth: transfersByMonth.splice(0, currentMonth + 1).reverse(),
+      period: period.splice(0, currentMonth + 1).reverse(),
       graphs: graphs.reverse(),
     };
 

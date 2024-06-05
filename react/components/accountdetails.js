@@ -9,11 +9,14 @@ const {
   registerables,
 } = require("chart.js");
 
+const {getElFromDataset} = require("../utils/html.js");
 const Button = require("./bulma/button.js");
 const Icon = require("./bulma/icon.js");
 const Title = require("./bulma/title.js");
 const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
+
+const TransactionModalList = require("./transactionmodallist.js");
 
 class AccountDetails extends React.Component {
   static splitArrayIntoChunks(array, chunkSize) {
@@ -33,8 +36,17 @@ class AccountDetails extends React.Component {
         this.charts[graph.label] = React.createRef();
       });
     }
-    this.balance = AccountDetails.splitArrayIntoChunks(this.props.totalBalance, 4);
-    console.log(this.balance);
+
+    this.state = {
+      modal: false,
+      selectedRow: 0,
+      monthSelectedIndex: 0,
+      monthSelectedName: "",
+      transactionsByMonth: AccountDetails.splitArrayIntoChunks(this.props.transactionsByMonth, 4),
+    };
+
+    this.handleOpenTransactionsModal = this.handleOpenTransactionsModal.bind(this);
+    this.handleCloseClick = this.handleCloseClick.bind(this);
   }
 
   componentDidMount() {
@@ -61,7 +73,7 @@ class AccountDetails extends React.Component {
     const data = {
       labels,
       datasets: [{
-        label,
+        labels,
         data: graph.data,
         backgroundColor,
         hoverOffset: 4,
@@ -84,60 +96,40 @@ class AccountDetails extends React.Component {
     });
   }
 
-  /* eslint-disable indent */
-  _renderNotif() {
-    const {notifs} = this.props;
-    const type = {
-      "default": "",
-      "info": "ℹ️",
-      "success": "✅",
-      "warning": "⚠️",
-      "danger": "❌",
-    };
-    return <div className="content">
+  handleOpenTransactionsModal(evt) {
+    const el = getElFromDataset(evt, "month");
+    const monthSelectedIndex = el.dataset.month;
+    const monthSelectedName = el.dataset.monthname;
+    const selectedRow = el.dataset.row;
+    this.setState(prevState => ({
+      modal: !prevState.modal,
+      monthSelectedIndex,
+      selectedRow,
+      monthSelectedName,
+    }));
+  }
 
-      {notifs && notifs.length > 0
-        ? notifs.map(notif => <div
-            className={`graph-box mb-2 ${type[notif.status]}`}
-            key={notif.body}
-        >
-          <b>
-            {type[notif.status]} {notif.body}
-          </b>
-          {
-            notif.text && notif.text.length > 0
-            && <ul>
-              {
-                notif.text.slice(0, this.limit).map(text => <li key={text}>
-                  {text}
-                </li>)
-              }
-            </ul>
-          }
-          {
-            notif.action
-            && <Button
-              className="has-text-weight-bold"
-              type="themed"
-              href={notif.action.url}
-              icon={<Icon size="small" icon="arrow-right" />}
-              label={notif.action.label}
-            />
-          }
-        </div>)
-        : <p>🎉 Vous n'avez aucune notification, vous pouvez soufflez 🌴</p>}
-    </div>;
+  handleCloseClick() {
+    this.setState({modal: false});
   }
 
   _renderGraph(graph, row, index) {
+    const color = graph.label[2] > 0 ? "has-text-success" : "has-text-danger";
     return <Column size={Column.Sizes.oneQuarter}>
-      <p>Solde du compte: ${this.balance[row][index]}</p>
-      <p>Période du compte: XXXXX€</p>
-      <div className="is-flex graph-container">
+      <div
+        data-row={row}
+        data-month={index}
+        data-monthname={graph.label[0]}
+        className="is-flex graph-container is-clickable"
+        onClick={this.handleOpenTransactionsModal}
+      >
         <div key={graph.label} className={`is-${graph.column} is-flex-grow-${graph.column}`}>
           <div className="pr-2 pb-2">
             <div className={"graph-box"}>
-              <Title size={5}>{graph.label}</Title>
+              <Title size={5}>{graph.label[0]}<br />
+                Solde du compte: {graph.label[1]} €<br />
+                Variation mensuel: <span className={color}>{graph.label[2]} €</span>
+              </Title>
               <div className="is-relative">
                 <canvas id="chart" ref={this.charts[graph.label]} />
               </div>
@@ -149,34 +141,44 @@ class AccountDetails extends React.Component {
   }
 
   render() {
-    const transactions = AccountDetails.splitArrayIntoChunks(this.props.graphs, 4);
+    const graphs = AccountDetails.splitArrayIntoChunks(this.props.graphs, 4);
 
     return <div className="body-content">
       <Column className="has-text-centered">
         <Title size={5}>Détails du compte: {this.props.account.name}</Title>
       </Column>
       <Columns>
-        {transactions[0].length > 0 && transactions[0].map((col, i) => this._renderGraph(col, 0, i))}
+        {graphs[0].length > 0
+          && graphs[0].map((col, i) => this._renderGraph(col, 0, i))}
       </Columns>
       <Columns>
-        {transactions[1] && transactions[1].length > 0 && transactions[1].map((col, i) => this._renderGraph(col, 1, i))}
+        {graphs[1]
+          && graphs[1].length > 0
+          && graphs[1].map((col, i) => this._renderGraph(col, 1, i))}
       </Columns>
       <Columns>
-        {transactions[2] && transactions[2].length > 0 && transactions[2].map((col, i) => this._renderGraph(col, 2, i))}
+        {graphs[2]
+          && graphs[2].length > 0
+          && graphs[2].map((col, i) => this._renderGraph(col, 2, i))}
       </Columns>
+      <TransactionModalList
+        visible={this.state.modal}
+        transactions={this.props.transactionsByMonthAndDays[this.state.monthSelectedIndex]}
+        month={this.state.monthSelectedName}
+        onCloseClick={this.handleCloseClick}
+        account={this.props.account}
+      />
     </div>;
   }
 }
 AccountDetails.displayName = "AccountDetails";
 AccountDetails.propTypes = {
-  notifs: PropTypes.array,
   graphs: PropTypes.array,
   account: PropTypes.object.isRequired,
-  totalBalance: PropTypes.array.isRequired,
+  transactionsByMonth: PropTypes.array.isRequired,
+  transactionsByMonthAndDays: PropTypes.array.isRequired,
+  transfersByMonth: PropTypes.array.isRequired,
 };
-AccountDetails.defaultProps = {
-  notifs: undefined,
-  graphs: undefined,
-};
+AccountDetails.defaultProps = {graphs: undefined};
 
 module.exports = AccountDetails;
