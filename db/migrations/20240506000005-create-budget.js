@@ -1,10 +1,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.createTable("BUGDET", {
+  up: (queryInterface, Sequelize) => queryInterface.createTable("BUDGET", {
     ID: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
+      type: Sequelize.INTEGER(20),
+    },
+    USER_ID: {
+      allowNull: false,
+      onDelete: "CASCADE",
+      references: {
+        model: "USER",
+        key: "ID",
+      },
       type: Sequelize.INTEGER(20),
     },
     NAME: {
@@ -13,7 +22,28 @@ module.exports = {
     },
     TOTAL_AMOUNT: {
       allowNull: false,
-      type: Sequelize.INTEGER(100),
+      type: Sequelize.FLOAT,
+    },
+    TOTAL_ALLOCATED_AMOUNT: {
+      allowNull: false,
+      type: Sequelize.FLOAT,
+    },
+    DURATION: {
+      allowNull: false,
+      type: Sequelize.INTEGER(20),
+    },
+    UNIT: {
+      allowNull: false,
+      type: Sequelize.STRING(20),
+    },
+    CATEGORY_ID: {
+      allowNull: false,
+      onDelete: "CASCADE",
+      references: {
+        model: "CATEGORY",
+        key: "ID",
+      },
+      type: Sequelize.INTEGER(20),
     },
     DATA: {type: Sequelize.TEXT},
     CREATION_DATE: {
@@ -26,5 +56,5 @@ module.exports = {
     },
   }),
 
-  down: (queryInterface, _Sequelize) => queryInterface.dropTable("BUGDET"),
+  down: (queryInterface, _Sequelize) => queryInterface.dropTable("BUDGET"),
 };

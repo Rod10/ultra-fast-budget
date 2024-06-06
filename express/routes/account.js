@@ -1,8 +1,5 @@
-const assert = require("assert");
 const express = require("express");
 const moment = require("moment");
-const React = require("react");
-const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
 const accountSrv = require("../services/account.js");
@@ -206,7 +203,8 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
         }
 
         if (transfersByMonth.length > 0) {
-          transactionsByMonthAndDays[month] = groupByDays(month, transfersByMonth[month]);
+          transactionsByMonthAndDays[month]
+            = transactionsByMonthAndDays[month].concat(groupByDays(month, transfersByMonth[month]));
           for (const transfer of transfersByMonth[month]) {
             if (account.id === transfer.senderId) {
               outcomeTransfers[month] += parseFloat(transfer.amount);
@@ -225,7 +223,6 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
         }
       }
       if (incomeTransactions[month] > 0 || outcomeTransactions[month] > 0) {
-        const color = period[month] > 0 ? "has-text-success" : "has-text-danger";
         graphs.push({
           type: "pie",
           label: [Months[month], totalBalance[month], period[month]],
@@ -242,7 +239,12 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
             "#d5ffea",
             "#ffc6cf",
           ],
-          data: [incomeTransactions[month], outcomeTransactions[month], incomeTransfers[month], outcomeTransfers[month]],
+          data: [
+            incomeTransactions[month],
+            outcomeTransactions[month],
+            incomeTransfers[month],
+            outcomeTransfers[month],
+          ],
         });
       } else {
         graphs.push({

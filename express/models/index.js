@@ -10,6 +10,7 @@ const env = require("../utils/env.js");
 const config = require("../utils/config.js").database[env];
 
 const Account = require("./account.js");
+const Budget = require("./budget.js");
 const Category = require("./category.js");
 const SubCategory = require("./subcategory.js");
 const Transaction = require("./transaction.js");
@@ -35,6 +36,7 @@ const db = {};
 
 [
   Account,
+  Budget,
   Category,
   PlannedTransaction,
   SubCategory,

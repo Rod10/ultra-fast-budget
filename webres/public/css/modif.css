@@ -427,6 +427,11 @@ a.link:hover {
         overflow-y: scroll;
         height: calc(100vh - 330px);
     }
+    .transaction-scrollblock {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: calc(100vh - 400px);
+    }
 }
 
 .operator-scrollblock {
