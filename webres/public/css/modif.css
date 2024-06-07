@@ -652,3 +652,13 @@ table {
 .brief .steps-content {
     font-size: 0.9rem;
 }
+
+.block-row-category {
+    background-color: #e3e3e3;
+    border-radius: 10px;
+    box-shadow: 0px 4px 5px #cacaca;
+}
+
+.row-category {
+
+}

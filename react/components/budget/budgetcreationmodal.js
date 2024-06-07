@@ -44,6 +44,7 @@ class BudgetCreationModal extends React.Component {
       to: "",
       dataLastKey: 0,
       currentKey: 0,
+      currentList: 0,
       accounts: [],
       visible: false,
       alert: false,
@@ -81,8 +82,10 @@ class BudgetCreationModal extends React.Component {
       const id = items.budget ? items.budget.id : 0;
       const duration = items.budget ? items.budget.duration : 0;
       const unit = items.budget ? items.budget.unit : "month";
+      const category = items.budget ? items.budget.category : null;
       return {
         id,
+        category,
         budget: items.budget,
         visible: true,
         data,
@@ -150,24 +153,33 @@ class BudgetCreationModal extends React.Component {
 
   handleOpenCategoryModal(evt) {
     preventDefault(evt);
-    const el = getElFromDataset(evt, "key");
+    const el = getElFromDataset(evt, "list");
+    if (!el) {
+      this.setState({modal: "category", currentKey: null, currentList: null});
+    }
     const key = parseInt(el.dataset.key, 10);
-    this.setState({modal: "category", currentKey: key});
+    const currentList = el.dataset.list;
+    this.setState({modal: "category", currentKey: key, currentList});
   }
 
-  handleCategoryChange(subCategory) {
-    this.setState(prevState => ({
-      data: prevState["data"].map(entry => {
-        if (entry.key === prevState.currentKey) {
-          return {
-            ...entry,
-            subCategory: subCategory.id,
-          };
-        }
-        return entry;
-      }),
-      modal: null,
-    }));
+  handleCategoryChange(category, subCategory) {
+    this.setState(prevState => {
+      if (prevState.currentList) {
+        return {
+          data: prevState["data"].map(entry => {
+            if (entry.key === prevState.currentKey) {
+              return {
+                ...entry,
+                subCategory,
+              };
+            }
+            return entry;
+          }),
+          modal: null,
+        };
+      }
+      return {category, modal: null};
+    });
   }
 
   handleRemoveFromList(evt) {
@@ -196,7 +208,7 @@ class BudgetCreationModal extends React.Component {
     const iconButton = item.subCategory ? <img src={`/icon/${item.subCategory.imagePath}`} style={{maxWidth: "15%", marginRight: "1rem"}} />
       : <Icon size="small" icon="magnifying-glass" />;
     const labelButton = item.subCategory ? item.subCategory.name : "Choisir une catégorie";
-    return <Columns key={item.key}>
+    return <Columns key={item.key} className="row-category">
       <input
         className="is-hidden"
         name={`data[${index}][subCategory]`}
@@ -222,6 +234,7 @@ class BudgetCreationModal extends React.Component {
           label={labelButton}
           icon={iconButton}
           data-key={item.key}
+          data-list="data"
           onClick={this.handleOpenCategoryModal}
         />
       </Column>
@@ -242,7 +255,7 @@ class BudgetCreationModal extends React.Component {
   }
 
   _renderData() {
-    return <div>
+    return <div className="block-row-category">
       {this.state.data.map((row, index) => this._renderSubTransactionsRow(row, index))}
       <hr />
       <Columns>
@@ -276,6 +289,10 @@ class BudgetCreationModal extends React.Component {
       action = "/budget/new";
     }
 
+    const categoryIconButton = this.state.category ? <img src={`/icon/${this.state.category.imagePath}`} style={{maxWidth: "15%", marginRight: "1rem"}} />
+      : <Icon size="small" icon="magnifying-glass" />;
+    const categoryLabelButton = this.state.category ? this.state.category.name : "Choisir une catégorie";
+
     return <Modal
       visible={this.state.visible}
       pending={this.state.pending}
@@ -296,8 +313,86 @@ class BudgetCreationModal extends React.Component {
             <Title size={4} className="mb-2">{title}</Title>
           </Column>
         </Columns>
+        <Columns>
+          <Column>
+            <Input
+              className="input"
+              label="Nom"
+              placeholder="Nom"
+              type="text"
+              name={"name"}
+              value={this.state.name}
+              data-propname="name"
+              onChange={this.handleChange}
+            />
+          </Column>
+          <Column>
+            <Input
+              className="input"
+              label="Durée"
+              placeholder="Durée"
+              type="text"
+              name={"duration"}
+              value={this.state.duration}
+              data-propname="duration"
+              onChange={this.handleChange}
+            />
+          </Column>
+          <Column>
+            <Select
+              label="Périodicité"
+              type="text"
+              name="unit"
+              defaultValue={this.state.unit}
+              data-propname={"unit"}
+              onChange={this.handleChange}
+              options={[
+                {
+                  value: "year",
+                  label: "Annuel",
+                },
+                {
+                  value: "month",
+                  label: "Mensuel",
+                },
+                {
+                  value: "week",
+                  label: "Hebdomadaire",
+                },
+              ]}
+            />
+          </Column>
+        </Columns>
+        <Columns>
+          <Column>
+            <div className="field-label has-text-centered">
+              <label className="label">
+                Choix de la catégorie
+              </label>
+            </div>
+            <Button
+              label={categoryLabelButton}
+              icon={categoryIconButton}
+              data-list={null}
+              onClick={this.handleOpenCategoryModal}
+            />
+          </Column>
+          <Column>
+            <Input
+              className="input"
+              label="Montant total allouée"
+              placeholder="Montant total allouée"
+              type="text"
+              name={"totalAllocatedAmount"}
+              value={this.state.totalAllocatedAmount}
+              data-propname="totalAllocatedAmount"
+              onChange={this.handleChange}
+            />
+          </Column>
+        </Columns>
         {this._renderData()}
       </form>
+      <br />
       <CategoryModal
         visible={this.state.modal === "category"}
         onConfirm={this.handleCategoryChange}
