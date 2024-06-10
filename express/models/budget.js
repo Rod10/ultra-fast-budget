@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
     },
     totalAllocatedAmount: {
-      allowNull: true,
+      allowNull: false,
       type: DataTypes.FLOAT,
     },
     duration: {
@@ -32,7 +32,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     unit: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.ENUM,
+      values: ["YEAR", "MONTH", "WEEK", "DAY"],
       allowNull: false,
     },
     data: {

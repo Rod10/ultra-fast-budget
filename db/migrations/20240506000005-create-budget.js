@@ -34,7 +34,8 @@ module.exports = {
     },
     UNIT: {
       allowNull: false,
-      type: Sequelize.STRING(20),
+      defaultValue: "MONTH",
+      type: Sequelize.ENUM("YEAR", "MONTH", "WEEK", "DAY"),
     },
     CATEGORY_ID: {
       allowNull: false,

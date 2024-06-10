@@ -1,14 +1,6 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
-const {
-  Chart, CategoryScale,
-  LinearScale,
-  BarController,
-  BarElement,
-  registerables,
-} = require("chart.js");
-
 // const TransactionType = require("../express/constants/budgettype.js");
 
 const {getElFromDataset} = require("../../utils/html.js");
@@ -20,7 +12,7 @@ const Column = require("../bulma/column.js");
 
 // const AccountModal = require("../budgetmodal.js");
 const utils = require("../utils.js");
-// const BudgetBlock = require("./budgetblock.js");
+const BudgetBlock = require("./budgetblock.js");
 // const AccountExpand = require("../budgetexpand.js");
 
 const BudgetCreationModal = require("./budgetcreationmodal.js");
@@ -59,7 +51,7 @@ class BudgetList extends React.Component {
   }
 
   render() {
-    /* const list = this.props.budget.rows.map(budget => <div
+    const list = this.props.budget.rows.map(budget => <div
       className="mb-2"
       data-budgetid={budget.id}
       onClick={this.handleOpenDetails}
@@ -72,9 +64,7 @@ class BudgetList extends React.Component {
         budget={budget}
         expanded={this.state.currentBudget !== null}
       />
-    </div>); */
-
-    const list = null;
+    </div>);
 
     return <div className="body-content">
       <Columns>

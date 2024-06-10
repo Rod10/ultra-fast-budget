@@ -18,7 +18,10 @@
     ]
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "@everapi/freecurrencyapi-js": "^1.0.1",
+    "@mui/material": "^5.15.19",
     "@simplewebauthn/browser": "^8.3.4",
     "@simplewebauthn/server": "^8.3.5",
     "axios": "^1.6.2",

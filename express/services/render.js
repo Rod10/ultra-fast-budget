@@ -10,7 +10,7 @@ const AccountList = require("../../react/components/accountlist.js");
 const Preference = require("../../react/components/preference.js");
 const CategoryList = require("../../react/components/categorylist.js");
 const TransactionList = require("../../react/components/transaction/transactionlist.js");
-const PlannedTransactionList = require("../../react/components/transaction/PlannedTransactionlist.js");
+const PlannedTransactionList = require("../../react/components/transaction/plannedtransactionlist.js");
 const AccountDetails = require("../../react/components/accountdetails.js");
 const BudgetList = require("../../react/components/budget/budgetlist.js");
 

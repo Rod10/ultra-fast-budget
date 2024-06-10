@@ -2,6 +2,7 @@ const React = require("react");
 const PropTypes = require("prop-types");
 const dateFns = require("date-fns");
 
+const {Slider} = require("@mui/material");
 const {getElFromDataset, preventDefault} = require("../../utils/html.js");
 const Button = require("../bulma/button.js");
 const Modal = require("../modal.js");
@@ -38,14 +39,10 @@ class BudgetCreationModal extends React.Component {
       id: null,
       categories: {rows: []},
       data: [],
-      date: "",
-      account: "",
-      notes: "",
-      to: "",
+      totalAllocatedAmount: 0,
       dataLastKey: 0,
       currentKey: 0,
       currentList: 0,
-      accounts: [],
       visible: false,
       alert: false,
       pending: false,
@@ -83,12 +80,14 @@ class BudgetCreationModal extends React.Component {
       const duration = items.budget ? items.budget.duration : 0;
       const unit = items.budget ? items.budget.unit : "month";
       const category = items.budget ? items.budget.category : null;
+      const totalAllocatedAmount = items.budget ? items.budget.category : 0;
       return {
         id,
         category,
         budget: items.budget,
         visible: true,
         data,
+        totalAllocatedAmount,
         date,
         unit,
         duration,
@@ -208,54 +207,70 @@ class BudgetCreationModal extends React.Component {
     const iconButton = item.subCategory ? <img src={`/icon/${item.subCategory.imagePath}`} style={{maxWidth: "15%", marginRight: "1rem"}} />
       : <Icon size="small" icon="magnifying-glass" />;
     const labelButton = item.subCategory ? item.subCategory.name : "Choisir une catégorie";
-    return <Columns key={item.key} className="row-category">
-      <input
-        className="is-hidden"
-        name={`data[${index}][subCategory]`}
-        defaultValue={item.subCategory?.id === undefined ? item.subCategory : item.subCategory.id}
-        readOnly
-      />
-      <Column>
-        <Input
-          className="input"
-          placeholder="Montant"
-          type="text"
-          name={`data[${index}][amount]`}
-          value={item.amount}
-          data-list="data"
-          data-propname="amount"
-          data-key={item.key}
-          onChange={this.handleListChange}
-          horizontal
+    return <div key={item.key}>
+      <Columns className="row-category">
+        <input
+          className="is-hidden"
+          name={`data[${index}][subCategory]`}
+          defaultValue={item.subCategory?.id === undefined ? item.subCategory : item.subCategory.id}
+          readOnly
         />
-      </Column>
-      <Column>
-        <Button
-          label={labelButton}
-          icon={iconButton}
-          data-key={item.key}
-          data-list="data"
-          onClick={this.handleOpenCategoryModal}
-        />
-      </Column>
-      <Column>
-        <Button
-          label={""}
-          icon={<Icon
-            icon="times"
-            faSize="lg"
-            size="big"
-          />}
-          data-key={item.key}
-          data-btn="remove"
-          onClick={this.handleRemoveFromList}
-        />
-      </Column>
-    </Columns>;
+        <Column>
+          <Input
+            className="input"
+            placeholder="Montant"
+            type="text"
+            name={`data[${index}][amount]`}
+            value={item.amount}
+            data-list="data"
+            data-propname="amount"
+            data-key={item.key}
+            onChange={this.handleListChange}
+            horizontal
+          />
+        </Column>
+        <Column>
+          <Button
+            label={labelButton}
+            icon={iconButton}
+            data-key={item.key}
+            data-list="data"
+            onClick={this.handleOpenCategoryModal}
+          />
+        </Column>
+        <Column>
+          <Button
+            label={""}
+            icon={<Icon
+              icon="times"
+              faSize="lg"
+              size="big"
+            />}
+            data-key={item.key}
+            data-btn="remove"
+            onClick={this.handleRemoveFromList}
+          />
+        </Column>
+      </Columns>
+      <Columns className="is-centered">
+        <Column size={Column.Sizes.fourFifths}>
+          <Slider
+            aria-label={`amount-${index}`}
+            disabled
+            value={(parseInt(item.amount, 10) / parseInt(this.state.totalAllocatedAmount, 10)) * 100}
+          />
+        </Column>
+      </Columns>
+    </div>;
   }
 
   _renderData() {
+    const totalAmount = this.state.data.map(data => parseInt(data.amount, 10)).reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0,
+    );
     return <div className="block-row-category">
+      {totalAmount > parseInt(this.state.totalAllocatedAmount, 10) && <div className="notification is-danger">Le total de vos sous catégorie ne peut pas dépasser le total alloué </div>}
       {this.state.data.map((row, index) => this._renderSubTransactionsRow(row, index))}
       <hr />
       <Columns>
@@ -308,6 +323,12 @@ class BudgetCreationModal extends React.Component {
         method="POST"
         action={action}
       >
+        <input
+          className="is-hidden"
+          name={"category"}
+          defaultValue={this.state.category?.id === undefined ? this.state.category : this.state.category.id}
+          readOnly
+        />
         <Columns>
           <Column>
             <Title size={4} className="mb-2">{title}</Title>
