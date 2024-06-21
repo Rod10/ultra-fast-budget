@@ -27,7 +27,7 @@ class BudgetCreationModal extends React.Component {
   static newRow(key = 0) {
     return {
       key,
-      amount: "",
+      totalAmount: 0,
       subCategory: null,
     };
   }
@@ -80,12 +80,13 @@ class BudgetCreationModal extends React.Component {
       const duration = items.budget ? items.budget.duration : 0;
       const unit = items.budget ? items.budget.unit : "month";
       const category = items.budget ? items.budget.category : null;
-      const totalAllocatedAmount = items.budget ? items.budget.category : 0;
+      const totalAllocatedAmount = items.budget ? items.budget.totalAllocatedAmount : 0;
       return {
         id,
         category,
         budget: items.budget,
         visible: true,
+        name: items.budget ? items.budget.name : "",
         data,
         totalAllocatedAmount,
         date,
@@ -182,6 +183,7 @@ class BudgetCreationModal extends React.Component {
   }
 
   handleRemoveFromList(evt) {
+    evt.preventDefault();
     this.setState(prevState => {
       let el = evt.target;
       while (!el.dataset.btn) {
@@ -220,10 +222,10 @@ class BudgetCreationModal extends React.Component {
             className="input"
             placeholder="Montant"
             type="text"
-            name={`data[${index}][amount]`}
-            value={item.amount}
+            name={`data[${index}][totalAmount]`}
+            value={item.totalAmount}
             data-list="data"
-            data-propname="amount"
+            data-propname="totalAmount"
             data-key={item.key}
             onChange={this.handleListChange}
             horizontal
@@ -255,9 +257,9 @@ class BudgetCreationModal extends React.Component {
       <Columns className="is-centered">
         <Column size={Column.Sizes.fourFifths}>
           <Slider
-            aria-label={`amount-${index}`}
+            aria-label={`totalAmount-${index}`}
             disabled
-            value={(parseInt(item.amount, 10) / parseInt(this.state.totalAllocatedAmount, 10)) * 100}
+            value={(parseInt(item.totalAmount, 10) / parseInt(this.state.totalAllocatedAmount, 10)) * 100}
           />
         </Column>
       </Columns>
@@ -265,7 +267,7 @@ class BudgetCreationModal extends React.Component {
   }
 
   _renderData() {
-    const totalAmount = this.state.data.map(data => parseInt(data.amount, 10)).reduce(
+    const totalAmount = this.state.data.map(data => parseInt(data.totalAmount, 10)).reduce(
       (accumulator, currentValue) => accumulator + currentValue,
       0,
     );
@@ -298,7 +300,7 @@ class BudgetCreationModal extends React.Component {
     let title = null;
     if (this.state.id !== 0) {
       action = `/budget/${this.state.id}/edit`;
-      title = "Modifier la budget";
+      title = "Modifier le budget";
     } else {
       title = "Créer un nouveau budget";
       action = "/budget/new";

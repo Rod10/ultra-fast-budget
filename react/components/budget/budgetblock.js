@@ -18,12 +18,12 @@ class BudetBlock extends React.Component {
     const {budget} = this.props;
     const totalBudget = parseFloat(budget.totalAmount) / parseFloat(budget.totalAllocatedAmount);
     const date = new Date();
+    const expandedWith = this.props.homepage ? "2" : "1";
     return <div className="box slide-in is-clickable">
-      <Title size={5}>{budget.name}</Title>
       <Columns className="is-flex">
-        <Column className="is-1">
-          <div className="icon-category" style={{width: "100%"}}>
-            <img src={`/icon/${budget.category.imagePath}`} />
+        <Column className={`is-${expandedWith}`}>
+          <div>
+            <img src={`/icon/${this.props.budget.category.imagePath}`} style={{width: "100%"}} />
           </div>
         </Column>
         <Column>
@@ -67,6 +67,11 @@ class BudetBlock extends React.Component {
 }
 
 BudetBlock.displayName = "BudetBlock";
-BudetBlock.propTypes = {budget: PropTypes.object.isRequired};
+BudetBlock.propTypes = {
+  budget: PropTypes.object.isRequired,
+  homepage: PropTypes.bool,
+};
+
+BudetBlock.defaultProps = {homepage: false};
 
 module.exports = BudetBlock;

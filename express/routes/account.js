@@ -61,11 +61,11 @@ router.get("/", async (req, res, next) => {
           for (const transaction of transactionsByMonth[month]) {
             if (transaction.type === TransactionTypes.INCOME
               || transaction.type === TransactionTypes.EXPECTED_INCOME) {
-              incomeTransactions[month] = calculateAmount(transaction.data);
+              incomeTransactions[month] += calculateAmount(transaction.data);
               balanceAccount += calculateAmount(transaction.data);
             } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
               || transaction.type === TransactionTypes.EXPENSE) {
-              outcomeTransactions[month] = calculateAmount(transaction.data);
+              outcomeTransactions[month] += calculateAmount(transaction.data);
               balanceAccount -= calculateAmount(transaction.data);
             }
           }

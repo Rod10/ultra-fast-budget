@@ -19,7 +19,6 @@ const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
 
 // const AccountModal = require("../transactionmodal.js");
-const utils = require("../utils.js");
 const TransactionBlock = require("./transactionblock.js");
 const TransactionExpanded = require("./transactionexpand.js");
 // const AccountExpand = require("../transactionexpand.js");
@@ -94,12 +93,12 @@ class PlannedTransactionList extends React.Component {
   handleOpenDetails(evt) {
     const el = getElFromDataset(evt, "transactionid");
     const transactionId = parseInt(el.dataset.transactionid, 10);
-    const transaction = this.props.transaction.rows.find(acc => acc.id === transactionId);
+    const transaction = this.props.transactions.rows.find(acc => acc.id === transactionId);
     this.setState({currentTransaction: transaction});
   }
 
   render() {
-    const list = this.props.transaction.rows.map(transaction => <div
+    const list = this.props.transactions.rows.map(transaction => <div
       className="mb-2"
       data-transactionid={transaction.id}
       onClick={this.handleOpenDetails}
@@ -148,7 +147,19 @@ class PlannedTransactionList extends React.Component {
           </div>
         </Column>
       </Columns>
-
+      <Columns>
+        <Column>
+          <b>Total Revenus: <span className="has-text-success">{this.props.income} €</span></b>
+        </Column>
+        <Column>
+          <b>Total Dépense: <span className="has-text-danger">{this.props.outcome} €</span></b>
+        </Column>
+        <Column>
+          <b>Solde restant:  <span className={`has-text-${this.props.income - this.props.outcome >= 0 ? "success" : "danger"}`}>
+            {this.props.income - this.props.outcome} €
+          </span></b>
+        </Column>
+      </Columns>
       <Columns>
         <div className="column">
           <div className="content operator-scrollblock">
@@ -164,11 +175,17 @@ class PlannedTransactionList extends React.Component {
 PlannedTransactionList.displayName = "PlannedTransactionList";
 PlannedTransactionList.propTypes = {
   user: PropTypes.object.isRequired,
-  transaction: PropTypes.object.isRequired,
+  transactions: PropTypes.object.isRequired,
   categories: PropTypes.object.isRequired,
   accounts: PropTypes.object.isRequired,
   graphs: PropTypes.array,
+  income: PropTypes.number,
+  outcome: PropTypes.number,
 };
-PlannedTransactionList.defaultProps = {graphs: undefined};
+PlannedTransactionList.defaultProps = {
+  graphs: undefined,
+  income: 0,
+  outcome: 0,
+};
 
 module.exports = PlannedTransactionList;

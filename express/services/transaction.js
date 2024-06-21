@@ -1,4 +1,5 @@
 const assert = require("assert");
+const moment = require("moment");
 const {
   sequelize,
   Sequelize,
@@ -39,6 +40,25 @@ transactionSrv.getAllByAccount = accountId => {
   });
 };
 
+transactionSrv.getAllByAccountAndRange = (accountId, query) => {
+  logger.debug("Get all transactions by account=[%s]", accountId);
+  const where = {[Op.and]: [{accountId}]};
+  const condition = where[Op.and][0];
+  if (query.unit) {
+    condition.transactionDate = {
+      [Op.and]: {
+        [Op.gte]: new moment().subtract(query.number, query.unit)
+          .startOf(query.unit),
+        [Op.lt]: new moment(),
+      },
+    };
+  }
+  return Transaction.findAndCountAll({
+    where,
+    order: [["transactionDate", OrderDirection.DESC]],
+  });
+};
+
 transactionSrv.create = async (userId, transactionData) => {
   logger.debug("Create transaction for user=[%s] with data=[%s]", userId, transactionData);
 
@@ -52,13 +72,14 @@ transactionSrv.create = async (userId, transactionData) => {
     type: transactionData.type,
   });
   const transactions = await transactionSrv.getAllByAccount(transaction.accountId);
-  return accountSrv.rebalance(transaction.accountId, transactions);
+  await accountSrv.rebalance(transaction.accountId, transactions);
+  return transaction;
 };
 
 transactionSrv.update = async (id, data) => {
   logger.debug("Edit transaction=[%s] with data=[%s]", id, data);
 
-  await Transaction.update({
+  const transaction = await Transaction.update({
     data: data.data,
     to: data.to,
     other: data.notes,
@@ -66,7 +87,8 @@ transactionSrv.update = async (id, data) => {
   }, {where: {id}});
 
   const transactions = await transactionSrv.getAllByAccount(data.account);
-  return accountSrv.rebalance(data.account, transactions);
+  await accountSrv.rebalance(data.account, transactions);
+  return transaction;
 };
 
 transactionSrv.delete = async id => {
@@ -75,6 +97,63 @@ transactionSrv.delete = async id => {
   transaction.destroy({where: {id}});
   const transactions = await transactionSrv.getAllByAccount(transaction.accountId);
   return accountSrv.rebalance(transaction.accountId, transactions);
+};
+
+transactionSrv.getAllByUserAndCategory = (userId, categoryId, query = {}) => {
+  logger.debug("Get all transactions by user=[%s] and category=[%s]", userId, categoryId);
+
+  const where = {[Op.and]: [{userId}]};
+  const condition = where[Op.and][0];
+  condition.data = {[Op.like]: `%${categoryId}%`};
+  if (query.unit) {
+    condition.transactionDate = {
+      [Op.and]: {
+        [Op.gte]: new moment().startOf(query.unit),
+        [Op.lt]: new moment().endOf(query.unit),
+      },
+    };
+  }
+  return Transaction.findAndCountAll({where});
+};
+
+transactionSrv.getAllByUserAndRange = (userId, query) => {
+  logger.debug("Get all transactions by user=[%s] and category=[%s]", userId);
+
+  const where = {[Op.and]: [{userId}]};
+  const condition = where[Op.and][0];
+  if (query.unit) {
+    if (query.range === "last") {
+      condition.transactionDate = {
+        [Op.and]: {
+          [Op.gte]: new moment().subtract(1, query.unit)
+            .startOf(query.unit),
+          [Op.lt]: new moment().subtract(1, query.unit)
+            .endOf(query.unit),
+        },
+      };
+    } else if (query.range === "seventh") {
+      condition.transactionDate = {
+        [Op.and]: {
+          [Op.gte]: new moment().subtract(7, query.unit)
+            .startOf(query.unit),
+          [Op.lt]: new moment().endOf(query.unit),
+        },
+      };
+    } else {
+      condition.transactionDate = {
+        [Op.and]: {
+          [Op.gte]: new moment().startOf(query.unit),
+          [Op.lt]: new moment().endOf(query.unit),
+        },
+      };
+    }
+  }
+
+  return Transaction.findAndCountAll({
+    where,
+    include: [{association: Transaction.Account}],
+    order: [["transactionDate", OrderDirection.DESC]],
+  });
 };
 
 module.exports = transactionSrv;

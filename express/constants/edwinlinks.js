@@ -46,19 +46,19 @@ const chart = {
   routes: [
     {
       label: "Catégories",
-      href: "/category",
+      href: "/graphics/category",
     },
     {
       label: "Temps",
-      href: "/time",
+      href: "/graphics/time",
     },
     {
       label: "Futur",
-      href: "/future",
+      href: "/graphics/future",
     },
     {
       label: "Prévisions",
-      href: "/forecasts",
+      href: "/graphics/forecasts",
     },
   ],
 };

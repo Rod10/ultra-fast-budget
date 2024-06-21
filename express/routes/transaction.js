@@ -11,6 +11,7 @@ const subCategorySrv = require("../services/subcategory.js");
 const transactionSrv = require("../services/transaction.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
+const budgetSrv = require("../services/budget");
 
 const router = express.Router();
 
@@ -50,7 +51,8 @@ router.post("/new", async (req, res, next) => {
       return res.redirect(SEE_OTHER, "/transaction");
     }
     const data = await prepareCategoryData(req.body);
-    await transactionSrv.create(req.user.id, data);
+    const transaction = await transactionSrv.create(req.user.id, data);
+    await budgetSrv.updateAmount(req.user, transaction);
     res.redirect(SEE_OTHER, "/transaction");
   } catch (e) {
     logger.error(e);
@@ -62,6 +64,7 @@ router.post("/:id/edit", async (req, res, next) => {
   try {
     const data = await prepareCategoryData(req.body);
     await transactionSrv.update(req.params.id, data);
+    await budgetSrv.recalculate(req.user);
     res.redirect(SEE_OTHER, "/transaction");
   } catch (e) {
     logger.error(e);
@@ -73,7 +76,8 @@ router.get(
   async (req, res, next) => {
     try {
       await transactionSrv.delete(req.params.id);
-      res.redirect(SEE_OTHER, "../list");
+      await budgetSrv.recalculate(req.user);
+      res.redirect(SEE_OTHER, "/transaction");
     } catch (e) {
       logger.error(e);
       return next(e);

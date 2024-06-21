@@ -12,9 +12,8 @@ const Column = require("../bulma/column.js");
 
 // const AccountModal = require("../budgetmodal.js");
 const utils = require("../utils.js");
+const BudgetExpanded = require("./budgetexpand.js");
 const BudgetBlock = require("./budgetblock.js");
-// const AccountExpand = require("../budgetexpand.js");
-
 const BudgetCreationModal = require("./budgetcreationmodal.js");
 
 class BudgetList extends React.Component {
@@ -66,6 +65,16 @@ class BudgetList extends React.Component {
       />
     </div>);
 
+    const expanded = this.state.currentBudget !== null
+      && <BudgetExpanded
+        base={this.base}
+        key={this.state.currentBudget.id}
+        budget={this.state.currentBudget}
+        onClose={this.handleCloseDetails}
+        user={this.props.user}
+        onClick={() => this.openBudgetCreationModal({budget: this.state.currentBudget, categories: this.props.categories})}
+      />;
+
     return <div className="body-content">
       <Columns>
         <Column size={Column.Sizes.oneThird}>
@@ -90,6 +99,7 @@ class BudgetList extends React.Component {
             {list}
           </div>
         </div>
+        {expanded}
       </Columns>
       <BudgetCreationModal onRegisterModal={this.handleRegisterModal} />
     </div>;

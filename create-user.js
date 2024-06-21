@@ -19,14 +19,14 @@ const createUser = async () => {
 
   const walletAccount = await accountSrv.create(user.id, {
     name: "Portefeuille",
-    initialBalance: 0,
+    initialBalance: 60,
     currency: "EUR",
     type: AccountTypes.WALLET,
   });
 
   const currentAccount = await accountSrv.create(user.id, {
     name: "Compte Courant",
-    initialBalance: 1441.56,
+    initialBalance: 2432.54,
     currency: "EUR",
     type: AccountTypes.COURANT,
   });
@@ -47,7 +47,7 @@ const createUser = async () => {
 
   const pelAccount = await accountSrv.create(user.id, {
     name: "PEL",
-    initialBalance: 3168.27,
+    initialBalance: 3268.27,
     currency: "EUR",
     type: AccountTypes.PEL,
   });

@@ -34,6 +34,7 @@ router.post("/new", async (req, res, next) => {
     const {user} = req;
     const data = req.body;
     for (const row of req.body.data) {
+      row.amount = 0;
       row.subCategory = await subCategorySrv.getById(row.subCategory);
     }
 
@@ -44,5 +45,31 @@ router.post("/new", async (req, res, next) => {
     return next(err);
   }
 });
+
+router.post("/:id/edit", async (req, res, next) => {
+  try {
+    const oldBudget = await budgetSrv.get(req.params.id);
+    const newBudget = req.body;
+    for (const row of newBudget.data) {
+      row.amount = 0;
+      row.subCategory = await subCategorySrv.getById(row.subCategory);
+    }
+    await budgetSrv.update(oldBudget, newBudget);
+    res.redirect(SEE_OTHER, "/budget");
+  } catch (err) {
+    logger.error(err);
+    return next(err);
+  }
+});
+
+router.get("/:id/delete", async (req, res, next) => {
+  try {
+    await budgetSrv.delete(req.params.id);
+    res.redirect(SEE_OTHER, "/budget");
+  } catch (err) {
+    logger.error(err);
+    return next(err);
+  }
+})
 
 module.exports = router;

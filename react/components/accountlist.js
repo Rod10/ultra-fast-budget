@@ -105,9 +105,15 @@ class AccountList extends React.Component {
             <Button
               className="has-text-weight-bold mr-3"
               type="themed"
+              icon={<Icon size="small" icon="list" />}
+              label="Voir les transfers planifiés"
+              href="/planned-transfer/list"
+            />
+            <Button
+              className="has-text-weight-bold mr-3"
+              type="themed"
               icon={<Icon size="small" icon="plus" />}
               label="Ajouter un compte"
-              // onClick={this.handleOpenAccountModal}
               onClick={() => this.openAccountModal()}
             />
           </div>

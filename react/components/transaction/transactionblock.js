@@ -16,12 +16,12 @@ class TransactionBlock extends React.Component {
       (accumulator, currentValue) => accumulator + currentValue,
       0,
     ) * 100) / 100;
-    const expandedWith = this.props.expanded ? "175%" : "100%";
+    const expandedWith = this.props.homepage ? "2" : "1";
     return <div className="box slide-in is-clickable">
       <div className="columns is-flex">
-        <div className="column is-1">
-          <div className="icon-category" style={{width: expandedWith}}>
-            <img src={`/icon/${this.props.transaction.data[0].subCategory.imagePath}`} />
+        <div className={`column is-${expandedWith}`}>
+          <div>
+            <img src={`/icon/${this.props.transaction.data[0].subCategory.imagePath}`} style={{width: "100%"}} />
           </div>
         </div>
         <div className="column">
@@ -84,7 +84,9 @@ class TransactionBlock extends React.Component {
 TransactionBlock.displayName = "TransactionBlock";
 TransactionBlock.propTypes = {
   transaction: PropTypes.object.isRequired,
-  expanded: PropTypes.bool.isRequired,
+  homepage: PropTypes.bool,
 };
+
+TransactionBlock.defaultProps = {homepage: false};
 
 module.exports = TransactionBlock;

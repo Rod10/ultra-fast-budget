@@ -10,6 +10,7 @@ const {
   PlannedTransaction,
   Op,
 } = require("../models/index.js");
+const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
 const accountSrv = require("./account.js");
 
@@ -27,10 +28,8 @@ plannedTransactionSrv.getAllByUser = userId => {
 
   return PlannedTransaction.findAndCountAll({
     where: {userId},
-    include: [{
-      association: PlannedTransaction.Account,
-      // where: {userId},
-    }],
+    include: [{association: PlannedTransaction.Account}],
+    order: [["transactionDate", OrderDirection.ASC]],
   });
 };
 

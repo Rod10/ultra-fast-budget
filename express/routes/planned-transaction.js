@@ -9,6 +9,7 @@ const subCategorySrv = require("../services/subcategory.js");
 const plannedTransactionSrv = require("../services/plannedtransaction.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
+const TransactionType = require("../constants/transactiontype");
 
 const router = express.Router();
 
@@ -22,15 +23,31 @@ const prepareCategoryData = async transactionData => {
   return transactionData;
 };
 
+const calculateAmount = data => data.map(row => parseFloat(row.amount)).reduce(
+  (accumulator, currentValue) => accumulator + currentValue,
+  0,
+);
+
 router.get("/", async (req, res, next) => {
   try {
-    const transaction = await plannedTransactionSrv.getAllByUser(req.user.id);
+    const transactions = await plannedTransactionSrv.getAllByUser(req.user.id);
     const categories = await categorySrv.getAll(req.user.id);
     const accounts = await accountSrv.getAllByUser(req.user.id);
+    let income = 0;
+    let outcome = 0;
+    for (const transaction of transactions.rows) {
+      if (transaction.type === TransactionType.EXPECTED_EXPENSE) {
+        outcome += calculateAmount(transaction.data);
+      } else if (transaction.type === TransactionType.EXPECTED_INCOME) {
+        income += calculateAmount(transaction.data);
+      }
+    }
     const data = {
-      transaction,
+      transactions,
       categories,
       accounts,
+      outcome,
+      income,
       user: req.user,
     };
     const navbar = renderSrv.navbar(res.locals);
@@ -46,7 +63,7 @@ router.post("/new", async (req, res, next) => {
   try {
     const data = await prepareCategoryData(req.body);
     await plannedTransactionSrv.create(req.user.id, data);
-    res.redirect(SEE_OTHER, "/transaction");
+    res.redirect(SEE_OTHER, "/planned-transaction");
   } catch (e) {
     logger.error(e);
     return next(e);
@@ -57,7 +74,7 @@ router.post("/:id/edit", async (req, res, next) => {
   try {
     const data = await prepareCategoryData(req.body);
     await plannedTransactionSrv.update(req.params.id, data);
-    res.redirect(SEE_OTHER, "/transaction");
+    res.redirect(SEE_OTHER, "/planned-transaction");
   } catch (e) {
     logger.error(e);
     return next(e);
@@ -68,7 +85,7 @@ router.get(
   async (req, res, next) => {
     try {
       await plannedTransactionSrv.delete(req.params.id);
-      res.redirect(SEE_OTHER, "../list");
+      res.redirect(SEE_OTHER, "/planned-transaction");
     } catch (e) {
       logger.error(e);
       return next(e);

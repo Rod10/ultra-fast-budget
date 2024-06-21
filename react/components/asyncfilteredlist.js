@@ -3,9 +3,8 @@ const React = require("react");
 const PropTypes = require("prop-types");
 
 const {OK} = require("../../express/utils/error.js");
-// const OrderDirection = require("../../express/constants/orderdirection.js");
+const OrderDirection = require("../../express/constants/orderdirection.js");
 const {preventDefault} = require("../utils/html.js");
-// const Navigation = require("./navigation.js");
 
 const DEFAULT_LIMIT = 15;
 const INPUT_TIMEOUT = 500;
@@ -37,9 +36,9 @@ class AsyncFilteredList extends React.Component {
     const doSearch = () => axios.get(`${this.searchUri + queryStr}&t=${Date.now()}`)
       .then(response => {
         if (response.status === OK) {
-          const contributors = response.data.contributors ? response.data.contributors : null;
+          const graphs = response.data.graphs ? response.data.graphs : null;
           this.setState({
-            contributors,
+            graphs,
             count: response.data.count,
             rows: this.adapter ? response.data.rows.map(this.adapter) : response.data.rows,
           });
@@ -58,10 +57,13 @@ class AsyncFilteredList extends React.Component {
     return {
       qId: 0,
       orderBy: this.props.query.orderBy || "id",
-      // orderDirection: this.props.query.orderDirection || OrderDirection.DESC,
+      orderDirection: this.props.query.orderDirection || OrderDirection.DESC,
       limit: this.props.query.limit,
       page: this.props.query.page,
       count: this.props.query.count,
+      unit: this.props.query.month || "month",
+      number: this.props.query.number || 12,
+      type: this.props.query.type || "planned",
     };
   }
 

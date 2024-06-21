@@ -1,8 +1,6 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
-const PlanTypes = require("../../../express/constants/plantypes.js");
-
 const HeadTypes = {
   ADMIN: "ADMIN",
   EDWIN: "EDWIN",

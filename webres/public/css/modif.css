@@ -29,6 +29,7 @@ h2 {
     position: relative;
     padding: 1.25rem 1.5rem 1.25rem 1.5rem;
     height: 100%;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.15), 0 0px 0 1px rgba(10, 10, 10, 0.02);
 }
 
 @media screen and (min-width: 1400px) {
@@ -432,6 +433,11 @@ a.link:hover {
         overflow-y: scroll;
         height: calc(100vh - 400px);
     }
+    .transaction-homepage-scrollblock {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: calc(100vh - 800px);
+    }
 }
 
 .operator-scrollblock {
@@ -659,6 +665,11 @@ table {
     box-shadow: 0px 4px 5px #cacaca;
 }
 
-.row-category {
+.homepage-chart {
+    height: 200px;
+    width: 200px;
+}
 
+.hr-homepage {
+    border: 1px solid black
 }

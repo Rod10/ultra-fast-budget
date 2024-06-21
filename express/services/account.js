@@ -10,6 +10,7 @@ const {
 } = require("../models/index.js");
 const TransactionTypes = require("./../constants/transactiontype.js");
 const {logger} = require("./logger.js");
+const AccountTypes = require("../constants/accountstype");
 
 const accountSrv = {};
 
@@ -70,7 +71,7 @@ accountSrv.updateData = async (userId, accountId, data) => {
       0,
     );
     assert(
-      parseInt(newAccountAmount, 10) > AccountsTypeFull[account.type].maxAmount,
+      parseInt(newAccountAmount, 10) > AccountsTypeFull[account.type].maxAmount && account.type !== AccountTypes.WALLET,
       "Balance cannot be more than the maximum amount allowed for an manual transaction",
     );
   } else if (data.type === TransactionTypes.EXPECTED_EXPENSE || data.type === TransactionTypes.EXPENSE) {
@@ -94,7 +95,7 @@ accountSrv.rebalance = async (accountId, transactions) => {
         0,
       );
       assert(
-        parseInt(newAccountBalance, 10) > AccountsTypeFull[account.type].maxAmount,
+        (parseInt(newAccountBalance, 10) > AccountsTypeFull[account.type].maxAmount) && account.type === AccountTypes.WALLET,
         "Balance cannot be more than the maximum amount allowed for an manual transaction",
       );
     } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE || transaction.type === TransactionTypes.EXPENSE) {

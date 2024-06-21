@@ -83,7 +83,7 @@ categorySrv.create = (user, data, file) => {
   const dir = getDir(user);
   const fileParts = file[0].originalname.split(".");
   const extension = fileParts[1];
-  const imagePath = `/icon/${dir}/${data.type}.${extension}`;
+  const imagePath = `${dir}/${data.type}.${extension}`;
 
   fs.renameSync(
     path.resolve(ICON, file[0].filename),

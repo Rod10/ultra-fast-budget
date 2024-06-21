@@ -16,6 +16,7 @@ const SubCategory = require("./subcategory.js");
 const Transaction = require("./transaction.js");
 const Transfer = require("./transfer.js");
 const PlannedTransaction = require("./plannedtransaction.js");
+const PlannedTransfer = require("./plannedtransfer.js");
 const User = require("./user.js");
 
 if (config.logging) {
@@ -39,6 +40,7 @@ const db = {};
   Budget,
   Category,
   PlannedTransaction,
+  PlannedTransfer,
   SubCategory,
   Transaction,
   Transfer,

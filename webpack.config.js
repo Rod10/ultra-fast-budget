@@ -20,10 +20,14 @@ const config = {
     "budgetlist": `${VIEWS}/budgetlist.js`,
     "transactionlist": `${VIEWS}/transactionlist.js`,
     "plannedtransactionlist": `${VIEWS}/plannedtransactionlist.js`,
+    "plannedtransferlist": `${VIEWS}/plannedtransferlist.js`,
 
     "settingshomepage": `${VIEWS}/settingshomepage.js`,
     "preference": `${VIEWS}/preference.js`,
     "categorylist": `${VIEWS}/categorylist.js`,
+
+    "categories": `${VIEWS}/categories.js`,
+    "forecast": `${VIEWS}/forecast.js`,
   },
   output: {
     path: path.resolve(__dirname, "dist", "public", "js"),

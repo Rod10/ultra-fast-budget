@@ -23,7 +23,7 @@ transferSrv.getAllByUser = userId => {
 
   return Transfer.findAndCountAll({
     where: {userId},
-    include: [{association: Transfer.Account}],
+    include: [{association: Transfer.Sender}, {association: Transfer.Receiver}],
     order: [["transferDate", OrderDirection.DESC]],
   });
 };
