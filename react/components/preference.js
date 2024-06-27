@@ -25,8 +25,17 @@ class Preference extends React.Component {
           label="Gérer vos catégories"
           href="/settings/category/list"
         />
-        <br/>
-        <br/>
+        <br />
+        <br />
+        <Button
+          className="has-text-weight-bold mr-3"
+          type="themed"
+          icon={<Icon size="small" icon="pen" />}
+          label="Gérer vos type de compte"
+          href="/settings/account-type"
+        />
+        <br />
+        <br />
         <Button
           className="has-text-weight-bold mr-3"
           type="themed"
@@ -34,7 +43,7 @@ class Preference extends React.Component {
           label="Gérer vos modèles de transactions"
           href="/settings/transaction/list"
         />
-        <hr/>
+        <hr />
         <Button
           className="has-text-weight-bold mr-3"
           type="themed"
@@ -42,8 +51,8 @@ class Preference extends React.Component {
           label="Couleur des pages"
           // onClick={open modal}
         />
-        <br/>
-        <br/>
+        <br />
+        <br />
         <p className="is-flex is-align-items-center">
           <b className="mr-3">Mode sombre: </b>
           <Toogle

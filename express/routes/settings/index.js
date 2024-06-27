@@ -26,5 +26,6 @@ router.get("/", (req, res) => {
 
 router.use("/category", require("./category.js"));
 router.use("/preference", require("./preference.js"));
+router.use("/account-type", require("./account-type.js"));
 
 module.exports = router;

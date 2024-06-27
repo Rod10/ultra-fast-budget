@@ -8,9 +8,9 @@ const {
   Account,
   Op,
 } = require("../models/index.js");
+const AccountTypes = require("../constants/accountstype.js");
 const TransactionTypes = require("./../constants/transactiontype.js");
 const {logger} = require("./logger.js");
-const AccountTypes = require("../constants/accountstype");
 
 const accountSrv = {};
 
@@ -47,7 +47,10 @@ accountSrv.get = id => {
 
 accountSrv.getAllByUser = userId => {
   logger.debug("Get all accounts for userId=[%s]", userId);
-  return Account.findAndCountAll({where: {userId}});
+  return Account.findAndCountAll({
+    where: {userId},
+    include: [{association: Account.AccountType}],
+  });
 };
 
 /**

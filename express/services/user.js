@@ -21,6 +21,7 @@ const mailSrv = require("./mail.js");
 const passwordSrv = require("./password.js");
 const {logger} = require("./logger.js");
 const subCatogeriesSrv = require("./subcategory.js");
+const accountTypeSrv = require("./accounttype");
 
 const userSrv = {};
 
@@ -63,6 +64,7 @@ userSrv.create = async data => {
   });
   const categories = await categorySrv.createForNewUser(user);
   await subCatogeriesSrv.createForNewUser(user, categories);
+  await accountTypeSrv.createForNewUser(user);
   return user;
 };
 

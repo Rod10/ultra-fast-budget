@@ -32,7 +32,7 @@ class CategoryBlock extends React.Component {
         <Columns className="is-flex">
           <Column className="is-narrow">
             <div className="icon-category" style={{width: "200px"}}>
-              <img src={`/icon/${subCategory.imagePath}`} />
+              <img src={`/icon/${subCategory.imagePath}`}/>
             </div>
           </Column>
           <Column>
@@ -43,14 +43,14 @@ class CategoryBlock extends React.Component {
               <Button
                 className="ml-2 has-text-weight-bold"
                 type="danger"
-                icon={<Icon size="small" icon="trash" />}
+                icon={<Icon size="small" icon="trash"/>}
                 // label="Éditer"
                 href={`${this.props.base}/sub-category/${subCategory.id}/delete`}
               />
               <Button
                 className="ml-2 has-text-weight-bold"
                 type="themed"
-                icon={<Icon size="small" icon="pen" />}
+                icon={<Icon size="small" icon="pen"/>}
                 // label="Éditer"
                 onClick={this.handleEditSubCategory}
               />
@@ -63,7 +63,7 @@ class CategoryBlock extends React.Component {
       <Columns className="is-flex">
         <Column className="is-narrow">
           <div className="icon-category" style={{width: "200px"}}>
-            <img src={`/icon/${this.props.category.imagePath}`} />
+            <img src={`/icon/${this.props.category.imagePath}`}/>
           </div>
         </Column>
         <Column>
@@ -75,14 +75,14 @@ class CategoryBlock extends React.Component {
             <Button
               className="ml-2 has-text-weight-bold"
               type="danger"
-              icon={<Icon size="small" icon="trash" />}
+              icon={<Icon size="small" icon="trash"/>}
               // label="Éditer"
               href={`${this.props.base}${this.props.category.id}/delete`}
             />
             <Button
               className="ml-2 has-text-weight-bold"
               type="themed"
-              icon={<Icon size="small" icon="pen" />}
+              icon={<Icon size="small" icon="pen"/>}
               // label="Éditer"
               onClick={this.props.onEditCategory}
             />
@@ -93,19 +93,12 @@ class CategoryBlock extends React.Component {
         <Button
           className="ml-2 has-text-weight-bold"
           // type="themed"
-          icon={<Icon size="small" icon="plus" />}
+          icon={<Icon size="small" icon="plus"/>}
           // label="Éditer"
           onClick={this.props.onAddCategory}
         />
       </div>
     </div>;
-  }
-
-  _renderTag() {
-   /* return <span
-      className={`tag ${this.props.category.className} is-medium is-rounded`}
-      title={AccountsTypeFull[this.props.category.type].label}
-    >{this.props.category.type}</span>;*/
   }
 }
 

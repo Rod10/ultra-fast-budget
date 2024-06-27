@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers, max-lines-per-function */
 module.exports = (sequelize, DataTypes) => {
-  const Account = sequelize.define("Account", {
+  const AccountType = sequelize.define("AccountType", {
     id: {
       type: DataTypes.INTEGER(20),
       allowNull: false,
@@ -11,26 +11,34 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER(20),
       allowNull: false,
     },
-    accountTypeId: {
-      type: DataTypes.INTEGER(20),
-      allowNull: false,
-    },
     name: {
       type: DataTypes.STRING(45),
       allowNull: false,
     },
-    currency: {
-      type: DataTypes.ENUM,
-      values: ["EUR", "USD", "JPY", "CNY"],
+    type: {
+      type: DataTypes.STRING(45),
       allowNull: false,
     },
-    initialBalance: {
+    color: {
+      type: DataTypes.STRING(45),
+      allowNull: false,
+    },
+    className: {
+      type: DataTypes.STRING(45),
+      allowNull: false,
+    },
+    interest: {
       type: DataTypes.FLOAT,
       allowNull: false,
     },
-    balance: {
+    maxAmount: {
       type: DataTypes.FLOAT,
       allowNull: true,
+    },
+    unit: {
+      type: DataTypes.ENUM,
+      values: ["YEAR", "MONTH", "WEEK", "DAY"],
+      allowNull: false,
     },
     creationDate: {
       type: DataTypes.DATE,
@@ -42,12 +50,12 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     freezeTableName: true,
-    tableName: "ACCOUNT",
+    tableName: "ACCOUNT_TYPE",
     createdAt: "creationDate",
     updatedAt: "modificationDate",
   });
-  Account.associate = models => {
-    Account.User = Account.belongsTo(models.User, {
+  AccountType.associate = models => {
+    AccountType.User = AccountType.belongsTo(models.User, {
       as: "user",
       foreignKey: {
         name: "userId",
@@ -56,15 +64,10 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       },
     });
-    Account.AccountType = Account.belongsTo(models.AccountType, {
-      as: "accountType",
-      foreignKey: {
-        name: "accountTypeId",
-        allowNull: false,
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
-      },
+    AccountType.Account = AccountType.hasMany(models.Account, {
+      as: "account",
+      foreignKey: "accountTypeId",
     });
   };
-  return Account;
+  return AccountType;
 };

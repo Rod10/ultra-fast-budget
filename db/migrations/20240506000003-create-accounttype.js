@@ -1,6 +1,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.createTable("ACCOUNT", {
+  up: (queryInterface, Sequelize) => queryInterface.createTable("ACCOUNT_TYPE", {
     ID: {
       allowNull: false,
       autoIncrement: true,
@@ -20,21 +20,28 @@ module.exports = {
       allowNull: false,
       type: Sequelize.STRING(45),
     },
-    CURRENCY: {
-      allowNull: false,
-      defaultValue: "EUR",
-      type: Sequelize.ENUM("EUR", "USD", "JPY", "CNY"),
-    },
     TYPE: {
       allowNull: false,
-      defaultValue: "WALLET",
-      type: Sequelize.ENUM("WALLET", "COURANT", "LIVRETA", "LDDS", "LEP", "LIVRETJ", "CEL", "PEL", "PERP", "CSL"),
+      type: Sequelize.STRING(45),
     },
-    INITIAL_BALANCE: {
+    COLOR: {
+      allowNull: false,
+      type: Sequelize.STRING(45),
+    },
+    CLASS_NAME: {
+      allowNull: false,
+      type: Sequelize.STRING(45),
+    },
+    INTEREST: {
       allowNull: false,
       type: Sequelize.FLOAT,
     },
-    BALANCE: {
+    UNIT: {
+      allowNull: false,
+      defaultValue: "MONTH",
+      type: Sequelize.ENUM("YEAR", "MONTH", "WEEK", "DAY"),
+    },
+    MAX_AMOUNT: {
       allowNull: false,
       type: Sequelize.FLOAT,
     },
@@ -48,5 +55,5 @@ module.exports = {
     },
   }),
 
-  down: (queryInterface, _Sequelize) => queryInterface.dropTable("ACCOUNT"),
+  down: (queryInterface, _Sequelize) => queryInterface.dropTable("ACCOUNT_TYPE"),
 };

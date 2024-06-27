@@ -30,9 +30,9 @@ class AccountBlock extends React.Component {
 
   _renderTag(account) {
     return <span
-      className={`tag ${AccountsTypeFull[account.type].className} is-medium is-rounded`}
-      title={AccountsTypeFull[account.type].label}
-    >{AccountsTypeFull[account.type].label}</span>;
+      className={`tag ${account.accountType.className} is-medium is-rounded`}
+      title={account.accountType.name}
+    >{account.accountType.name}</span>;
   }
 
   handleExpandClick(evt) {

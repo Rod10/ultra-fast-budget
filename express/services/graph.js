@@ -6,9 +6,57 @@ const transactionSrv = require("./transaction.js");
 const accountSrv = require("./account.js");
 const categorySrv = require("./category.js");
 const plannedTransactionSrv = require("./plannedtransaction.js");
-const plannedTransferSrv = require("./plannedtransfer");
+const plannedTransferSrv = require("./plannedtransfer.js");
 
 const graphSrv = {};
+
+const calculateTransactionTotal = transactionData => transactionData
+  .map(d => parseFloat(d.amount)).reduce(
+    (accumulator, currentValue) => accumulator + currentValue,
+    0,
+  );
+
+const calculateMonthlyTotal = (account, plannedTransactions, plannedTransfers, query) => {
+  if (plannedTransactions.count > 0) {
+    let totalTransaction = 0;
+    for (const transaction of plannedTransactions.rows) {
+      if (transaction.type === TransactionType.EXPECTED_EXPENSE) {
+        totalTransaction -= calculateTransactionTotal(transaction.data);
+      } else if (transaction.type === TransactionType.EXPECTED_INCOME) {
+        const newBalance = account.balance + calculateTransactionTotal(transaction.data);
+        if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
+          transaction.data = [];
+          totalTransaction += account.accountType.maxAmount - account.balance;
+        } else {
+          totalTransaction += calculateTransactionTotal(transaction.data);
+        }
+      }
+    }
+    account.balance += totalTransaction;
+  }
+  if (plannedTransfers.count > 0) {
+    for (const transfer of plannedTransfers.rows) {
+      if (transfer.senderId === account.id) {
+        account.balance -= parseFloat(transfer.amount);
+      } else if (transfer.receiverId === account.id) {
+        const newBalance = account.balance + parseFloat(transfer.amount);
+        console.log(account.accountType.type, newBalance);
+        console.log(newBalance > account.accountType.maxAmount && account.accountType.maxAmount !== 0);
+        if (newBalance > account.accountType.maxAmount && account.accountType.maxAmount !== 0) {
+          
+        } else {
+          account.balance += parseFloat(transfer.amount);
+        }
+      }
+    }
+  }
+
+  if (query.startingDate.month() === 0) {
+    account.balance *= (1 + (account.accountType.interest / 100));
+  }
+
+  return Math.round(account.balance * 100) / 100;
+};
 
 graphSrv.getSummary = async (user, type) => {
   logger.debug("Create graph data for summary");
@@ -221,7 +269,7 @@ graphSrv.balance = async user => {
       label: account.name,
       data: accountBalance.reverse(),
       fill: false,
-      borderColor: AccounstTypesFull[account.type].color,
+      borderColor: account.accountType.color,
       tension: 0.1,
     });
   }
@@ -296,7 +344,139 @@ graphSrv.byCategory = async (user, category) => {
   };
 };
 
+const reduceDataByIndex = (accountType, query) => {
+  // Initialize an array to hold the reduced data
+  const dataKeys = Object.keys(accountType);
+  const numberOfMonths = query.number;
+  const reducedData = Array.from({length: numberOfMonths}, () => 0);
+
+  // Iterate through each account type
+  for (const key of dataKeys) {
+    // Get the data array for the current account type
+    const dataArray = accountType[key].data;
+    if (query.unit === "year") {
+      // console.log(dataArray);
+    } else {
+      // Sum the values at each index
+      for (let i = 0; i < numberOfMonths; i++) {
+        const amount = parseFloat(dataArray[i]);
+        if (amount !== undefined && !isNaN(amount)) {
+          reducedData[i] += amount;
+        }
+      }
+    }
+  }
+  return reducedData;
+};
+
 graphSrv.allAccountsForecast = async (user, query) => {
+  const accounts = await accountSrv.getAllByUser(user.id);
+  const labels = Array.from({length: query.number}, (element, index) => {
+    let text;
+    const date = moment().add(index, query.unit);
+    if (query.unit === "month") {
+      text = `${date.month() + 1}/${date.year()}`;
+    } else if (query.unit === "year") {
+      text = date.year().toString();
+    }
+    return text;
+  });
+  let data = [];
+
+  const accountsBalance = {};
+
+  for (const account of accounts.rows) {
+    accountsBalance[account.accountType.type] = {
+      data: Array.from({length: query.number}, () => {
+        if (query.unit === "year") return Array.from({length: 12}, () => 0);
+        return 0;
+      }),
+      interest: Array.from({length: query.number}, () => 0),
+    };
+  }
+
+  if (query.type === "planned") {
+    for (const account of accounts.rows) {
+      for (let i = 0; i < query.number; i++) {
+        query.startingDate = new moment()
+          .add(i, query.unit)
+          .startOf(query.unit);
+        query.endingDate = new moment()
+          .add(i, query.unit)
+          .endOf(query.unit);
+        query.accountId = account.id;
+        const plannedTransactions = await plannedTransactionSrv.getAllByUser(user.id, query);
+        const plannedTransfers = await plannedTransferSrv.getAllByUser(user.id, query);
+        if (query.unit === "year") {
+          for (let m = 0; m < 12; m++) {
+            accountsBalance[account.accountType.type].data[i][m] = calculateMonthlyTotal(account, plannedTransactions, plannedTransfers, query);
+          }
+        } else {
+          /* if (plannedTransactions.count > 0) {
+            let totalTransaction = 0;
+            for (const transaction of plannedTransactions.rows) {
+              if (transaction.type === TransactionType.EXPECTED_EXPENSE) {
+                totalTransaction -= calculateTransactionTotal(transaction.data);
+              } else if (transaction.type === TransactionType.EXPECTED_INCOME) {
+                const newBalance = account.balance + calculateTransactionTotal(transaction.data);
+                if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
+                  transaction.data = [];
+                  totalTransaction += account.accountType.maxAmount - account.balance;
+                } else {
+                  totalTransaction += calculateTransactionTotal(transaction.data);
+                }
+              }
+            }
+            account.balance += totalTransaction;
+          }
+          if (plannedTransfers.count > 0) {
+            for (const transfer of plannedTransfers.rows) {
+              if (transfer.senderId === account.id) {
+                account.balance -= parseFloat(transfer.amount);
+              } else if (transfer.receiverId === account.id) {
+                const newBalance = account.balance + parseFloat(transfer.amount);
+                if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
+                  if (transfer.amount !== 0) {
+                    account.balance += account.accountType.maxAmount - account.balance;
+                    transfer.amount = 0;
+                  }
+                } else {
+                  account.balance += parseFloat(transfer.amount);
+                }
+              }
+            }
+          }
+
+          if (query.startingDate.month() === 0) {
+            account.balance *= (1 + (account.accountType.interest / 100));
+          }*/
+
+          accountsBalance[account.accountType.type].data[i] = calculateMonthlyTotal(account, plannedTransactions, plannedTransfers, query);
+        }
+      }
+    }
+  }
+  data = reduceDataByIndex(accountsBalance, query);
+
+  return {
+    type: "line",
+    label: "Total du solde de tout les comptes",
+    column: 12,
+    data: {
+      labels,
+      datasets: [{
+        label: "Solde de tous les comptes",
+        data,
+        fill: false,
+        borderColor: "#3979ff",
+        tension: 0.1,
+      }],
+    },
+    options: {maintainAspectRatio: false},
+  };
+};
+
+/* graphSrv.allAccountsForecast = async (user, query) => {
   const accounts = await accountSrv.getAllByUser(user.id);
 
   const labels = [];
@@ -315,7 +495,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
       .month()) + 1;
 
     for (const account of accounts.rows) {
-      const accountTransaction = plannedTransactions.rows
+      let accountTransaction = plannedTransactions.rows
         .filter(transaction => transaction.accountId === account.id);
       if (accountTransaction !== undefined) {
         for (const transaction of accountTransaction) {
@@ -325,15 +505,24 @@ graphSrv.allAccountsForecast = async (user, query) => {
               0,
             );
           } else if (transaction.type === TransactionType.EXPECTED_INCOME) {
-            account.balance += transaction.data.map(d => parseFloat(d.amount)).reduce(
+            const newBalance = account.balance + transaction.data.map(d => parseFloat(d.amount)).reduce(
               (accumulator, currentValue) => accumulator + currentValue,
               0,
             );
+            if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
+              transaction.data = [];
+              account.balance += account.accountType.maxAmount - account.balance;
+            } else {
+              account.balance += transaction.data.map(d => parseFloat(d.amount)).reduce(
+                (accumulator, currentValue) => accumulator + currentValue,
+                0,
+              );
+            }
           }
         }
       }
       if (month === 1) {
-        account.balance *= (1 + (AccounstTypesFull[account.type].interest / 100));
+        account.balance *= (1 + (account.accountType.interest / 100));
       }
       if (i !== 0) {
         data[i] += account.balance;
@@ -361,7 +550,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
     },
     options: {maintainAspectRatio: false},
   };
-};
+};*/
 
 graphSrv.accountForecast = async (user, account, query) => {
   const transactions = await plannedTransactionSrv.getAllByAccount(account.id);
@@ -383,10 +572,19 @@ graphSrv.accountForecast = async (user, account, query) => {
             0,
           );
         } else if (transaction.type === TransactionType.EXPECTED_INCOME) {
-          account.balance += transaction.data.map(d => parseFloat(d.amount)).reduce(
+          const newBalance = account.balance + transaction.data.map(d => parseFloat(d.amount)).reduce(
             (accumulator, currentValue) => accumulator + currentValue,
             0,
           );
+          if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
+            transaction.data = [];
+            account.balance += account.accountType.maxAmount - account.balance;
+          } else {
+            account.balance += transaction.data.map(d => parseFloat(d.amount)).reduce(
+              (accumulator, currentValue) => accumulator + currentValue,
+              0,
+            );
+          }
         }
       }
     }
@@ -395,14 +593,22 @@ graphSrv.accountForecast = async (user, account, query) => {
         if (transfer.senderId === account.id) {
           account.balance -= parseFloat(transfer.amount);
         } else if (transfer.receiverId === account.id) {
-          account.balance += parseFloat(transfer.amount);
+          const newBalance = account.balance + parseFloat(transfer.amount);
+          if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
+            if (transfer.amount !== 0) {
+              account.balance += account.accountType.maxAmount - account.balance;
+              transfer.amount = 0;
+            }
+          } else {
+            account.balance += parseFloat(transfer.amount);
+          }
         }
       }
     }
     if (month === 1) {
       year++;
-      if (AccounstTypesFull[account.type].interest !== 0) {
-        account.balance *= (1 + (AccounstTypesFull[account.type].interest / 100));
+      if (account.accountType.interest !== 0) {
+        account.balance *= (1 + (account.accountType.interest / 100));
       }
     }
     data[i] = account.balance;
@@ -410,12 +616,12 @@ graphSrv.accountForecast = async (user, account, query) => {
   }
   return {
     type: "line",
-    label: `Total du solde du ${AccounstTypesFull[account.type].label}`,
+    label: `Total du solde du ${account.accountType.name}`,
     column: 12,
     data: {
       labels,
       datasets: [{
-        label: `Total du solde du ${AccounstTypesFull[account.type].label}`,
+        label: `Total du solde du ${account.accountType.name}`,
         data,
         fill: false,
         borderColor: "#3979ff",

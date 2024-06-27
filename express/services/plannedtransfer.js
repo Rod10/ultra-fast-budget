@@ -20,13 +20,21 @@ plannedTransferSrv.get = id => {
   return PlannedTransfer.findOne({where: {id}});
 };
 
-plannedTransferSrv.getAllByUser = userId => {
+plannedTransferSrv.getAllByUser = (userId, query) => {
   logger.debug("Get all transaction for user=[%s]", userId);
 
   assert(userId, "User Id cannot be null");
-
+  const cond = {userId};
+  if (query.endingDate) {
+    cond.transferDate = {
+      [Op.between]: [
+        new Date(query.startDate),
+        new Date(query.endingDate),
+      ],
+    };
+  }
   return PlannedTransfer.findAndCountAll({
-    where: {userId},
+    where: cond,
     include: [{association: PlannedTransfer.Sender}, {association: PlannedTransfer.Receiver}],
     order: [["transferDate", OrderDirection.ASC]],
   });

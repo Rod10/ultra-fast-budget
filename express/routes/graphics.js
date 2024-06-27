@@ -4,21 +4,14 @@ const authMid = require("../middlewares/user.js");
 const categorySrv = require("../services/category.js");
 const graphSrv = require("../services/graph.js");
 const renderSrv = require("../services/render.js");
-const transactionSrv = require("../services/transaction.js");
 const {logger} = require("../services/logger.js");
 
-const {SEE_OTHER} = require("../utils/error.js");
 const accountSrv = require("../services/account.js");
-const searchMid = require("../middlewares/search");
+const searchMid = require("../middlewares/search.js");
 
 const router = express.Router();
 
 router.use(authMid.strict);
-
-const calculateAmount = data => data.map(row => parseFloat(row.amount)).reduce(
-  (accumulator, currentValue) => accumulator + currentValue,
-  0,
-);
 
 router.get("/category", async (req, res, next) => {
   try {
@@ -40,8 +33,15 @@ router.get("/category", async (req, res, next) => {
 
 router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
-    const query = req.parsedQuery;
-
+    let query = req.parsedQuery;
+    if (!query?.unit || !query?.type || !query?.number) {
+      query = {
+        ...query,
+        unit: "year",
+        number: 12,
+        type: "planned",
+      };
+    }
     const cookie = req.parsedSearchCookie;
     if (!cookie.forecasts) cookie.forecasts = {};
     cookie.forecasts = query;
@@ -53,9 +53,9 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
     graphs["allForecast"] = await graphSrv.allAccountsForecast(user, query);
 
     for (const account of accounts.rows) {
-      graphs[account.type] = await graphSrv.accountForecast(user, account, query);
+      graphs[account.accountType.name] = await graphSrv.accountForecast(user, account, query);
     }
-    console.log(query);
+
     const data = {query, graphs};
     const navbar = renderSrv.navbar(res.locals);
     const content = renderSrv.forecast(data);
@@ -69,7 +69,7 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
 router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
     const {user} = req;
-    let query = req.parsedQuery;
+    const query = req.parsedQuery;
 
     const cookie = req.parsedSearchCookie;
     if (!cookie.forecasts) cookie.forecasts = {};
@@ -82,7 +82,7 @@ router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res
       graphs["allForecast"] = await graphSrv.allAccountsForecast(user, query);
 
       for (const account of accounts.rows) {
-        graphs[account.type] = await graphSrv.accountForecast(user, account, query);
+        graphs[account.accountType.name] = await graphSrv.accountForecast(user, account, query);
       }
       const data = {query, graphs};
       const navbar = renderSrv.navbar(res.locals);

@@ -18,6 +18,7 @@ const Head = require("../helpers/head.js");
 
 const AsyncFilteredList = require("../asyncfilteredlist.js");
 const Icon = require("../bulma/icon.js");
+const OrderDirection = require("../../../express/constants/orderdirection");
 
 class Forecast extends AsyncFilteredList {
   static splitArrayIntoChunks(array, chunkSize) {
@@ -74,6 +75,14 @@ class Forecast extends AsyncFilteredList {
         }
       });
     }
+    this.setState(() => ({
+      qId: 0,
+      orderBy: "id",
+      orderDirection: OrderDirection.DESC,
+      unit: "month",
+      number: 12,
+      type: "planned",
+    }));
   }
 
   _getQueryString() {

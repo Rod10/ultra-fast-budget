@@ -134,7 +134,7 @@ transactionSrv.getAllByUserAndRange = (userId, query) => {
     } else if (query.range === "seventh") {
       condition.transactionDate = {
         [Op.and]: {
-          [Op.gte]: new moment().subtract(7, query.unit)
+          [Op.gte]: new moment().subtract(6, query.unit)
             .startOf(query.unit),
           [Op.lt]: new moment().endOf(query.unit),
         },

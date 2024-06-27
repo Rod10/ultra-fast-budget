@@ -25,6 +25,7 @@ const config = {
     "settingshomepage": `${VIEWS}/settingshomepage.js`,
     "preference": `${VIEWS}/preference.js`,
     "categorylist": `${VIEWS}/categorylist.js`,
+    "accounttypelist": `${VIEWS}/accounttypelist.js`,
 
     "categories": `${VIEWS}/categories.js`,
     "forecast": `${VIEWS}/forecast.js`,
