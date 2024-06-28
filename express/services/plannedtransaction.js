@@ -7,6 +7,7 @@ const AccountsTypeFull = require("../constants/accountstypefull.js");
 const {
   sequelize,
   Sequelize,
+  Account,
   PlannedTransaction,
   Op,
 } = require("../models/index.js");
@@ -43,7 +44,10 @@ plannedTransactionSrv.getAllByUser = (userId, query) => {
 
   return PlannedTransaction.findAndCountAll({
     where: cond,
-    include: [{association: PlannedTransaction.Account}],
+    include: [{
+      association: PlannedTransaction.Account,
+      include: [{association: Account.AccountType}],
+    }],
     order: [["transactionDate", OrderDirection.ASC]],
   });
 };

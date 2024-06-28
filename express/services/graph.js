@@ -10,52 +10,27 @@ const plannedTransferSrv = require("./plannedtransfer.js");
 
 const graphSrv = {};
 
-const calculateTransactionTotal = transactionData => transactionData
+const calculateTotalTransactionData = transactionData => transactionData
   .map(d => parseFloat(d.amount)).reduce(
     (accumulator, currentValue) => accumulator + currentValue,
     0,
   );
 
-const calculateMonthlyTotal = (account, plannedTransactions, plannedTransfers, query) => {
-  if (plannedTransactions.count > 0) {
-    let totalTransaction = 0;
-    for (const transaction of plannedTransactions.rows) {
-      if (transaction.type === TransactionType.EXPECTED_EXPENSE) {
-        totalTransaction -= calculateTransactionTotal(transaction.data);
-      } else if (transaction.type === TransactionType.EXPECTED_INCOME) {
-        const newBalance = account.balance + calculateTransactionTotal(transaction.data);
-        if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
-          transaction.data = [];
-          totalTransaction += account.accountType.maxAmount - account.balance;
-        } else {
-          totalTransaction += calculateTransactionTotal(transaction.data);
-        }
-      }
-    }
-    account.balance += totalTransaction;
-  }
-  if (plannedTransfers.count > 0) {
-    for (const transfer of plannedTransfers.rows) {
-      if (transfer.senderId === account.id) {
-        account.balance -= parseFloat(transfer.amount);
-      } else if (transfer.receiverId === account.id) {
-        const newBalance = account.balance + parseFloat(transfer.amount);
-        console.log(account.accountType.type, newBalance);
-        console.log(newBalance > account.accountType.maxAmount && account.accountType.maxAmount !== 0);
-        if (newBalance > account.accountType.maxAmount && account.accountType.maxAmount !== 0) {
-          
-        } else {
-          account.balance += parseFloat(transfer.amount);
-        }
-      }
+const calculateTotalTransaction = (transaction, account) => {
+  let totalTransaction = 0;
+  if (transaction.type === TransactionType.EXPECTED_EXPENSE) {
+    totalTransaction -= calculateTotalTransactionData(transaction.data);
+  } else if (transaction.type === TransactionType.EXPECTED_INCOME) {
+    const newBalance = account.balance + calculateTotalTransactionData(transaction.data);
+    if (account.accountType.maxAmount !== 0 && newBalance > account.accountType.maxAmount) {
+      transaction.data = [];
+      totalTransaction += account.accountType.maxAmount - account.balance;
+    } else {
+      totalTransaction += calculateTotalTransactionData(transaction.data);
     }
   }
-
-  if (query.startingDate.month() === 0) {
-    account.balance *= (1 + (account.accountType.interest / 100));
-  }
-
-  return Math.round(account.balance * 100) / 100;
+  account.balance += totalTransaction;
+  return account.balance;
 };
 
 graphSrv.getSummary = async (user, type) => {
@@ -396,23 +371,30 @@ graphSrv.allAccountsForecast = async (user, query) => {
   }
 
   if (query.type === "planned") {
-    for (const account of accounts.rows) {
-      for (let i = 0; i < query.number; i++) {
-        query.startingDate = new moment()
-          .add(i, query.unit)
-          .startOf(query.unit);
-        query.endingDate = new moment()
-          .add(i, query.unit)
-          .endOf(query.unit);
-        query.accountId = account.id;
-        const plannedTransactions = await plannedTransactionSrv.getAllByUser(user.id, query);
-        const plannedTransfers = await plannedTransferSrv.getAllByUser(user.id, query);
-        if (query.unit === "year") {
-          for (let m = 0; m < 12; m++) {
-            accountsBalance[account.accountType.type].data[i][m] = calculateMonthlyTotal(account, plannedTransactions, plannedTransfers, query);
-          }
-        } else {
-          /* if (plannedTransactions.count > 0) {
+    for (let i = 0; i < query.number; i++) {
+      query.startingDate = new moment()
+        .add(i, query.unit)
+        .startOf(query.unit);
+      query.endingDate = new moment()
+        .add(i, query.unit)
+        .endOf(query.unit);
+
+      const plannedTransactions = await plannedTransactionSrv.getAllByUser(user.id, query);
+      const plannedTransfers = await plannedTransferSrv.getAllByUser(user.id, query);
+
+      if (query.unit === "year") {
+      } else {
+        for (const transaction of plannedTransactions.rows) {
+          const account = transaction.account;
+
+        }
+      }
+      /* if (query.unit === "year") {
+        for (let m = 0; m < 12; m++) {
+          accountsBalance[account.accountType.type].data[i][m] = calculateMonthlyTotal(account, plannedTransactions, plannedTransfers, query);
+        }
+      } else {
+           if (plannedTransactions.count > 0) {
             let totalTransaction = 0;
             for (const transaction of plannedTransactions.rows) {
               if (transaction.type === TransactionType.EXPECTED_EXPENSE) {
@@ -449,11 +431,9 @@ graphSrv.allAccountsForecast = async (user, query) => {
 
           if (query.startingDate.month() === 0) {
             account.balance *= (1 + (account.accountType.interest / 100));
-          }*/
+          }
 
-          accountsBalance[account.accountType.type].data[i] = calculateMonthlyTotal(account, plannedTransactions, plannedTransfers, query);
-        }
-      }
+        accountsBalance[account.accountType.type].data[i] = calculateMonthlyTotal(account, plannedTransactions, plannedTransfers, query);*/
     }
   }
   data = reduceDataByIndex(accountsBalance, query);

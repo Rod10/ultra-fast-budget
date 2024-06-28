@@ -37,7 +37,7 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
     if (!query?.unit || !query?.type || !query?.number) {
       query = {
         ...query,
-        unit: "year",
+        unit: "month",
         number: 12,
         type: "planned",
       };
