@@ -65,7 +65,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     });
     Transfer.Receiver = Transfer.belongsTo(models.Account, {
-      as: "recevier",
+      as: "receiver",
       foreignKey: {
         name: "receiverId",
         allowNull: false,

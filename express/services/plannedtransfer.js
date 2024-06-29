@@ -1,12 +1,8 @@
 const assert = require("assert");
-const df = require("dateformat");
-
-const moment = require("moment");
-const AccountsTypeFull = require("../constants/accountstypefull.js");
-
 const {
   sequelize,
   Sequelize,
+  Account,
   PlannedTransfer,
   Op,
 } = require("../models/index.js");
@@ -22,9 +18,11 @@ plannedTransferSrv.get = id => {
 
 plannedTransferSrv.getAllByUser = (userId, query) => {
   logger.debug("Get all transaction for user=[%s]", userId);
-
   assert(userId, "User Id cannot be null");
   const cond = {userId};
+  if (query.notTransfersId) {
+    cond.id = {[Op.not]: query.notTransfersId};
+  }
   if (query.endingDate) {
     cond.transferDate = {
       [Op.between]: [
@@ -35,7 +33,16 @@ plannedTransferSrv.getAllByUser = (userId, query) => {
   }
   return PlannedTransfer.findAndCountAll({
     where: cond,
-    include: [{association: PlannedTransfer.Sender}, {association: PlannedTransfer.Receiver}],
+    include: [
+      {
+        association: PlannedTransfer.Sender,
+        include: [{association: Account.AccountType}],
+      },
+      {
+        association: PlannedTransfer.Receiver,
+        include: [{association: Account.AccountType}],
+      },
+    ],
     order: [["transferDate", OrderDirection.ASC]],
   });
 };

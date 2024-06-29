@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     unit: {
       type: DataTypes.ENUM,
       values: ["YEAR", "MONTH", "WEEK", "DAY"],
-      allowNull: false,
+      allowNull: true,
     },
     creationDate: {
       type: DataTypes.DATE,

@@ -7,6 +7,7 @@ const AccounstTypesFull = {
     className: "is-danger is-light",
     color: "#cc0f35",
     interest: 0,
+    unit: null,
     maxAmount: 0,
   },
   [AccountsTypes.COURANT]: {
@@ -15,6 +16,7 @@ const AccounstTypesFull = {
     className: "is-white",
     color: "#638d5c",
     interest: 0,
+    unit: null,
     maxAmount: 0,
   },
   [AccountsTypes.LIVRETA]: {
@@ -23,6 +25,7 @@ const AccounstTypesFull = {
     className: "is-black",
     color: "#000000",
     interest: 3,
+    unit: "year",
     maxAmount: 22950,
   },
   [AccountsTypes.LDDS]: {
@@ -31,6 +34,7 @@ const AccounstTypesFull = {
     className: "is-light",
     color: "#888888",
     interest: 3,
+    unit: "year",
     maxAmount: 12000,
   },
   [AccountsTypes.LEP]: {
@@ -39,6 +43,7 @@ const AccounstTypesFull = {
     className: "is-warning",
     color: "#FFE08AFF",
     interest: 5,
+    unit: "year",
     maxAmount: 10000,
   },
   [AccountsTypes.LIVRETJ]: {
@@ -47,6 +52,7 @@ const AccounstTypesFull = {
     className: "is-primary",
     color: "#00D1B2FF",
     interest: 3,
+    unit: "year",
     maxAmount: 1600,
   },
   [AccountsTypes.CEL]: {
@@ -55,6 +61,7 @@ const AccounstTypesFull = {
     className: "is-link",
     color: "#485FC7FF",
     interest: 2,
+    unit: "year",
     maxAmount: 15300,
   },
   [AccountsTypes.PEL]: {
@@ -63,6 +70,7 @@ const AccounstTypesFull = {
     className: ".is-link.is-light",
     color: "#a974ff",
     interest: 2,
+    unit: "year",
     maxAmount: 61200,
   },
   [AccountsTypes.PERP]: {
@@ -71,6 +79,7 @@ const AccounstTypesFull = {
     className: "is-info",
     color: "#3E8ED0FF",
     interest: 2,
+    unit: "year",
     maxAmount: 0,
   },
   [AccountsTypes.CSL]: {
@@ -79,6 +88,7 @@ const AccounstTypesFull = {
     className: "is-success",
     color: "#48C78EFF",
     interest: 0,
+    unit: "year",
     maxAmount: 0,
   },
 

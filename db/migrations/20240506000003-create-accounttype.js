@@ -37,7 +37,7 @@ module.exports = {
       type: Sequelize.FLOAT,
     },
     UNIT: {
-      allowNull: false,
+      allowNull: true,
       defaultValue: "MONTH",
       type: Sequelize.ENUM("YEAR", "MONTH", "WEEK", "DAY"),
     },
