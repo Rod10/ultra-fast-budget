@@ -1,7 +1,7 @@
 #!/bin/bash
 
-REMOTE="erwan@90.195.67.190"
-TARGET_FOLDER="nodejs"
+REMOTE="erwan@86.195.67.190"
+TARGET_FOLDER="Documents/Dev/ultra-fast-budget"
 GRUNT_ARG="deploy"
 NODE_ENV="production"
 
