@@ -41,4 +41,9 @@ accountTypeSrv.getAllByUser = userId => {
   return AccountType.findAndCountAll({where: {userId}});
 };
 
+accountTypeSrv.getByType = (userId, type) => {
+  logger.debug("Get all Account Type for user=[%s]", userId);
+  return AccountType.findOne({where: {userId, type}});
+};
+
 module.exports = accountTypeSrv;

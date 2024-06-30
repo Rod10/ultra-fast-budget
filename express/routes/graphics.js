@@ -38,7 +38,7 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
       query = {
         ...query,
         unit: "year",
-        number: 3,
+        number: 12,
         type: "planned",
       };
     }
@@ -50,10 +50,11 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
     const user = req.user;
     const accounts = await accountSrv.getAllByUser(user.id);
     const graphs = {};
-    graphs["allForecast"] = await graphSrv.allAccountsForecast(user, query);
+    const resultGraphs = await graphSrv.allAccountsForecast(user, query);
+    graphs["allForecast"] = resultGraphs.allForecast;
 
     for (const account of accounts.rows) {
-      graphs[account.accountType.name] = await graphSrv.accountForecast(user, account, query);
+      graphs[account.accountType.name] = resultGraphs[account.accountType.name];
     }
 
     const data = {query, graphs};
@@ -79,10 +80,11 @@ router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res
     if (query.unit && query.number && query.type) {
       const accounts = await accountSrv.getAllByUser(user.id);
       const graphs = {};
-      graphs["allForecast"] = await graphSrv.allAccountsForecast(user, query);
+      const resultGraphs = await graphSrv.allAccountsForecast(user, query);
+      graphs["allForecast"] = resultGraphs.allForecast;
 
       for (const account of accounts.rows) {
-        graphs[account.accountType.name] = await graphSrv.accountForecast(user, account, query);
+        graphs[account.accountType.name] = resultGraphs[account.accountType.name];
       }
       const data = {query, graphs};
       const navbar = renderSrv.navbar(res.locals);

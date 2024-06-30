@@ -1,8 +1,6 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
-const AccountType = require("../../express/constants/accountstype.js");
-const AccountTypeFull = require("../../express/constants/accountstypefull.js");
 const Currencies = require("../../express/constants/currencies.js");
 const CurrenciesFull = require("../../express/constants/currenciesfull.js");
 
@@ -27,6 +25,8 @@ class AccountModal extends React.Component {
 
     this.state = {
       account: {},
+      accountsType: {},
+      accountsTypeRow: [],
       name: "",
       type: "",
       currency: "",
@@ -50,10 +50,15 @@ class AccountModal extends React.Component {
     }
   }
 
-  openModal(account) {
+  openModal(account, accountsType) {
     this.setState(() => ({
       visible: true,
       account,
+      accountsType,
+      accountsTypeRow: accountsType.rows.map(row => ({
+        value: row.type,
+        label: row.name,
+      })),
       name: account ? account.name : "",
       type: account ? account.type : "",
       initialBalance: account ? account.initialBalance : "",
@@ -94,11 +99,6 @@ class AccountModal extends React.Component {
       action = "/account/new";
       title = "Créer un compte";
     }
-
-    const typeOptions = Object.keys(AccountType).map(currency => ({
-      value: currency,
-      label: AccountTypeFull[currency].label,
-    }));
 
     const currenciesOptions = Object.keys(Currencies).map(currency => ({
       value: currency,
@@ -147,7 +147,7 @@ class AccountModal extends React.Component {
               name="type"
               value={this.state.type}
               data-key={"type"}
-              options={typeOptions}
+              options={this.state.accountsTypeRow}
               onChange={this.handleChange}
             />
           </Column>
@@ -164,7 +164,7 @@ class AccountModal extends React.Component {
             />
           </Column>
         </Columns>
-        {this.state.type && <p>Montant Maximal: {AccountTypeFull[this.state.type].maxAmount}</p>}
+        {this.state.type && <p>Montant Maximal: {this.state.accountsType.rows.find(accountType => accountType.type === this.state.type).maxAmount}</p>}
         <Columns>
           <Column>
             <Select

@@ -318,12 +318,30 @@ graphSrv.byCategory = async (user, category) => {
   };
 };
 
+const reduceData = (dataArray, query) => {
+  const numberOfMonths = query.number;
+  const reducedData = Array.from({length: numberOfMonths}, () => 0);
+  if (query.unit === "year") {
+    for (let i = 0; i < dataArray.length; i++) {
+      reducedData[i] += dataArray[i][dataArray[i].length - 1];
+    }
+  } else {
+    // Sum the values at each index
+    for (let i = 0; i < query.number; i++) {
+      const amount = parseFloat(dataArray[i]);
+      if (amount !== undefined && !isNaN(amount)) {
+        reducedData[i] += amount;
+      }
+    }
+  }
+  return reducedData;
+};
+
 const reduceDataByIndex = (accountType, query) => {
   // Initialize an array to hold the reduced data
   const dataKeys = Object.keys(accountType);
   const numberOfMonths = query.number;
   const reducedData = Array.from({length: numberOfMonths}, () => 0);
-
   // Iterate through each account type
   for (const key of dataKeys) {
     // Get the data array for the current account type
@@ -444,13 +462,14 @@ graphSrv.allAccountsForecast = async (user, query) => {
             const transfer = plannedTransfers.rows[t];
             const accountReceiver = accountsBalance[transfer.receiver.type].data[i][m];
             const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
-            console.log(transfer.receiver.type, "accountReceiver", accountReceiver);
-            console.log(transfer.receiver.type, "newBalanceReceiver", newBalanceReceiver);
-            console.log(transfer.receiver.type, newBalanceReceiver > transfer.receiver.accountType.maxAmount);
             if (newBalanceReceiver > transfer.receiver.accountType.maxAmount) {
-              accountsBalance[transfer.receiver.type].data[i][m] = transfer.receiver.accountType.maxAmount;
+              if (parseFloat(transfer.amount) !== 0) {
+                accountsBalance[transfer.receiver.type].data[i][m] = accountReceiver;
+                accountsBalance[transfer.sender.type].data[i][m]
+                    -= (accountReceiver - transfer.receiver.accountType.maxAmount);
+              }
+              transfer.amount = 0;
               indexToRemove = transfer.id;
-              plannedTransfers.rows.filter(tr => tr.id !== indexToRemove);
             } else {
               accountsBalance[transfer.receiver.type].data[i][m] += parseFloat(transfer.amount);
               accountsBalance[transfer.sender.type].data[i][m] -= parseFloat(transfer.amount);
@@ -513,12 +532,10 @@ graphSrv.allAccountsForecast = async (user, query) => {
       }
     }
   }
-  for (const account of accounts.rows) {
-    // console.log(accountsBalance[account.type]);
-  }
   data = reduceDataByIndex(accountsBalance, query);
 
-  return {
+  const results = {};
+  results["allForecast"] = {
     type: "line",
     label: "Total du solde de tout les comptes",
     column: 12,
@@ -528,12 +545,33 @@ graphSrv.allAccountsForecast = async (user, query) => {
         label: "Solde de tous les comptes",
         data,
         fill: false,
-        borderColor: "#3979ff",
+        borderColor: "#39eeff",
         tension: 0.1,
       }],
     },
     options: {maintainAspectRatio: false},
   };
+
+  for (const account of accounts.rows) {
+    results[account.accountType.name] = {
+      type: "line",
+      label: `Total du solde du ${account.accountType.name}`,
+      column: 12,
+      data: {
+        labels,
+        datasets: [{
+          label: `Total du solde du ${account.accountType.name}`,
+          data: reduceData(accountsBalance[account.accountType.type].data, query),
+          fill: false,
+          borderColor: "#3979ff",
+          tension: 0.1,
+        }],
+      },
+      options: {maintainAspectRatio: false},
+    };
+  }
+
+  return results;
 };
 
 /* graphSrv.allAccountsForecast = async (user, query) => {

@@ -84,12 +84,12 @@ class AccountList extends React.Component {
           key={this.state.currentAccount.id}
           account={this.state.currentAccount}
           onClose={this.handleCloseDetails}
-          onClick={() => this.openAccountModal(this.state.currentAccount)}
+          onClick={() => this.openAccountModal(this.state.currentAccount, this.props.accountsType)}
           openTransferModal={() => this.openTransferModal({
             currentAccount: this.state.currentAccount,
             accounts: this.props.userAccounts,
             transfer: null,
-          })}
+          }, this.props.accountsType)}
           graphs={this.props.graphs}
           userAccounts={this.props.userAccounts}
         />;
@@ -114,7 +114,7 @@ class AccountList extends React.Component {
               type="themed"
               icon={<Icon size="small" icon="plus" />}
               label="Ajouter un compte"
-              onClick={() => this.openAccountModal()}
+              onClick={() => this.openAccountModal(null, this.props.accountsType)}
             />
           </div>
         </Column>
@@ -137,6 +137,7 @@ AccountList.displayName = "AccountList";
 AccountList.propTypes = {
   user: PropTypes.object.isRequired,
   userAccounts: PropTypes.object.isRequired,
+  accountsType: PropTypes.object.isRequired,
   graphs: PropTypes.object,
 };
 AccountList.defaultProps = {graphs: undefined};

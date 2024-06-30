@@ -9,6 +9,7 @@ const transferSrv = require("../services/transfer.js");
 const {logger} = require("../services/logger.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const TransactionTypes = require("../constants/transactiontype.js");
+const accountTypeSrv = require("../services/accounttype.js");
 
 const router = express.Router();
 
@@ -37,8 +38,10 @@ const calculateAmount = data => data.map(row => parseFloat(row.amount)).reduce(
 router.get("/", async (req, res, next) => {
   try {
     const userAccounts = await accountSrv.getAllByUser(req.user.id);
+    const accountsType = await accountTypeSrv.getAllByUser(req.user.id);
     const data = {
       userAccounts,
+      accountsType,
       user: req.user,
     };
     const navbar = renderSrv.navbar(res.locals);
@@ -123,7 +126,8 @@ router.get("/", async (req, res, next) => {
 
 router.post("/new", async (req, res, next) => {
   try {
-    await accountSrv.create(req.user.id, req.body);
+    const accountType = await accountTypeSrv.getByType(req.user.id, req.body.type);
+    await accountSrv.create(req.user.id, req.body, accountType);
     res.redirect(SEE_OTHER, "/account");
   } catch (err) {
     logger.error(err);
