@@ -64,6 +64,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    deletedOn: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     freezeTableName: true,
     tableName: "PLANNED_TRANSACTION",

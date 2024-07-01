@@ -54,6 +54,10 @@ module.exports = {
       allowNull: true,
       type: Sequelize.DATE,
     },
+    DELETED_ON: {
+      allowNull: true,
+      type: Sequelize.DATE,
+    },
   }),
 
   down: (queryInterface, _Sequelize) => queryInterface.dropTable("TRANSFER"),

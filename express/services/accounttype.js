@@ -14,7 +14,7 @@ const accountTypeSrv = {};
 accountTypeSrv.createForNewUser = async userId => {
   logger.info("Creating accountTypeSrv for new user=[%s]", userId);
   for (const accountType of Object.values(AccountTypes)) {
-    await accountTypeSrv.create(1, accountType);
+    await accountTypeSrv.create(userId, accountType);
   }
 };
 
