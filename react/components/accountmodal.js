@@ -30,6 +30,7 @@ class AccountModal extends React.Component {
       name: "",
       type: "",
       currency: "",
+      balance: 0,
       initialBalance: 0,
       visible: false,
       alert: false,
@@ -62,6 +63,7 @@ class AccountModal extends React.Component {
       name: account ? account.name : "",
       type: account ? account.type : "",
       initialBalance: account ? account.initialBalance : "",
+      balance: account ? account.balance : 0,
       currency: account ? account.currency : "",
     }));
   }

@@ -44,7 +44,10 @@ accountSrv.create = (userId, data, accountType) => {
 
 accountSrv.get = id => {
   logger.debug("Get account by id=[%s]", id);
-  return Account.findOne({where: {id}});
+  return Account.findOne({
+    where: {id},
+    include: [{association: Account.AccountType}],
+  });
 };
 
 accountSrv.getAllByUser = userId => {
@@ -58,16 +61,15 @@ accountSrv.getAllByUser = userId => {
 /**
  * update the account with the data provided
  * @param {number} userId - The user Id
- * @param {int} accountId - The account that need to me modified
+ * @param {object} account - The account that need to me modified
  * @param {object} data - The transaction data
  */
-accountSrv.updateData = async (userId, accountId, data) => {
-  logger.debug("Update user=[%s] account=[%s] with data=[%s]", userId, accountId, data);
+accountSrv.updateData = async (userId, account, data) => {
+  logger.debug("Update user=[%s] account=[%s] with data=[%s]", userId, account.id, data);
   assert(userId, "UserId cannot be null");
-  assert(accountId, "AccountId cannot be null");
+  assert(account.id, "AccountId cannot be null");
   assert(data, "Data cannot be null");
 
-  const account = await Account.findOne({where: {id: accountId, userId}});
   let newAccountAmount = 0;
 
   if (data.type === TransactionTypes.INCOME || data.type === TransactionTypes.EXPECTED_INCOME) {
@@ -85,6 +87,7 @@ accountSrv.updateData = async (userId, accountId, data) => {
       0,
     );
   }
+  console.log(account);
   account.balance = newAccountAmount;
   return account.save();
 };
@@ -100,7 +103,8 @@ accountSrv.rebalance = async (accountId, transactions) => {
         0,
       );
       assert(
-        (parseInt(newAccountBalance, 10) > AccountsTypeFull[account.type].maxAmount) && account.type === AccountTypes.WALLET,
+        (parseInt(newAccountBalance, 10) > account.accountType.maxAmount)
+        && (account.accountType.type === AccountTypes.WALLET || account.accountType.type === AccountTypes.COURANT),
         "Balance cannot be more than the maximum amount allowed for an manual transaction",
       );
     } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE || transaction.type === TransactionTypes.EXPENSE) {
