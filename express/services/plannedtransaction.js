@@ -29,17 +29,19 @@ plannedTransactionSrv.getAllByUser = (userId, query) => {
 
   const cond = {userId};
 
-  if (query.accountId) {
-    cond.accountId = query.accountId;
-  }
+  if (query) {
+    if (query.accountId) {
+      cond.accountId = query.accountId;
+    }
 
-  if (query.endingDate) {
-    cond.transactionDate = {
-      [Op.between]: [
-        new Date(query.startDate),
-        new Date(query.endingDate),
-      ],
-    };
+    if (query.endingDate) {
+      cond.transactionDate = {
+        [Op.between]: [
+          new Date(query.startDate),
+          new Date(query.endingDate),
+        ],
+      };
+    }
   }
 
   return PlannedTransaction.findAndCountAll({
