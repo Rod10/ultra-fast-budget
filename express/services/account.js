@@ -70,25 +70,10 @@ accountSrv.updateData = async (userId, account, data) => {
   assert(account.id, "AccountId cannot be null");
   assert(data, "Data cannot be null");
 
-  let newAccountAmount = 0;
+  account.name = data.name;
+  account.type = data.type;
+  account.balance = data.initialBalance;
 
-  if (data.type === TransactionTypes.INCOME || data.type === TransactionTypes.EXPECTED_INCOME) {
-    newAccountAmount = account.balance + data.data.map(row => parseFloat(row.amount)).reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0,
-    );
-    assert(
-      parseInt(newAccountAmount, 10) > AccountsTypeFull[account.type].maxAmount && account.type !== AccountTypes.WALLET,
-      "Balance cannot be more than the maximum amount allowed for an manual transaction",
-    );
-  } else if (data.type === TransactionTypes.EXPECTED_EXPENSE || data.type === TransactionTypes.EXPENSE) {
-    newAccountAmount = account.balance - data.data.map(row => parseFloat(row.amount)).reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0,
-    );
-  }
-  console.log(account);
-  account.balance = newAccountAmount;
   return account.save();
 };
 
