@@ -20,16 +20,18 @@ plannedTransferSrv.getAllByUser = (userId, query) => {
   logger.debug("Get all transaction for user=[%s]", userId);
   assert(userId, "User Id cannot be null");
   const cond = {userId};
-  if (query.notTransfersId) {
-    cond.id = {[Op.not]: query.notTransfersId};
-  }
-  if (query.endingDate) {
-    cond.transferDate = {
-      [Op.between]: [
-        new Date(query.startDate),
-        new Date(query.endingDate),
-      ],
-    };
+  if (query) {
+    if (query.notTransfersId) {
+      cond.id = {[Op.not]: query.notTransfersId};
+    }
+    if (query.endingDate) {
+      cond.transferDate = {
+        [Op.between]: [
+          new Date(query.startDate),
+          new Date(query.endingDate),
+        ],
+      };
+    }
   }
   return PlannedTransfer.findAndCountAll({
     where: cond,
