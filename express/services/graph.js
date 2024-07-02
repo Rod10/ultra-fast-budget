@@ -1,5 +1,4 @@
 const moment = require("moment");
-const AccountTypes = require("../constants/accountstype.js");
 const {logger} = require("./logger.js");
 const TransactionType = require("./../constants/transactiontype.js");
 const transactionSrv = require("./transaction.js");
@@ -460,19 +459,21 @@ graphSrv.allAccountsForecast = async (user, query) => {
           let t = plannedTransfers.rows.length;
           while (t--) {
             const transfer = plannedTransfers.rows[t];
-            const accountReceiver = accountsBalance[transfer.receiver.type].data[i][m];
+            const receiver = transfer.receiver;
+            const sender = transfer.sender;
+            const accountReceiver = accountsBalance[receiver.accountType.type].data[i][m];
             const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
-            if (newBalanceReceiver > transfer.receiver.accountType.maxAmount) {
+            if (newBalanceReceiver > receiver.accountType.maxAmount) {
               if (parseFloat(transfer.amount) !== 0) {
-                accountsBalance[transfer.receiver.type].data[i][m] = accountReceiver;
-                accountsBalance[transfer.sender.type].data[i][m]
-                    -= (accountReceiver - transfer.receiver.accountType.maxAmount);
+                accountsBalance[receiver.accountType.type].data[i][m] = accountReceiver;
+                accountsBalance[sender.accountType.type].data[i][m]
+                    -= (accountReceiver - receiver.accountType.maxAmount);
               }
               transfer.amount = 0;
               indexToRemove = transfer.id;
             } else {
-              accountsBalance[transfer.receiver.type].data[i][m] += parseFloat(transfer.amount);
-              accountsBalance[transfer.sender.type].data[i][m] -= parseFloat(transfer.amount);
+              accountsBalance[receiver.accountType.type].data[i][m] += parseFloat(transfer.amount);
+              accountsBalance[sender.accountType.type].data[i][m] -= parseFloat(transfer.amount);
             }
           }
           for (const account of accounts.rows) {
@@ -501,17 +502,19 @@ graphSrv.allAccountsForecast = async (user, query) => {
         let indexToRemove = null;
         while (t--) {
           const transfer = plannedTransfers.rows[t];
-          const accountReceiver = accountsBalance[transfer.receiver.type].data[i];
+          const receiver = transfer.receiver;
+          const sender = transfer.sender;
+          const accountReceiver = accountsBalance[receiver.accountType.type].data[i];
           const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
-          if (newBalanceReceiver > transfer.receiver.accountType.maxAmount) {
-            accountsBalance[transfer.receiver.type].data[i]
-                  += newBalanceReceiver - transfer.receiver.accountType.maxAmount;
-            accountsBalance[transfer.sender.type].data[i]
-                  -= newBalanceReceiver - transfer.receiver.accountType.maxAmount;
+          if (newBalanceReceiver > receiver.accountType.maxAmount) {
+            accountsBalance[receiver.accountType.type].data[i]
+                  += newBalanceReceiver - receiver.accountType.maxAmount;
+            accountsBalance[sender.accountType.type].data[i]
+                  -= newBalanceReceiver - receiver.accountType.maxAmount;
             indexToRemove = transfer.id;
           } else {
-            accountsBalance[transfer.receiver.type].data[i] += parseFloat(transfer.amount);
-            accountsBalance[transfer.sender.type].data[i] -= parseFloat(transfer.amount);
+            accountsBalance[receiver.accountType.type].data[i] += parseFloat(transfer.amount);
+            accountsBalance[sender.accountType.type].data[i] -= parseFloat(transfer.amount);
           }
         }
         if (indexToRemove !== null) {
