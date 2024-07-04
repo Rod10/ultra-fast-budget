@@ -3,8 +3,10 @@ const moment = require("moment");
 
 const {
   Account,
+  Category,
   PlannedTransaction,
   PlannedTransfer,
+  SubCategory,
   Transaction,
   Transfer,
   sequelize,
@@ -17,6 +19,7 @@ const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
 
 const {Op} = Sequelize;
+const test = {};
 const tasks = [];
 
 const automatedSrv = {};
@@ -46,7 +49,7 @@ automatedSrv.plannedTransactions = async () => {
       include: [{association: Account.AccountType}],
     }],
   });
-  console.log(plannedTransactions.rows)
+
   for (const plannedTransaction of plannedTransactions.rows) {
     logger.debug("Create transaction for user=[%s] with data=[%s]", plannedTransaction.userId, plannedTransaction);
 
@@ -124,7 +127,7 @@ automatedSrv.plannedTransfers = async () => {
       accountReceiver.balance += parseFloat(plannedTransfer.amount);
       newBalanceReceiver.balance -= parseFloat(plannedTransfer.amount);
     }
-    plannedTransfer.transferDate = new moment().add(1, "months");
+    plannedTransfer.transferDate = new moment().add(1, plannedTransfer.unit);
     accountReceiver.save();
     accountSender.save();
     plannedTransfer.save();
@@ -139,6 +142,52 @@ automatedSrv.plannedTransfers = async () => {
       unit: plannedTransfer.unit,
       number: plannedTransfer.number,
     });
+  }
+};
+
+automatedSrv.dailyInterests = async () => {
+  const accounts = await Account.findAndCountAll({
+    include: [{
+      association: Account.AccountType,
+      where: {unit: "DAY"},
+    }],
+  });
+  for (const account of accounts.rows) {
+    const oldAmount = account.balance;
+    const newAmount = account.balance * (((account.accountType.interest / 100) + 1) ** (1 / 365.25));
+    const interest = Math.round((newAmount - oldAmount) * 100000000) / 100000000;
+    if (interest < 0.01) {
+      if (test[account.accountType.type]) {
+        test[account.accountType.type] += interest;
+      } else {
+        test[account.accountType.type] = interest;
+      }
+    }
+    if (test[account.accountType.type] >= 0.01) {
+      test[account.accountType.type] = 0;
+      account.balance += 0.01;
+      account.save();
+      const subCategory = await SubCategory.findOne({
+        where: {
+          userId: account.userId,
+          type: "INCOME",
+        },
+        include: [{association: SubCategory.Category}],
+      });
+      const data = [{
+        category: subCategory.category,
+        subCategory,
+        amount: 0.01,
+      }];
+      await Transaction.create({
+        userId: account.userId,
+        accountId: account.id,
+        type: TransactionTypes.INTEREST,
+        data,
+        other: "Daily interest",
+        transactionDate: new Date(),
+      });
+    }
   }
 };
 

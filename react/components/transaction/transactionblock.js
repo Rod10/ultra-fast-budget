@@ -71,6 +71,11 @@ class TransactionBlock extends React.Component {
         className="tag is-warning is-light is-medium is-rounded"
         title="Transfert planifié"
       >Transfert planifié</span>;
+    } else if (transaction.type === TransactionTypes.INTEREST) {
+      return <span
+        className="tag is-interest is-medium is-rounded"
+        title="Interêt"
+      >Interêt</span>;
     }
   }
 

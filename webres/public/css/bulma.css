@@ -2528,6 +2528,10 @@ div.icon-text {
   background-color: #feecf0;
   color: #cc0f35;
 }
+.tag:not(body).is-interest {
+  background-color: #dbffe4;
+  color: #0c9d00;
+}
 .tag:not(body).is-normal {
   font-size: 0.75rem;
 }

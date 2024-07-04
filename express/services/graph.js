@@ -383,7 +383,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
       data: Array.from({length: query.number}, (e, i) => {
         if (query.unit === "year") {
           if (i === 0) {
-            return Array.from({length: 11 - new moment().month()}, () => 0);
+            return Array.from({length: 12 - new moment().month()}, () => 0);
           }
           return Array.from({length: 12}, () => 0);
         }
@@ -423,9 +423,10 @@ graphSrv.allAccountsForecast = async (user, query) => {
       if (query.unit === "year") {
         let period = 12;
         if (i === 0) {
-          period = 11 - new moment().month();
+          period = 12 - new moment().month();
         }
         let indexToRemove = null;
+        let w = 1;
         for (let m = 0; m < period; m++) {
           const accountWithTransactions = [];
           for (const transaction of plannedTransactions.rows) {
@@ -459,31 +460,90 @@ graphSrv.allAccountsForecast = async (user, query) => {
           let t = plannedTransfers.rows.length;
           while (t--) {
             const transfer = plannedTransfers.rows[t];
-            const receiver = transfer.receiver;
-            const sender = transfer.sender;
-            const accountReceiver = accountsBalance[receiver.accountType.type].data[i][m];
-            const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
-            if (newBalanceReceiver > receiver.accountType.maxAmount) {
-              if (parseFloat(transfer.amount) !== 0) {
-                accountsBalance[receiver.accountType.type].data[i][m] = accountReceiver;
-                accountsBalance[sender.accountType.type].data[i][m]
+            if (transfer.unit === "MONTH") {
+              const receiver = transfer.receiver;
+              const sender = transfer.sender;
+              const accountReceiver = accountsBalance[receiver.accountType.type].data[i][m];
+              const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
+              if ((newBalanceReceiver > receiver.accountType.maxAmount) && receiver.accountType.maxAmount !== 0) {
+                if (parseFloat(transfer.amount) !== 0) {
+                  accountsBalance[receiver.accountType.type].data[i][m] = accountReceiver;
+                  accountsBalance[sender.accountType.type].data[i][m]
                     -= (accountReceiver - receiver.accountType.maxAmount);
+                }
+                transfer.amount = 0;
+                indexToRemove = transfer.id;
+              } else {
+                accountsBalance[receiver.accountType.type].data[i][m] += parseFloat(transfer.amount);
+                accountsBalance[sender.accountType.type].data[i][m] -= parseFloat(transfer.amount);
               }
-              transfer.amount = 0;
-              indexToRemove = transfer.id;
-            } else {
-              accountsBalance[receiver.accountType.type].data[i][m] += parseFloat(transfer.amount);
-              accountsBalance[sender.accountType.type].data[i][m] -= parseFloat(transfer.amount);
+            } else if (transfer.unit === "WEEK") {
+              const receiver = transfer.receiver;
+              const sender = transfer.sender;
+              const numberOfDays = new moment().add(m, "month")
+                .daysInMonth();
+              for (let d = 1; d <= numberOfDays; d++) {
+                if (w === 7) {
+                  const totalWeeks = transfer.amount * 7;
+                  const accountReceiver = accountsBalance[receiver.accountType.type].data[i][m];
+                  const newBalanceReceiver = accountReceiver + totalWeeks;
+                  if ((newBalanceReceiver > receiver.accountType.maxAmount) && receiver.accountType.maxAmount !== 0) {
+                    if (transfer.amount !== 0) {
+                      accountsBalance[receiver.accountType.type].data[i][m] = accountReceiver;
+                      accountsBalance[sender.accountType.type].data[i][m]
+                      -= (accountReceiver - receiver.accountType.maxAmount);
+                    }
+                    transfer.amount = 0;
+                    indexToRemove = transfer.id;
+                  } else {
+                    accountsBalance[receiver.accountType.type].data[i][m] += totalWeeks;
+                    accountsBalance[sender.accountType.type].data[i][m] -= totalWeeks;
+                  }
+                  w = 1;
+                } else {
+                  console.log(w);
+                  w++;
+                }
+              }
             }
           }
+
           for (const account of accounts.rows) {
-            if (m === 0 && i !== 0) {
-              const oldAmount = accountsBalance[account.accountType.type].data[i][0];
-              const newAmount = accountsBalance[account.accountType.type].data[i][0]
+            if (account.accountType.unit === "YEAR") {
+              if (m === 0 && i !== 0) {
+                const oldAmount = accountsBalance[account.accountType.type].data[i][0];
+                const newAmount = accountsBalance[account.accountType.type].data[i][0]
                   * (1 + (account.accountType.interest / 100));
-              const interest = newAmount - oldAmount;
-              accountsBalance[account.accountType.type].data[i][0] += interest;
-              accountsBalance[account.accountType.type].interest[i] = interest;
+                const interest = newAmount - oldAmount;
+                accountsBalance[account.accountType.type].data[i][0] += interest;
+                accountsBalance[account.accountType.type].interest[i] = interest;
+              }
+            } else if (account.accountType.unit === "DAY") {
+              /* const daysInMonth = new moment()
+                .add(m, "month")
+                .daysInMonth();
+              const totalDataMonth = Array.from({length: daysInMonth}, () => 0);
+              const totalInterestMonth = Array.from({length: daysInMonth}, () => 0);
+              if (m === 0 && i === 0) {
+                totalDataMonth[0] = accountsBalance[account.accountType.type].data[i][m];
+              } else if (i !== 0 && m === 0) {
+                const lastYearLastMonth = accountsBalance[account.accountType.type].data[i - 1].length - 1;
+                totalDataMonth[0] = accountsBalance[account.accountType.type].data[i - 1][lastYearLastMonth];
+              }
+              totalDataMonth[0] = accountsBalance[account.accountType.type].data[i][m];
+              for (let d = 1; d < totalDataMonth.length; d++) {
+                const oldAmount = totalDataMonth[d - 1];
+                const newAmount = oldAmount * (((account.accountType.interest / 100) + 1) ** (1 / 365.25));
+                const interest = Math.round((newAmount - oldAmount) * 100000000) / 100000000;
+                totalInterestMonth[d] = interest;
+                totalDataMonth[d] = newAmount;
+              }
+              const totalInterest = totalInterestMonth.reduce(
+                (accumulator, currentValue) => accumulator + currentValue,
+                0,
+              );
+              accountsBalance[account.accountType.type].data[i][m] += totalInterest;
+              accountsBalance[account.accountType.type].interest[i] += totalInterest;*/
             }
           }
         }
@@ -502,19 +562,40 @@ graphSrv.allAccountsForecast = async (user, query) => {
         let indexToRemove = null;
         while (t--) {
           const transfer = plannedTransfers.rows[t];
-          const receiver = transfer.receiver;
-          const sender = transfer.sender;
-          const accountReceiver = accountsBalance[receiver.accountType.type].data[i];
-          const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
-          if (newBalanceReceiver > receiver.accountType.maxAmount) {
-            accountsBalance[receiver.accountType.type].data[i]
-                  += newBalanceReceiver - receiver.accountType.maxAmount;
-            accountsBalance[sender.accountType.type].data[i]
-                  -= newBalanceReceiver - receiver.accountType.maxAmount;
-            indexToRemove = transfer.id;
-          } else {
-            accountsBalance[receiver.accountType.type].data[i] += parseFloat(transfer.amount);
-            accountsBalance[sender.accountType.type].data[i] -= parseFloat(transfer.amount);
+          if (transfer.unit === "MONTH") {
+            const receiver = transfer.receiver;
+            const sender = transfer.sender;
+            const accountReceiver = accountsBalance[receiver.accountType.type].data[i];
+            const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
+            if (newBalanceReceiver > receiver.accountType.maxAmount) {
+              accountsBalance[receiver.accountType.type].data[i]
+                += newBalanceReceiver - receiver.accountType.maxAmount;
+              accountsBalance[sender.accountType.type].data[i]
+                -= newBalanceReceiver - receiver.accountType.maxAmount;
+              indexToRemove = transfer.id;
+            } else {
+              accountsBalance[receiver.accountType.type].data[i] += parseFloat(transfer.amount);
+              accountsBalance[sender.accountType.type].data[i] -= parseFloat(transfer.amount);
+            }
+          } else if (transfer.unit === "WEEK") {
+            const totalWeeks = (new moment().add(i, "month")
+              .daysInMonth() / 7) * (parseFloat(transfer.amount) * 7);
+            const receiver = transfer.receiver;
+            const sender = transfer.sender;
+            const accountReceiver = accountsBalance[receiver.accountType.type].data[i];
+            const newBalanceReceiver = accountReceiver + totalWeeks;
+            if ((newBalanceReceiver > receiver.accountType.maxAmount) && receiver.accountType.maxAmount !== 0) {
+              if (parseFloat(totalWeeks) !== 0) {
+                accountsBalance[receiver.accountType.type].data[i] = accountReceiver;
+                accountsBalance[sender.accountType.type].data[i]
+                  -= (accountReceiver - receiver.accountType.maxAmount);
+              }
+              transfer.amount = 0;
+              indexToRemove = transfer.id;
+            } else {
+              accountsBalance[receiver.accountType.type].data[i] += totalWeeks;
+              accountsBalance[sender.accountType.type].data[i] -= totalWeeks;
+            }
           }
         }
         if (indexToRemove !== null) {
@@ -535,6 +616,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
       }
     }
   }
+  console.log(accountsBalance["TRADING212L"]);
   data = reduceDataByIndex(accountsBalance, query);
 
   const results = {};
