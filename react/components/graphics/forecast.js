@@ -18,7 +18,8 @@ const Head = require("../helpers/head.js");
 
 const AsyncFilteredList = require("../asyncfilteredlist.js");
 const Icon = require("../bulma/icon.js");
-const OrderDirection = require("../../../express/constants/orderdirection");
+const OrderDirection = require("../../../express/constants/orderdirection.js");
+const {getElFromDataset} = require("../../utils/html");
 
 class Forecast extends AsyncFilteredList {
   static splitArrayIntoChunks(array, chunkSize) {
@@ -47,6 +48,7 @@ class Forecast extends AsyncFilteredList {
       graphs: null,
       unit: this.props.query.unit,
       type: this.props.query.type,
+      accountSelected: "allForecast",
     };
 
     if (this.props.graphs) {
@@ -54,6 +56,8 @@ class Forecast extends AsyncFilteredList {
         this.charts[`${key}`] = React.createRef();
       });
     }
+
+    this.handleAccountTableChange = this.handleAccountTableChange.bind(this);
   }
 
   componentDidMount() {
@@ -75,13 +79,13 @@ class Forecast extends AsyncFilteredList {
         }
       });
     }
-    this.setState(() => ({
-      qId: 0,
-      orderBy: "id",
-      orderDirection: OrderDirection.DESC,
-      unit: "month",
-      number: 12,
-      type: "planned",
+    this.setState(prevState => ({
+      qId: prevState.qId,
+      orderBy: prevState.orderBy,
+      orderDirection: prevState.orderDirection,
+      unit: prevState.unit,
+      number: prevState.number,
+      type: prevState.type,
     }));
   }
 
@@ -147,6 +151,19 @@ class Forecast extends AsyncFilteredList {
         ...options,
       },
     });
+  }
+
+  handleAccountTableChange(evt) {
+    const el = getElFromDataset(evt, "action");
+    const action = el.dataset.action;
+    const graphsKeys = Object.keys(this.props.graphs);
+    let currentIndex = graphsKeys.indexOf(this.state.accountSelected);
+    if (action === "increase") {
+      currentIndex++;
+    } else {
+      currentIndex--;
+    }
+    this.setState({accountSelected: graphsKeys[currentIndex]});
   }
 
   _renderFilters() {
@@ -242,6 +259,43 @@ class Forecast extends AsyncFilteredList {
     </Column>;
   }
 
+  _renderTableHead() {
+    return <thead>
+      <tr>
+        <th className="has-text-centered">
+          <span onClick={this.handleAccountTableChange} data-action={"decrease"}>
+            <Icon size="small" icon="arrow-left" />
+          </span>
+          {this.props.graphs[this.state.accountSelected].label}
+          <span onClick={this.handleAccountTableChange} data-action={"increase"}>
+            <Icon size="small" icon="arrow-right" />
+          </span>
+        </th>
+        {this.props.graphs[this.state.accountSelected].data.labels
+          .map((label, index) => <th key={index}>{label}</th>)}
+      </tr>
+    </thead>;
+  }
+
+  _renderForecastTable() {
+    // console.log(this.state.accountSelected);
+    // console.log(this.props.accountsDetails[this.state.accountSelected]);
+    return <tbody>
+      <tr>
+        <td>Total</td>
+        {this.props.graphs[this.state.accountSelected].data.datasets[0].data.map((data, index) => <td key={index}>{Math.round(data * 100) / 100}</td>)}
+      </tr>
+      <tr>
+        <td>Nombre de transaction</td>
+        {this.props.accountsDetails[this.state.accountSelected].transactionsNumber.map((transaction, index) => <td key={index}>{transaction}</td>)}
+      </tr>
+      <tr>
+        <td>Interêt</td>
+        {this.props.accountsDetails[this.state.accountSelected].interest.map((interest, index) => <td key={index}>{Math.round(interest * 100) / 100}</td>)}
+      </tr>
+    </tbody>;
+  }
+
   render() {
     const newGraphs = {...this.props.graphs};
     delete newGraphs["allForecast"];
@@ -259,6 +313,14 @@ class Forecast extends AsyncFilteredList {
       {graphsLabels.map((row, index) => <Columns key={index}>
         {row.map((key, col) => this._renderRowGraph(newGraphs[key], key))}
       </Columns>)}
+      <Columns>
+        <Column>
+          <table className="table is-bordered is-fullwidth">
+            {this._renderTableHead()}
+            {this._renderForecastTable()}
+          </table>
+        </Column>
+      </Columns>
     </div>;
   }
 }
@@ -267,6 +329,7 @@ Forecast.displayName = "Forecast";
 Forecast.propTypes = {
   notifs: PropTypes.array,
   graphs: PropTypes.object,
+  accountsDetails: PropTypes.object.isRequired,
   query: PropTypes.object.isRequired,
 };
 Forecast.defaultProps = {

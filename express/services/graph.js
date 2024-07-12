@@ -336,7 +336,7 @@ const reduceData = (dataArray, query) => {
   return reducedData;
 };
 
-const reduceDataByIndex = (accountType, query) => {
+const reduceDataByIndex = (accountType, data, query) => {
   // Initialize an array to hold the reduced data
   const dataKeys = Object.keys(accountType);
   const numberOfMonths = query.number;
@@ -344,7 +344,7 @@ const reduceDataByIndex = (accountType, query) => {
   // Iterate through each account type
   for (const key of dataKeys) {
     // Get the data array for the current account type
-    const dataArray = accountType[key].data;
+    const dataArray = accountType[key][data];
     if (query.unit === "year") {
       for (let i = 0; i < dataArray.length; i++) {
         reducedData[i] += dataArray[i][dataArray[i].length - 1];
@@ -362,7 +362,7 @@ const reduceDataByIndex = (accountType, query) => {
   return reducedData;
 };
 
-graphSrv.allAccountsForecast = async (user, query) => {
+graphSrv.allAccountsForecastMonth = async (user, query) => {
   const accounts = await accountSrv.getAllByUser(user.id);
   const labels = Array.from({length: query.number}, (element, index) => {
     let text;
@@ -390,7 +390,535 @@ graphSrv.allAccountsForecast = async (user, query) => {
         }
         return 0;
       }),
-      interest: Array.from({length: query.number}, () => 0),
+      interest: Array.from({length: query.number}, (e, i) => {
+        if (query.unit === "year") {
+          if (i === 0) {
+            return Array.from({length: 12 - new moment().month()}, () => 0);
+          }
+          return Array.from({length: 12}, () => 0);
+        }
+        return 0;
+      }),
+      transactionsNumber: Array.from({length: query.number}, (e, i) => {
+        if (query.unit === "year") {
+          if (i === 0) {
+            return Array.from({length: 12 - new moment().month()}, () => 0);
+          }
+          return Array.from({length: 12}, () => 0);
+        }
+        return 0;
+      }),
+      averageExpensePerDay: Array.from({length: query.number}, () => 0),
+      averageTransactionsPerDay: Array.from({length: query.number}, () => 0),
+    };
+    if (query.unit === "month") {
+      accountsBalance[account.accountType.type].data[0] = account.balance;
+    } else {
+      accountsBalance[account.accountType.type].data[0][0] = account.balance;
+    }
+  }
+
+  query.notTransactionsId = [];
+  query.notTransfersId = [];
+  if (query.type === "planned") {
+    for (let i = 0; i < query.number; i++) {
+      for (const account of accounts.rows) {
+        if (query.unit === "month") {
+          if (i !== 0) {
+            accountsBalance[account.accountType.type].data[i]
+              = accountsBalance[account.accountType.type].data[i - 1];
+          }
+        }
+      }
+      query.startingDate = new moment()
+        .add(i, query.unit)
+        .startOf(query.unit);
+      query.endingDate = new moment()
+        .add(i, query.unit)
+        .endOf(query.unit);
+
+      const plannedTransactions = await plannedTransactionSrv.getAllByUser(user.id, query);
+      const plannedTransfers = await plannedTransferSrv.getAllByUser(user.id, query);
+      for (const transaction of plannedTransactions.rows) {
+        const account = transaction.account;
+        accountsBalance[account.accountType.type].data[i]
+          += calculateTotalTransaction(transaction, account);
+        accountsBalance[account.accountType.type].transactionsNumber[i]++;
+      }
+      let t = plannedTransfers.rows.length;
+      let indexToRemove = null;
+      while (t--) {
+        const transfer = plannedTransfers.rows[t];
+        if (transfer.unit === "MONTH") {
+          const receiver = transfer.receiver;
+          const sender = transfer.sender;
+          const accountReceiver = accountsBalance[receiver.accountType.type].data[i];
+          const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
+          if (newBalanceReceiver > receiver.accountType.maxAmount) {
+            accountsBalance[receiver.accountType.type].data[i]
+              += newBalanceReceiver - receiver.accountType.maxAmount;
+            accountsBalance[sender.accountType.type].data[i]
+              -= newBalanceReceiver - receiver.accountType.maxAmount;
+            indexToRemove = transfer.id;
+          } else {
+            accountsBalance[receiver.accountType.type].data[i] += parseFloat(transfer.amount);
+            accountsBalance[sender.accountType.type].data[i] -= parseFloat(transfer.amount);
+          }
+        } else if (transfer.unit === "WEEK") {
+          const receiver = transfer.receiver;
+          const sender = transfer.sender;
+          const numberOfDays = new moment().add(i, "month")
+            .daysInMonth();
+          for (let d = 1; d <= numberOfDays; d++) {
+            if (w === 7) {
+              const totalWeeks = parseFloat(transfer.amount);
+              const accountReceiver = accountsBalance[receiver.accountType.type].data[i];
+              const newBalanceReceiver = accountReceiver + totalWeeks;
+              if ((newBalanceReceiver > receiver.accountType.maxAmount) && receiver.accountType.maxAmount !== 0) {
+                if (transfer.amount !== 0) {
+                  accountsBalance[receiver.accountType.type].data[i] = accountReceiver;
+                  accountsBalance[sender.accountType.type].data[i]
+                    -= (accountReceiver - receiver.accountType.maxAmount);
+                }
+                transfer.amount = 0;
+                indexToRemove = transfer.id;
+              } else {
+                accountsBalance[receiver.accountType.type].data[i] += totalWeeks;
+                accountsBalance[sender.accountType.type].data[i] -= totalWeeks;
+              }
+              w = 1;
+            } else {
+              w++;
+            }
+          }
+        }
+      }
+      if (indexToRemove !== null) {
+        if (!query.notTransfersId.includes(indexToRemove)) {
+          query.notTransfersId.push(indexToRemove);
+        }
+      }
+      for (const account of accounts.rows) {
+        if (account.accountType.unit === "YEAR") {
+          if (query.startingDate.month() === 0) {
+            const oldAmount = accountsBalance[account.accountType.type].data[i];
+            const newAmount = accountsBalance[account.accountType.type].data[i]
+              * (1 + (account.accountType.interest / 100));
+            const interest = newAmount - oldAmount;
+            accountsBalance[account.accountType.type].data[i] += interest;
+            accountsBalance[account.accountType.type].interest[i] = interest;
+          }
+        } else if (account.accountType.unit === "DAY") {
+          const daysInMonth = new moment()
+            .add(i, "month")
+            .daysInMonth();
+          const totalDataMonth = Array.from({length: daysInMonth}, () => 0);
+          const totalInterestMonth = Array.from({length: daysInMonth}, () => 0);
+          if (i === 0) {
+            totalDataMonth[0] = accountsBalance[account.accountType.type].data[i];
+          } else if (i !== 0) {
+            const lastYearLastMonth = accountsBalance[account.accountType.type].data[i - 1].length - 1;
+            totalDataMonth[0] = accountsBalance[account.accountType.type].data[i - 1][lastYearLastMonth];
+          }
+          totalDataMonth[0] = accountsBalance[account.accountType.type].data[i];
+          for (let d = 1; d < totalDataMonth.length; d++) {
+            const oldAmount = totalDataMonth[d - 1];
+            const newAmount = oldAmount * (((account.accountType.interest / 100) + 1) ** (1 / 365.25));
+            const interest = Math.round((newAmount - oldAmount) * 100000000) / 100000000;
+            totalInterestMonth[d] = interest;
+            totalDataMonth[d] = newAmount;
+          }
+          const totalInterest = totalInterestMonth.reduce(
+            (accumulator, currentValue) => accumulator + currentValue,
+            0,
+          );
+          accountsBalance[account.accountType.type].data[i] += totalInterest;
+          accountsBalance[account.accountType.type].interest[i] += totalInterest;
+        }
+      }
+    }
+  }
+  data = reduceDataByIndex(accountsBalance, "data", query);
+
+  accountsBalance["allForecast"] = {
+    data,
+    interest: Array.from({length: query.number}, () => 0),
+    transactionsNumber: Array.from({length: query.number}, () => 0),
+    averageExpensePerDay: Array.from({length: query.number}, () => 0),
+    averageTransactionsPerDay: Array.from({length: query.number}, () => 0),
+  };
+
+  const results = {
+    accountsBalance,
+    graphs: {},
+  };
+  results.graphs["allForecast"] = {
+    type: "line",
+    label: "Total du solde de tout les comptes",
+    column: 12,
+    data: {
+      labels,
+      datasets: [{
+        label: "Solde de tous les comptes",
+        data,
+        fill: false,
+        borderColor: "#39eeff",
+        tension: 0.1,
+      }],
+    },
+    options: {maintainAspectRatio: false},
+  };
+
+  for (const account of accounts.rows) {
+    results.graphs[account.accountType.name] = {
+      type: "line",
+      label: `Total du solde du ${account.accountType.name}`,
+      column: 12,
+      data: {
+        labels,
+        datasets: [{
+          label: `Total du solde du ${account.accountType.name}`,
+          data: reduceData(accountsBalance[account.accountType.type].data, query),
+          fill: false,
+          borderColor: "#3979ff",
+          tension: 0.1,
+        }],
+      },
+      options: {maintainAspectRatio: false},
+    };
+
+    for (let i = 0; i < query.number; i++) {
+      accountsBalance["allForecast"].interest[i] += parseFloat(accountsBalance[account.accountType.type].interest[i]);
+      accountsBalance["allForecast"].transactionsNumber[i] += parseFloat(accountsBalance[account.accountType.type].transactionsNumber[i]);
+      accountsBalance["allForecast"].averageExpensePerDay[i] += parseFloat(accountsBalance[account.accountType.type].averageExpensePerDay[i])
+        / new moment().add(i, query.number)
+          .days();
+      accountsBalance["allForecast"].averageTransactionsPerDay[i] += parseFloat(accountsBalance[account.accountType.type].averageTransactionsPerDay[i]);
+    }
+  }
+  return results;
+};
+
+graphSrv.allAccountsForecastYear = async (user, query) => {
+  const accounts = await accountSrv.getAllByUser(user.id);
+  const labels = Array.from({length: query.number}, (element, index) => {
+    let text;
+    const date = moment().add(index, query.unit);
+    if (query.unit === "month") {
+      text = `${date.month() + 1}/${date.year()}`;
+    } else if (query.unit === "year") {
+      text = date.year().toString();
+    }
+    return text;
+  });
+  let data = [];
+
+  const accountsBalance = {};
+  let w = 1;
+
+  for (const account of accounts.rows) {
+    accountsBalance[account.accountType.type] = {
+      data: Array.from({length: query.number}, (e, i) => {
+        if (query.unit === "year") {
+          if (i === 0) {
+            return Array.from({length: 12 - new moment().month()}, () => 0);
+          }
+          return Array.from({length: 12}, () => 0);
+        }
+        return 0;
+      }),
+      interest: Array.from({length: query.number}, (e, i) => {
+        if (query.unit === "year") {
+          if (i === 0) {
+            return Array.from({length: 12 - new moment().month()}, () => 0);
+          }
+          return Array.from({length: 12}, () => 0);
+        }
+        return 0;
+      }),
+      transactionsNumber: Array.from({length: query.number}, (e, i) => {
+        if (query.unit === "year") {
+          if (i === 0) {
+            return Array.from({length: 12 - new moment().month()}, () => 0);
+          }
+          return Array.from({length: 12}, () => 0);
+        }
+        return 0;
+      }),
+      averageExpensePerDay: Array.from({length: query.number}, () => 0),
+      averageTransactionsPerDay: Array.from({length: query.number}, () => 0),
+    };
+    if (query.unit === "month") {
+      accountsBalance[account.accountType.type].data[0] = account.balance;
+    } else {
+      accountsBalance[account.accountType.type].data[0][0] = account.balance;
+    }
+  }
+
+  query.notTransactionsId = [];
+  query.notTransfersId = [];
+  if (query.type === "planned") {
+    for (let i = 0; i < query.number; i++) {
+      for (const account of accounts.rows) {
+        if (query.unit === "month") {
+          if (i !== 0) {
+            accountsBalance[account.accountType.type].data[i]
+              = accountsBalance[account.accountType.type].data[i - 1];
+          }
+        }
+      }
+      query.startingDate = new moment()
+        .add(i, query.unit)
+        .startOf(query.unit);
+      query.endingDate = new moment()
+        .add(i, query.unit)
+        .endOf(query.unit);
+
+      const plannedTransactions = await plannedTransactionSrv.getAllByUser(user.id, query);
+      const plannedTransfers = await plannedTransferSrv.getAllByUser(user.id, query);
+
+      let period = 12;
+      if (i === 0) {
+        period = 12 - new moment().month();
+      }
+      let indexToRemove = null;
+      for (let m = 0; m < period; m++) {
+        const accountWithTransactions = [];
+        for (const transaction of plannedTransactions.rows) {
+          const account = transaction.account;
+          accountWithTransactions.push(account.accountType.type);
+          if (m === 0 && i !== 0) {
+            const lastYearMonth = accountsBalance[account.accountType.type].data[i - 1].length - 1;
+            accountsBalance[account.accountType.type].data[i][0]
+                = accountsBalance[account.accountType.type].data[i - 1][lastYearMonth];
+          } else if (m !== 0 && accountsBalance[account.accountType.type].data[i][m] === 0) {
+            accountsBalance[account.accountType.type].data[i][m]
+                = accountsBalance[account.accountType.type].data[i][m - 1];
+          }
+          accountsBalance[account.accountType.type].data[i][m]
+              += calculateTotalTransaction(transaction, account);
+          accountsBalance[account.accountType.type].transactionsNumber[i][m]++;
+        }
+
+        for (const account of accounts.rows) {
+          if (!accountWithTransactions.includes(account.accountType.type)) {
+            if (m === 0 && i !== 0) {
+              const lastYearMonth = accountsBalance[account.accountType.type].data[i - 1].length - 1;
+              accountsBalance[account.accountType.type].data[i][0]
+                  = accountsBalance[account.accountType.type].data[i - 1][lastYearMonth];
+            } else if (m !== 0 && accountsBalance[account.accountType.type].data[i][m] === 0) {
+              accountsBalance[account.accountType.type].data[i][m]
+                  = accountsBalance[account.accountType.type].data[i][m - 1];
+            }
+          }
+        }
+
+        let t = plannedTransfers.rows.length;
+        while (t--) {
+          const transfer = plannedTransfers.rows[t];
+          if (transfer.unit === "MONTH") {
+            const receiver = transfer.receiver;
+            const sender = transfer.sender;
+            const accountReceiver = accountsBalance[receiver.accountType.type].data[i][m];
+            const newBalanceReceiver = accountReceiver + parseFloat(transfer.amount);
+            if ((newBalanceReceiver > receiver.accountType.maxAmount) && receiver.accountType.maxAmount !== 0) {
+              if (parseFloat(transfer.amount) !== 0) {
+                accountsBalance[receiver.accountType.type].data[i][m] = accountReceiver;
+                accountsBalance[sender.accountType.type].data[i][m]
+                    -= (accountReceiver - receiver.accountType.maxAmount);
+              }
+              transfer.amount = 0;
+              indexToRemove = transfer.id;
+            } else {
+              accountsBalance[receiver.accountType.type].data[i][m] += parseFloat(transfer.amount);
+              accountsBalance[sender.accountType.type].data[i][m] -= parseFloat(transfer.amount);
+            }
+          } else if (transfer.unit === "WEEK") {
+            const receiver = transfer.receiver;
+            const sender = transfer.sender;
+            const numberOfDays = new moment().add(m, "month")
+              .daysInMonth();
+            for (let d = 1; d <= numberOfDays; d++) {
+              if (w === 7) {
+                const totalWeeks = parseFloat(transfer.amount);
+                const accountReceiver = accountsBalance[receiver.accountType.type].data[i][m];
+                const newBalanceReceiver = accountReceiver + totalWeeks;
+                if ((newBalanceReceiver > receiver.accountType.maxAmount) && receiver.accountType.maxAmount !== 0) {
+                  if (transfer.amount !== 0) {
+                    accountsBalance[receiver.accountType.type].data[i][m] = accountReceiver;
+                    accountsBalance[sender.accountType.type].data[i][m]
+                        -= (accountReceiver - receiver.accountType.maxAmount);
+                  }
+                  transfer.amount = 0;
+                  indexToRemove = transfer.id;
+                } else {
+                  accountsBalance[receiver.accountType.type].data[i][m] += totalWeeks;
+                  accountsBalance[sender.accountType.type].data[i][m] -= totalWeeks;
+                }
+                w = 1;
+              } else {
+                w++;
+              }
+            }
+          }
+        }
+
+        for (const account of accounts.rows) {
+          if (account.accountType.unit === "YEAR") {
+            if (m === 0 && i !== 0) {
+              const oldAmount = accountsBalance[account.accountType.type].data[i][0];
+              const newAmount = accountsBalance[account.accountType.type].data[i][0]
+                  * (1 + (account.accountType.interest / 100));
+              const interest = newAmount - oldAmount;
+              accountsBalance[account.accountType.type].data[i][0] += interest;
+              accountsBalance[account.accountType.type].interest[i][m] = interest;
+            }
+          } else if (account.accountType.unit === "DAY") {
+            const daysInMonth = new moment()
+              .add(m, "month")
+              .daysInMonth();
+            const totalDataMonth = Array.from({length: daysInMonth}, () => 0);
+            const totalInterestMonth = Array.from({length: daysInMonth}, () => 0);
+            if (m === 0 && i === 0) {
+              totalDataMonth[0] = accountsBalance[account.accountType.type].data[i][m];
+            } else if (i !== 0 && m === 0) {
+              const lastYearLastMonth = accountsBalance[account.accountType.type].data[i - 1].length - 1;
+              totalDataMonth[0] = accountsBalance[account.accountType.type].data[i - 1][lastYearLastMonth];
+            }
+            totalDataMonth[0] = accountsBalance[account.accountType.type].data[i][m];
+            for (let d = 1; d < totalDataMonth.length; d++) {
+              const oldAmount = totalDataMonth[d - 1];
+              const newAmount = oldAmount * (((account.accountType.interest / 100) + 1) ** (1 / 365.25));
+              const interest = Math.round((newAmount - oldAmount) * 100000000) / 100000000;
+              totalInterestMonth[d] = interest;
+              totalDataMonth[d] = newAmount;
+            }
+            const totalInterest = totalInterestMonth.reduce(
+              (accumulator, currentValue) => accumulator + currentValue,
+              0,
+            );
+            accountsBalance[account.accountType.type].data[i][m] += totalInterest;
+            accountsBalance[account.accountType.type].interest[i][m] += totalInterest;
+          }
+        }
+      }
+      if (indexToRemove !== null) {
+        if (!query.notTransfersId.includes(indexToRemove)) {
+          query.notTransfersId.push(indexToRemove);
+        }
+      }
+    }
+  }
+  data = reduceDataByIndex(accountsBalance, "data", query);
+
+  accountsBalance["allForecast"] = {
+    data,
+    interest: Array.from({length: query.number}, () => 0),
+    transactionsNumber: Array.from({length: query.number}, () => 0),
+    averageExpensePerDay: Array.from({length: query.number}, () => 0),
+    averageTransactionsPerDay: Array.from({length: query.number}, () => 0),
+  };
+
+  const results = {
+    accountsBalance,
+    graphs: {},
+  };
+  results.graphs["allForecast"] = {
+    type: "line",
+    label: "Total du solde de tout les comptes",
+    column: 12,
+    data: {
+      labels,
+      datasets: [{
+        label: "Solde de tous les comptes",
+        data,
+        fill: false,
+        borderColor: "#39eeff",
+        tension: 0.1,
+      }],
+    },
+    options: {maintainAspectRatio: false},
+  };
+
+  for (const account of accounts.rows) {
+    results.graphs[account.accountType.name] = {
+      type: "line",
+      label: `Total du solde du ${account.accountType.name}`,
+      column: 12,
+      data: {
+        labels,
+        datasets: [{
+          label: `Total du solde du ${account.accountType.name}`,
+          data: reduceData(accountsBalance[account.accountType.type].data, query),
+          fill: false,
+          borderColor: "#3979ff",
+          tension: 0.1,
+        }],
+      },
+      options: {maintainAspectRatio: false},
+    };
+
+    for (let i = 0; i < query.number; i++) {
+      let period = 12;
+      if (i === 0) {
+        period = 12 - new moment().month();
+      }
+      accountsBalance[account.accountType.type].interest[i] = accountsBalance[account.accountType.type].interest[i].reduce(
+        (accumulator, currentValue) => accumulator + currentValue,
+        0,
+      );
+      accountsBalance["allForecast"].interest[i] += accountsBalance[account.accountType.type].interest[i];
+
+      accountsBalance[account.accountType.type].transactionsNumber[i] = accountsBalance[account.accountType.type].transactionsNumber[i].reduce(
+        (accumulator, currentValue) => accumulator + currentValue,
+        0,
+      );
+      accountsBalance["allForecast"].transactionsNumber[i] += accountsBalance[account.accountType.type].transactionsNumber[i];
+    }
+  }
+  return results;
+};
+
+/* graphSrv.allAccountsForecast = async (user, query) => {
+  const accounts = await accountSrv.getAllByUser(user.id);
+  const labels = Array.from({length: query.number}, (element, index) => {
+    let text;
+    const date = moment().add(index, query.unit);
+    if (query.unit === "month") {
+      text = `${date.month() + 1}/${date.year()}`;
+    } else if (query.unit === "year") {
+      text = date.year().toString();
+    }
+    return text;
+  });
+  let data = [];
+
+  const accountsBalance = {};
+  let w = 1;
+
+  for (const account of accounts.rows) {
+    accountsBalance[account.accountType.type] = {
+      data: Array.from({length: query.number}, (e, i) => {
+        if (query.unit === "year") {
+          if (i === 0) {
+            return Array.from({length: 12 - new moment().month()}, () => 0);
+          }
+          return Array.from({length: 12}, () => 0);
+        }
+        return 0;
+      }),
+      interest: Array.from({length: query.number}, (e, i) => {
+        if (query.unit === "year") {
+          if (i === 0) {
+            return Array.from({length: 12 - new moment().month()}, () => 0);
+          }
+          return Array.from({length: 12}, () => 0);
+        }
+        return 0;
+      }),
+      transactionsNumber: Array.from({length: query.number}, () => 0),
+      averageExpensePerDay: Array.from({length: query.number}, () => 0),
+      averageTransactionsPerDay: Array.from({length: query.number}, () => 0),
     };
     if (query.unit === "month") {
       accountsBalance[account.accountType.type].data[0] = account.balance;
@@ -442,6 +970,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
             }
             accountsBalance[account.accountType.type].data[i][m]
                   += calculateTotalTransaction(transaction, account);
+            accountsBalance[account.accountType.type].transactionsNumber[i][m]++;
           }
 
           for (const account of accounts.rows) {
@@ -542,7 +1071,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
                 0,
               );
               accountsBalance[account.accountType.type].data[i][m] += totalInterest;
-              accountsBalance[account.accountType.type].interest[i] += totalInterest;
+              accountsBalance[account.accountType.type].interest[i][m] += totalInterest;
             }
           }
         }
@@ -556,6 +1085,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
           const account = transaction.account;
           accountsBalance[account.accountType.type].data[i]
               += calculateTotalTransaction(transaction, account);
+          accountsBalance[account.accountType.type].transactionsNumber[i]++;
         }
         let t = plannedTransfers.rows.length;
         let indexToRemove = null;
@@ -582,7 +1112,6 @@ graphSrv.allAccountsForecast = async (user, query) => {
             const numberOfDays = new moment().add(i, "month")
               .daysInMonth();
             for (let d = 1; d <= numberOfDays; d++) {
-              console.log(i, w, d);
               if (w === 7) {
                 const totalWeeks = parseFloat(transfer.amount);
                 const accountReceiver = accountsBalance[receiver.accountType.type].data[i];
@@ -652,11 +1181,21 @@ graphSrv.allAccountsForecast = async (user, query) => {
       }
     }
   }
-  console.log(accountsBalance["TRADING212L"]);
-  data = reduceDataByIndex(accountsBalance, query);
+  data = reduceDataByIndex(accountsBalance, "data", query);
 
-  const results = {};
-  results["allForecast"] = {
+  accountsBalance["allForecast"] = {
+    data,
+    interest: Array.from({length: query.number}, () => 0),
+    transactionsNumber: Array.from({length: query.number}, () => 0),
+    averageExpensePerDay: Array.from({length: query.number}, () => 0),
+    averageTransactionsPerDay: Array.from({length: query.number}, () => 0),
+  };
+
+  const results = {
+    accountsBalance,
+    graphs: {},
+  };
+  results.graphs["allForecast"] = {
     type: "line",
     label: "Total du solde de tout les comptes",
     column: 12,
@@ -674,7 +1213,7 @@ graphSrv.allAccountsForecast = async (user, query) => {
   };
 
   for (const account of accounts.rows) {
-    results[account.accountType.name] = {
+    results.graphs[account.accountType.name] = {
       type: "line",
       label: `Total du solde du ${account.accountType.name}`,
       column: 12,
@@ -690,9 +1229,19 @@ graphSrv.allAccountsForecast = async (user, query) => {
       },
       options: {maintainAspectRatio: false},
     };
-  }
 
+    for (let i = 0; i < query.number; i++) {
+      if (query.unit === "month") {
+        accountsBalance["allForecast"].interest[i] += parseFloat(accountsBalance[account.accountType.type].interest[i]);
+        accountsBalance["allForecast"].transactionsNumber[i] += parseFloat(accountsBalance[account.accountType.type].transactionsNumber[i]);
+        accountsBalance["allForecast"].averageExpensePerDay[i] += parseFloat(accountsBalance[account.accountType.type].averageExpensePerDay[i])
+          / new moment().add(i, query.number)
+            .days();
+        accountsBalance["allForecast"].averageTransactionsPerDay[i] += parseFloat(accountsBalance[account.accountType.type].averageTransactionsPerDay[i]);
+      }
+    }
+  }
   return results;
-};
+};*/
 
 module.exports = graphSrv;

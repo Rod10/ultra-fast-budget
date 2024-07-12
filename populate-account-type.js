@@ -3,7 +3,6 @@ const accountTypeSrv = require("./express/services/accounttype.js");
 
 const populateAccountType = async () => {
   for (const accountType of Object.values(AccountTypes)) {
-    console.log(accountType);
     await accountTypeSrv.create(1, accountType);
   }
 };

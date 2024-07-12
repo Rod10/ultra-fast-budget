@@ -26,7 +26,6 @@ const accountSrv = {};
  */
 accountSrv.create = (userId, data, accountType) => {
   logger.debug("Create account with data=[%s] for user=[%s]", data, userId);
-  console.log(accountType);
   // if (AccountsTypeFull[data.type].maxAmount !== 0) {
   //   assert(parseInt(data.initialBalance, 10) <= AccountsTypeFull[data.type].maxAmount, "Initial balance cannot be more than the maximum amount allowed");
   // }

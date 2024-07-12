@@ -113,10 +113,10 @@ router.get("/", async (req, res) => {
     }
   }
   const daysInMonth = new moment().daysInMonth();
-  liquidity.average.daily.income = liquidity.totalIncome / daysInMonth;
-  liquidity.average.daily.outcome = liquidity.totalOutcome / daysInMonth;
-  liquidity.average.transactions.income = liquidity.totalIncome / liquidity.incomeTransactionsNumber;
-  liquidity.average.transactions.outcome = liquidity.totalOutcome / liquidity.outcomeTransactionsNumber;
+  liquidity.average.daily.income = Math.round(liquidity.totalIncome / daysInMonth * 100) / 100;
+  liquidity.average.daily.outcome = Math.round(liquidity.totalOutcome / daysInMonth * 100) / 100;
+  liquidity.average.transactions.income = Math.round(liquidity.totalIncome / liquidity.incomeTransactionsNumber * 100) / 100;
+  liquidity.average.transactions.outcome = Math.round(liquidity.totalOutcome / liquidity.outcomeTransactionsNumber * 100) / 100;
 
   const data = {
     graphs,

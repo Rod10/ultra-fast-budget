@@ -37,8 +37,8 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
     if (!query?.unit || !query?.type || !query?.number) {
       query = {
         ...query,
-        unit: "year",
-        number: 2,
+        unit: "month",
+        number: 12,
         type: "planned",
       };
     }
@@ -50,14 +50,16 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
     const user = req.user;
     const accounts = await accountSrv.getAllByUser(user.id);
     const graphs = {};
-    const resultGraphs = await graphSrv.allAccountsForecast(user, query);
-    graphs["allForecast"] = resultGraphs.allForecast;
+    const result = query.unit === "month"
+    ? await graphSrv.allAccountsForecastMonth(user, query)
+    : await graphSrv.allAccountsForecastYear(user, query);
+    graphs["allForecast"] = result.graphs.allForecast;
 
     for (const account of accounts.rows) {
-      graphs[account.accountType.name] = resultGraphs[account.accountType.name];
+      graphs[account.accountType.type] = result.graphs[account.accountType.name];
     }
 
-    const data = {query, graphs};
+    const data = {query, graphs, accountsDetails: result.accountsBalance};
     const navbar = renderSrv.navbar(res.locals);
     const content = renderSrv.forecast(data);
     res.render("generic", {navbar, data, content, components: ["forecast"]});
@@ -80,13 +82,16 @@ router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res
     if (query.unit && query.number && query.type) {
       const accounts = await accountSrv.getAllByUser(user.id);
       const graphs = {};
-      const resultGraphs = await graphSrv.allAccountsForecast(user, query);
-      graphs["allForecast"] = resultGraphs.allForecast;
+      const result = query.unit === "month"
+        ? await graphSrv.allAccountsForecastMonth(user, query)
+        : await graphSrv.allAccountsForecastYear(user, query);
+      graphs["allForecast"] = result.graphs.allForecast;
 
       for (const account of accounts.rows) {
-        graphs[account.accountType.name] = resultGraphs[account.accountType.name];
+        graphs[account.accountType.type] = result.graphs[account.accountType.name];
       }
-      const data = {query, graphs};
+
+      const data = {query, graphs, accountsDetails: result.accountsBalance};
       const navbar = renderSrv.navbar(res.locals);
       const content = renderSrv.forecast(data);
       res.render("generic", {navbar, data, content, components: ["forecast"]});
