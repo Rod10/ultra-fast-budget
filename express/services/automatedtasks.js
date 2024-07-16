@@ -163,7 +163,8 @@ automatedSrv.dailyInterests = async () => {
         test[account.accountType.type] = interest;
       }
     }
-    if (test[account.accountType.type] >= 0.01) {
+
+    if (test[account.accountType.type] >= 0.01 || interest >= 0.01) {
       test[account.accountType.type] = 0;
       account.balance += 0.01;
       account.save();

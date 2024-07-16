@@ -4,12 +4,6 @@ const homepage = {
   routes: "/",
 };
 
-const summary = {
-  label: "Sommaire",
-  logo: "/images/icons/worker.svg",
-  routes: "/summary",
-};
-
 const transactions = {
   label: "Transactions",
   logo: "/images/svg/home_suivi.svg",
@@ -37,7 +31,7 @@ const budget = {
 const debt = {
   label: "Dettes",
   logo: "/images/svg/home_suivi.svg",
-  routes: "/debt",
+  routes: "/#",
 };
 
 const chart = {
@@ -65,7 +59,6 @@ const chart = {
 
 module.exports = {
   homepage,
-  summary,
   transactions,
   transactionsPlanified,
   account,

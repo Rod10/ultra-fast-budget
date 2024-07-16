@@ -8,7 +8,7 @@ class Basenavbar extends React.Component {
   static _renderLogo(src, alt) {
     return <img
       src={src}
-      alt={alt || "Edwin"}
+      alt={alt || "Ultra-Fast-Budget"}
       height={32}
     />;
   }

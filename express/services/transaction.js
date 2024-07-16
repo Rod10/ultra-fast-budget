@@ -9,6 +9,7 @@ const {
 const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
 const accountSrv = require("./account.js");
+const TransactionType = require("../constants/transactiontype");
 
 const transactionSrv = {};
 

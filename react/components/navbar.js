@@ -8,7 +8,7 @@ const NewBaseNavbar = require("./basenavbar.js");
 class Navbar extends React.Component {
   static _renderCopyright() {
     return <div className="has-text-centered is-size-7 mb-2">
-      <p>Copyright <a href="https://comstedition.com/" className="has-text-white">ComST Edition</a> - © Edwin {new Date().getFullYear()}</p>
+      <p>Copyright Ayaya production - © Ultra Fast Budget {new Date().getFullYear()}</p>
     </div>;
   }
 
