@@ -39,13 +39,16 @@ budgetSrv.create = async (user, budgetData) => {
   const transactionsRaw = await transactionSrv.getAllByUserAndCategory(
     user.id,
     budgetData.category,
-    {unit: budgetData.unit},
+    {
+      unit: budgetData.unit,
+      isPlanned: null,
+    },
   );
-  const transactions = transactionsRaw.rows
+  let transactions = transactionsRaw.rows
     .map(transaction => transaction.data
       .map(data => parseInt(data.category.id, 10) === parseInt(budgetData.category, 10)
         && data)[0]);
-
+  transactions = transactions.filter(transaction => transaction !== false);
   for (const data of budgetData.data) {
     const transactionsFiltered = transactions
       .filter(row => row.subCategory.id === data.subCategory.id);

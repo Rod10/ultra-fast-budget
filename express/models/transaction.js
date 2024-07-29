@@ -43,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
       values: ["INCOME", "EXPECTED_INCOME", "EXPENSE", "EXPECTED_EXPENSE", "TRANSFER", "EXPECTED_TRANSFERT"],
       allowNull: false,
     },
+    isPlanned: {
+      allowNull: true,
+      type: DataTypes.INTEGER(20),
+    },
     creationDate: {
       type: DataTypes.DATE,
       allowNull: false,

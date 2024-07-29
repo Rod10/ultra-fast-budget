@@ -79,6 +79,7 @@ automatedSrv.plannedTransactions = async () => {
       other: plannedTransaction.other,
       transactionDate: new Date(),
       type: transactionTypeConvert[plannedTransaction.type],
+      isPlanned: true,
     });
     account.balance = newAccountAmount;
     account.save();
@@ -125,7 +126,7 @@ automatedSrv.plannedTransfers = async () => {
       plannedTransfer.deletedOn = new Date();
     } else {
       accountReceiver.balance += parseFloat(plannedTransfer.amount);
-      newBalanceReceiver.balance -= parseFloat(plannedTransfer.amount);
+      accountSender.balance -= parseFloat(plannedTransfer.amount);
     }
     plannedTransfer.transferDate = new moment().add(1, plannedTransfer.unit);
     accountReceiver.save();
@@ -141,6 +142,7 @@ automatedSrv.plannedTransfers = async () => {
       occurence: plannedTransfer.occurence,
       unit: plannedTransfer.unit,
       number: plannedTransfer.number,
+      isPlanned: true,
     });
   }
 };

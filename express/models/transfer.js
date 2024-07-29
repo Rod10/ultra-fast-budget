@@ -31,6 +31,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    isPlanned: {
+      allowNull: true,
+      type: DataTypes.INTEGER(20),
+    },
     creationDate: {
       type: DataTypes.DATE,
       allowNull: false,

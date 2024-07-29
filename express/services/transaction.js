@@ -114,6 +114,9 @@ transactionSrv.getAllByUserAndCategory = (userId, categoryId, query = {}) => {
       },
     };
   }
+  if ("isPlanned" in query) {
+    condition.isPlanned = query.isPlanned;
+  }
   return Transaction.findAndCountAll({where});
 };
 
