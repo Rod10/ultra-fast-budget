@@ -1,4 +1,5 @@
 const assert = require("assert");
+const moment = require("moment");
 const {
   sequelize,
   Sequelize,
@@ -28,9 +29,19 @@ budgetSrv.getAllByUser = userId => {
   });
 };
 
-budgetSrv.getAllByCategory = categoryId => {
+budgetSrv.getAllByCategory = (categoryId, transaction) => {
   logger.debug("Get all budget by category=[%s]", categoryId);
-  return Budget.findAndCountAll({where: {categoryId}});
+  return Budget.findAndCountAll({
+    where: {
+      categoryId,
+      creationDate: {
+        [Op.and]: {
+          [Op.gte]: new moment(transaction.transactionDate).startOf("month"),
+          [Op.lt]: new moment(transaction.transactionDate).endOf("month"),
+        },
+      },
+    },
+  });
 };
 
 budgetSrv.create = async (user, budgetData) => {
@@ -104,7 +115,7 @@ budgetSrv.delete = id => {
 budgetSrv.updateAmount = async (user, transaction) => {
   logger.debug("Updating amount for budget");
   for (const row of transaction.data) {
-    const budgets = await budgetSrv.getAllByCategory(row.category.id);
+    const budgets = await budgetSrv.getAllByCategory(row.category.id, transaction);
     for (const budget of budgets.rows) {
       const newData = [...budget.data];
       const index = budget.data.findIndex(data => data.subCategory.id === row.subCategory.id);

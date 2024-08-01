@@ -13,7 +13,7 @@ module.exports = {
       "IS_PLANNED",
       {
         allowNull: true,
-        type: Sequelize.BOOL,
+        type: Sequelize.INTEGER(20),
       },
     );
   },
