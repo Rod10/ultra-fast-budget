@@ -285,4 +285,27 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
   }
 });
 
+router.get("/rebalance-all", async (req, res, next) => {
+  try {
+    const accounts = await accountSrv.getAllByUser(req.user.id);
+    for (const account of accounts.rows) {
+      const transactions = await transactionSrv.getAllByAccount(account.id);
+      await accountSrv.rebalance(account.id, transactions);
+    }
+    const transfers = await transferSrv.getAllByUser(req.user.id);
+    for (const transfer of transfers.rows) {
+      const accountReceiver = await accountSrv.get(transfer.receiverId);
+      const accountSender = await accountSrv.get(transfer.senderId);
+      accountReceiver.balance += parseFloat(transfer.amount);
+      accountSender.balance -= parseFloat(transfer.amount);
+      await accountSrv.update(req.user.id, accountReceiver.id, accountReceiver);
+      await accountSrv.update(req.user.id, accountSender.id, accountSender);
+    }
+    res.redirect("/account");
+  } catch (err) {
+    logger.error(err);
+    return next(err);
+  }
+});
+
 module.exports = router;

@@ -116,6 +116,13 @@ class AccountList extends React.Component {
               label="Ajouter un compte"
               onClick={() => this.openAccountModal(null, this.props.accountsType)}
             />
+            <Button
+              className="has-text-weight-bold mr-3"
+              type="themed"
+              icon={<Icon size="small" icon="rotate" />}
+              label="Recalculer les comptes"
+              href="/account/rebalance-all"
+            />
           </div>
         </Column>
       </Columns>

@@ -2,6 +2,7 @@ const assert = require("assert");
 const {
   sequelize,
   Sequelize,
+  Account,
   Transfer,
   Op,
 } = require("../models/index.js");
@@ -23,7 +24,16 @@ transferSrv.getAllByUser = userId => {
 
   return Transfer.findAndCountAll({
     where: {userId},
-    include: [{association: Transfer.Sender}, {association: Transfer.Receiver}],
+    include: [
+      {
+        association: Transfer.Sender,
+        include: [{association: Account.AccountType}],
+      },
+      {
+        association: Transfer.Receiver,
+        include: [{association: Account.AccountType}],
+      },
+    ],
     order: [["transferDate", OrderDirection.DESC]],
   });
 };
@@ -37,6 +47,16 @@ transferSrv.getAllByAccount = accountId => {
         {receiverId: accountId},
       ],
     },
+    include: [
+      {
+        association: Transfer.Sender,
+        include: [{association: Account.AccountType}],
+      },
+      {
+        association: Transfer.Receiver,
+        include: [{association: Account.AccountType}],
+      },
+    ],
     order: [["transferDate", OrderDirection.DESC]],
   });
 };

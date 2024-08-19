@@ -23,7 +23,15 @@ budgetSrv.getAllByUser = userId => {
   assert(userId, "User Id cannot be null");
 
   return Budget.findAndCountAll({
-    where: {userId},
+    where: {
+      userId,
+      creationDate: {
+        [Op.and]: {
+          [Op.gte]: new moment().startOf("month"),
+          [Op.lt]: new moment().endOf("month"),
+        },
+      },
+    },
     include: [{association: Budget.User}, {association: Budget.Category}],
     order: [["creationDate", OrderDirection.DESC]],
   });

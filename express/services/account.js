@@ -76,6 +76,19 @@ accountSrv.updateData = async (userId, account, data) => {
   return account.save();
 };
 
+accountSrv.update = async (userId, accountId, data) => {
+  logger.debug("Update user account=[%s]", accountId);
+  return Account.update(
+    {balance: data.balance},
+    {
+      where: {
+        id: accountId,
+        userId,
+      },
+    },
+  );
+};
+
 accountSrv.rebalance = async (accountId, transactions) => {
   logger.debug("Rebalance account=[%s]", accountId);
   const account = await accountSrv.get(accountId);
@@ -86,18 +99,19 @@ accountSrv.rebalance = async (accountId, transactions) => {
         (accumulator, currentValue) => accumulator + currentValue,
         0,
       );
-      assert(
-        (parseInt(newAccountBalance, 10) > account.accountType.maxAmount)
-        && (account.accountType.type === AccountTypes.WALLET || account.accountType.type === AccountTypes.COURANT),
-        "Balance cannot be more than the maximum amount allowed for an manual transaction",
-      );
     } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE || transaction.type === TransactionTypes.EXPENSE) {
       newAccountBalance -= transaction.data.map(row => parseFloat(row.amount)).reduce(
         (accumulator, currentValue) => accumulator + currentValue,
         0,
       );
+    } else if (transaction.type === TransactionTypes.INTEREST) {
+      newAccountBalance += transaction.data.map(row => parseFloat(row.amount)).reduce(
+        (accumulator, currentValue) => accumulator + currentValue,
+        0,
+      );
     }
   }
+
   account.balance = newAccountBalance;
   account.save();
 };
@@ -105,7 +119,7 @@ accountSrv.rebalance = async (accountId, transactions) => {
 accountSrv.rebalanceTransfer = async (senderId, receiverId, transfers) => {
   logger.debug("Rebalance account=[%s] and [%s] for transfer", senderId, receiverId);
   const sender = await accountSrv.get(senderId);
-  let newSenderAccountBalance = sender.initialBalance;
+  let newSenderAccountBalance = sender.balance;
   for (const transfer of transfers.rows) {
     newSenderAccountBalance -= parseFloat(transfer.amount);
   }
@@ -113,7 +127,7 @@ accountSrv.rebalanceTransfer = async (senderId, receiverId, transfers) => {
   sender.save();
 
   const receiver = await accountSrv.get(receiverId);
-  let newReceiverAccountBalance = receiver.initialBalance;
+  let newReceiverAccountBalance = receiver.balance;
   for (const transfer of transfers.rows) {
     newReceiverAccountBalance += parseFloat(transfer.amount);
   }

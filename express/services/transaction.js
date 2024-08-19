@@ -10,6 +10,8 @@ const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
 const accountSrv = require("./account.js");
 const TransactionType = require("../constants/transactiontype");
+const TransactionTypes = require("../constants/transactiontype");
+const AccountTypes = require("../constants/accountstype");
 
 const transactionSrv = {};
 
@@ -63,7 +65,25 @@ transactionSrv.getAllByAccountAndRange = (accountId, query) => {
 transactionSrv.create = async (userId, transactionData) => {
   logger.debug("Create transaction for user=[%s] with data=[%s]", userId, transactionData);
 
-  const transaction = await Transaction.create({
+  const account = await accountSrv.get(transactionData.account);
+  if (transactionData.type === TransactionTypes.INCOME || transactionData.type === TransactionTypes.EXPECTED_INCOME) {
+    account.balance += transactionData.data.map(row => parseFloat(row.amount)).reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0,
+    );
+    assert(
+      (parseInt(account.balance, 10) > account.accountType.maxAmount)
+      && (account.accountType.type === AccountTypes.WALLET || account.accountType.type === AccountTypes.COURANT),
+      "Balance cannot be more than the maximum amount allowed for an manual transaction",
+    );
+  } else if (transactionData.type === TransactionTypes.EXPECTED_EXPENSE || transactionData.type === TransactionTypes.EXPENSE) {
+    account.balance -= transactionData.data.map(row => parseFloat(row.amount)).reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0,
+    );
+  }
+  account.save();
+  return Transaction.create({
     userId,
     accountId: transactionData.account,
     data: transactionData.data,
@@ -72,9 +92,6 @@ transactionSrv.create = async (userId, transactionData) => {
     transactionDate: new Date(transactionData.date),
     type: transactionData.type,
   });
-  const transactions = await transactionSrv.getAllByAccount(transaction.accountId);
-  await accountSrv.rebalance(transaction.accountId, transactions);
-  return transaction;
 };
 
 transactionSrv.update = async (id, data) => {
