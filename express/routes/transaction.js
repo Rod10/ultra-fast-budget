@@ -11,7 +11,7 @@ const subCategorySrv = require("../services/subcategory.js");
 const transactionSrv = require("../services/transaction.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
-const budgetSrv = require("../services/budget");
+const budgetSrv = require("../services/budget.js");
 
 const router = express.Router();
 
