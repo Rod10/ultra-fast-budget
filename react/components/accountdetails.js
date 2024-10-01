@@ -17,6 +17,7 @@ const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
 
 const TransactionModalList = require("./transactionmodallist.js");
+const moment = require("moment");
 
 class AccountDetails extends React.Component {
   static splitArrayIntoChunks(array, chunkSize) {
@@ -146,6 +147,7 @@ class AccountDetails extends React.Component {
     return <div className="body-content">
       <Column className="has-text-centered">
         <Title size={5}>Détails du compte: {this.props.account.name}</Title>
+        <h5>Année en cour: {new moment().year()}</h5>
       </Column>
       <Columns>
         {graphs[0].length > 0
@@ -164,6 +166,7 @@ class AccountDetails extends React.Component {
       <TransactionModalList
         visible={this.state.modal}
         transactions={this.props.transactionsByMonthAndDays[this.state.monthSelectedIndex]}
+        transfers={this.props.transfersByMonthAndDays[this.state.monthSelectedIndex]}
         month={this.state.monthSelectedName}
         onCloseClick={this.handleCloseClick}
         account={this.props.account}
@@ -178,6 +181,7 @@ AccountDetails.propTypes = {
   transactionsByMonth: PropTypes.array.isRequired,
   transactionsByMonthAndDays: PropTypes.array.isRequired,
   transfersByMonth: PropTypes.array.isRequired,
+  transfersByMonthAndDays: PropTypes.array.isRequired,
 };
 AccountDetails.defaultProps = {graphs: undefined};
 

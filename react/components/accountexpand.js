@@ -23,7 +23,7 @@ class AccountExpand extends React.Component {
     super(props);
     this.charts = {};
     if (this.props.graphs) {
-      const graph = this.props.graphs[this.props.account.type];
+      const graph = this.props.graphs[this.props.account.accountType.type];
       this.charts[graph.label] = React.createRef();
     }
     this.handleEditClick = this.handleEditClick.bind(this);
@@ -37,7 +37,7 @@ class AccountExpand extends React.Component {
     Chart.register(...registerables);
 
     if (this.props.graphs) {
-      const graph = this.props.graphs[this.props.account.type];
+      const graph = this.props.graphs[this.props.account.accountType.type];
       if (graph.type === "pie") {
         this.createPieChart(graph, this.charts[graph.label].current.getContext("2d"));
       } else {
@@ -81,7 +81,7 @@ class AccountExpand extends React.Component {
 
   render() {
     const action = this._renderActionList(this.props.account);
-    const graph = this.props.graphs[this.props.account.type];
+    const graph = this.props.graphs[this.props.account.accountType.type];
     return <div className="column">
       <div className="content box account-scrollblock expand-account">
         <div className="max-height">

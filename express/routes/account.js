@@ -51,11 +51,18 @@ router.get("/", async (req, res, next) => {
       const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const outcomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      const incomeTransferts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      const outcomeTransferts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       totalBalance[new moment(account.creationDate).month() - 1] = account.initialBalance;
       const transactions = await transactionSrv.getAllByAccount(account.id);
+      const transferts = await transferSrv.getAllByAccount(account.id);
       const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+      const transfertsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
       for (const transaction of transactions.rows) {
         transactionsByMonth[new moment(transaction.transactionDate).month()].push(transaction);
+      }
+      for (const transfert of transferts.rows) {
+        transfertsByMonth[new moment(transfert.transferDate).month()].push(transfert);
       }
       // eslint-disable-next-line no-magic-numbers
       for (let month = 0; month <= 11; month++) {
@@ -66,20 +73,34 @@ router.get("/", async (req, res, next) => {
               || transaction.type === TransactionTypes.EXPECTED_INCOME) {
               incomeTransactions[month] += calculateAmount(transaction.data);
               balanceAccount += calculateAmount(transaction.data);
+            } else if (transaction.type === TransactionTypes.INTEREST) {
+              incomeTransactions[month] += calculateAmount(transaction.data);
+              balanceAccount += calculateAmount(transaction.data);
             } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
               || transaction.type === TransactionTypes.EXPENSE) {
               outcomeTransactions[month] += calculateAmount(transaction.data);
               balanceAccount -= calculateAmount(transaction.data);
             }
           }
-          if (month === 0) {
-            totalBalance[month] = balanceAccount;
-          } else {
-            totalBalance[month] = balanceAccount + totalBalance[month - 1];
+          if (transfertsByMonth[month].length > 0) {
+            for (const transfert of transfertsByMonth[month]) {
+              if (account.id === transfert.senderId) {
+                balanceAccount -= parseFloat(transfert.amount);
+                outcomeTransferts[month] += parseFloat(transfert.amount);
+              } else if (account.id === transfert.receiverId) {
+                balanceAccount += parseFloat(transfert.amount);
+                incomeTransferts[month] += parseFloat(transfert.amount);
+              }
+            }
+            if (month === 0) {
+              totalBalance[month] = balanceAccount;
+            } else {
+              totalBalance[month] = balanceAccount + totalBalance[month - 1];
+            }
           }
         }
       }
-      graphs[account.type] = {
+      graphs[account.accountType.type] = {
         type: "line",
         label: "Récapitulatif de la balance et des transactions",
         column: 2,
@@ -101,6 +122,16 @@ router.get("/", async (req, res, next) => {
               data: outcomeTransactions,
               borderColor: "#e53838",
             },
+            {
+              label: "Virement Reçu",
+              data: incomeTransferts,
+              borderColor: "#7feaae",
+            },
+            {
+              label: "Virement Emis",
+              data: outcomeTransferts,
+              borderColor: "#ea7c7c",
+            },
           ],
         },
         options: {
@@ -112,7 +143,7 @@ router.get("/", async (req, res, next) => {
               text: "Type de filtre",
             },
           },
-          elements: {line: {tension: 0.5}},
+          elements: {line: {tension: 0.1}},
         },
       };
     }
@@ -158,6 +189,15 @@ const groupByDays = (month, data) => {
   days.reverse();
   return days.filter(day => day.length > 0);
 };
+const groupByDaysTransfert = (month, data) => {
+  const days = Array.from({
+    length: new moment().month(month)
+      .daysInMonth(),
+  }, () => []);
+  days[new moment(data.transferDate).day()] = data;
+  days.reverse();
+  return days.filter(day => day.length > 0);
+};
 // transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
 
 router.get("/:userId/detail/:id", async (req, res, next) => {
@@ -180,11 +220,12 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
     const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
     const transactionsByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
     const transfersByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+    const transfersByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
     for (const transaction of transactions.rows) {
       transactionsByMonth[new moment(transaction.transactionDate).month()].push(transaction);
     }
     for (const transfer of transfers.rows) {
-      transfersByMonth[new moment(transfer.transactionDate).month()].push(transfer);
+      transfersByMonth[new moment(transfer.transferDate).month()].push(transfer);
     }
     // eslint-disable-next-line no-magic-numbers
     for (let month = 0; month <= currentMonth; month++) {
@@ -195,27 +236,29 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
         for (const transaction of transactionsByMonth[month]) {
           if (transaction.type === TransactionTypes.INCOME
             || transaction.type === TransactionTypes.EXPECTED_INCOME) {
-            incomeTransactions[month] = calculateAmount(transaction.data);
+            incomeTransactions[month] += calculateAmount(transaction.data);
             balanceAccount += calculateAmount(transaction.data);
             periodByMonth += calculateAmount(transaction.data);
           } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
             || transaction.type === TransactionTypes.EXPENSE) {
-            outcomeTransactions[month] = calculateAmount(transaction.data);
+            outcomeTransactions[month] += calculateAmount(transaction.data);
             balanceAccount -= calculateAmount(transaction.data);
             periodByMonth -= calculateAmount(transaction.data);
           }
         }
 
         if (transfersByMonth.length > 0) {
-          transactionsByMonthAndDays[month]
-            = transactionsByMonthAndDays[month].concat(groupByDays(month, transfersByMonth[month]));
+          transfersByMonthAndDays[month]
+            = groupByDaysTransfert(month, transfersByMonth[month]);
           for (const transfer of transfersByMonth[month]) {
             if (account.id === transfer.senderId) {
               outcomeTransfers[month] += parseFloat(transfer.amount);
               periodByMonth -= parseFloat(transfer.amount);
+              balanceAccount -= parseFloat(transfer.amount);
             } else {
               incomeTransfers[month] += parseFloat(transfer.amount);
               periodByMonth += parseFloat(transfer.amount);
+              balanceAccount += parseFloat(transfer.amount);
             }
           }
         }
@@ -272,6 +315,7 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
       transactionsByMonth: transactionsByMonth.splice(0, currentMonth + 1).reverse(),
       transactionsByMonthAndDays: transactionsByMonthAndDays.splice(0, currentMonth + 1).reverse(),
       transfersByMonth: transfersByMonth.splice(0, currentMonth + 1).reverse(),
+      transfersByMonthAndDays: transfersByMonthAndDays.splice(0, currentMonth + 1).reverse(),
       period: period.splice(0, currentMonth + 1).reverse(),
       graphs: graphs.reverse(),
     };
