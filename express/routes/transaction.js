@@ -12,6 +12,7 @@ const transactionSrv = require("../services/transaction.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
 const budgetSrv = require("../services/budget.js");
+const transferSrv = require("../services/transfer.js");
 
 const router = express.Router();
 
@@ -63,7 +64,8 @@ router.post("/new", async (req, res, next) => {
 router.post("/:id/edit", async (req, res, next) => {
   try {
     const data = await prepareCategoryData(req.body);
-    await transactionSrv.update(req.params.id, data);
+    const transfers = await transferSrv.getAllByUser(req.user.id);
+    await transactionSrv.update(req.params.id, data, transfers.rows);
     await budgetSrv.recalculate(req.user);
     res.redirect(SEE_OTHER, "/transaction");
   } catch (e) {

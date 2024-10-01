@@ -89,7 +89,7 @@ accountSrv.update = async (userId, accountId, data) => {
   );
 };
 
-accountSrv.rebalance = async (accountId, transactions) => {
+accountSrv.rebalance = async (accountId, transactions, transfers) => {
   logger.debug("Rebalance account=[%s]", accountId);
   const account = await accountSrv.get(accountId);
   let newAccountBalance = account.initialBalance;
@@ -109,6 +109,16 @@ accountSrv.rebalance = async (accountId, transactions) => {
         (accumulator, currentValue) => accumulator + currentValue,
         0,
       );
+    }
+  }
+
+  if (transfers) {
+    for (const transfer of transfers) {
+      if (account.id === transfer.receiverId) {
+        newAccountBalance += parseFloat(transfer.amount);
+      } else if (account.id === transfer.senderId) {
+        newAccountBalance -= parseFloat(transfer.amount);
+      }
     }
   }
 
