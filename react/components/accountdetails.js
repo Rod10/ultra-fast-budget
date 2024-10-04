@@ -1,3 +1,5 @@
+const df = require("dateformat");
+//const moment = require("moment");
 const React = require("react");
 const PropTypes = require("prop-types");
 
@@ -17,7 +19,6 @@ const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
 
 const TransactionModalList = require("./transactionmodallist.js");
-const moment = require("moment");
 
 class AccountDetails extends React.Component {
   static splitArrayIntoChunks(array, chunkSize) {
@@ -147,7 +148,7 @@ class AccountDetails extends React.Component {
     return <div className="body-content">
       <Column className="has-text-centered">
         <Title size={5}>Détails du compte: {this.props.account.name}</Title>
-        <h5>Année en cour: {new moment().year()}</h5>
+        <h5>Année en cour: {new Date().getUTCFullYear()}</h5>
       </Column>
       <Columns>
         {graphs[0].length > 0
