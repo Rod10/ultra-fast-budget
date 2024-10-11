@@ -33,7 +33,7 @@ class Select extends React.Component {
         {options.map(e => <option
           key={`${this.props.name}-${e.value}`}
           disabled={e.disabled}
-          defaultValue={e.value}
+          value={e.value}
         >
           {e.label || e.value}
         </option>)}

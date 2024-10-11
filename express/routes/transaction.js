@@ -13,6 +13,7 @@ const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
 const budgetSrv = require("../services/budget.js");
 const transferSrv = require("../services/transfer.js");
+const searchMid = require("../middlewares/search.js");
 
 const router = express.Router();
 
@@ -26,13 +27,15 @@ const prepareCategoryData = async transactionData => {
   return transactionData;
 };
 
-router.get("/", async (req, res, next) => {
+router.get("/", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
-    const transaction = await transactionSrv.getAllByUser(req.user.id);
+    const query = req.parsedQuery || {};
+    const transactions = await transactionSrv.getAllByUser(req.user.id);
     const categories = await categorySrv.getAll(req.user.id);
     const accounts = await accountSrv.getAllByUser(req.user.id);
     const data = {
-      transaction,
+      query,
+      transactions,
       categories,
       accounts,
       user: req.user,
@@ -86,5 +89,18 @@ router.get(
     }
   },
 );
+
+router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
+  try {
+    const result = await transactionSrv.search(req.user, req.parsedQuery);
+    res.json({
+      count: result.count,
+      rows: result.rows,
+    });
+  } catch (e) {
+    logger.error(e);
+    return next(e);
+  }
+});
 
 module.exports = router;

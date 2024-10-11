@@ -5,6 +5,7 @@ const PropTypes = require("prop-types");
 const {OK} = require("../../express/utils/error.js");
 const OrderDirection = require("../../express/constants/orderdirection.js");
 const {preventDefault} = require("../utils/html.js");
+const Navigation = require("./navigation.js");
 
 const DEFAULT_LIMIT = 15;
 const INPUT_TIMEOUT = 500;
@@ -36,15 +37,14 @@ class AsyncFilteredList extends React.Component {
     const doSearch = () => axios.get(`${this.searchUri + queryStr}&t=${Date.now()}`)
       .then(response => {
         if (response.status === OK) {
-          const graphs = response.data.graphs ? response.data.graphs : null;
+          const contributors = response.data.contributors ? response.data.contributors : null;
           this.setState({
-            graphs,
+            contributors,
             count: response.data.count,
             rows: this.adapter ? response.data.rows.map(this.adapter) : response.data.rows,
           });
         }
       });
-
     if (this.delaiLastSearch) {
       clearTimeout(this.delaiTimeout);
       this.delaiTimeout = setTimeout(doSearch, INPUT_TIMEOUT);
@@ -61,9 +61,6 @@ class AsyncFilteredList extends React.Component {
       limit: this.props.query.limit,
       page: this.props.query.page,
       count: this.props.query.count,
-      unit: this.props.query.month || "month",
-      number: this.props.query.number || 12,
-      type: this.props.query.type || "planned",
     };
   }
 
@@ -165,6 +162,21 @@ class AsyncFilteredList extends React.Component {
         </div>
       </div>,
     );
+  }
+
+  _renderNavigation(content = null) {
+    return <Navigation
+      limit={this.state.limit}
+      page={this.state.page}
+      count={this.state.count}
+      onChange={this.handleChange}
+      query={this.getQueryObject()}
+      sort={this.sort}
+      orderBy={this.state.orderBy}
+      orderDirection={this.state.orderDirection}
+    >
+      {content}
+    </Navigation>;
   }
 }
 AsyncFilteredList.displayName = "AsyncFilteredList";

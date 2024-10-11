@@ -7,11 +7,11 @@ const {
   Op,
 } = require("../models/index.js");
 const OrderDirection = require("../constants/orderdirection.js");
-const {logger} = require("./logger.js");
-const accountSrv = require("./account.js");
 const TransactionType = require("../constants/transactiontype");
 const TransactionTypes = require("../constants/transactiontype");
 const AccountTypes = require("../constants/accountstype");
+const accountSrv = require("./account.js");
+const {logger} = require("./logger.js");
 
 const transactionSrv = {};
 
@@ -103,7 +103,6 @@ transactionSrv.update = async (id, data, transfers) => {
     other: data.notes,
     transactionDate: new Date(data.date),
   }, {where: {id}});
-  console.log(transaction)
   const transactions = await transactionSrv.getAllByAccount(data.account);
   await accountSrv.rebalance(data.account, transactions, transfers);
   return transaction;
@@ -175,6 +174,64 @@ transactionSrv.getAllByUserAndRange = (userId, query) => {
     include: [{association: Transaction.Account}],
     order: [["transactionDate", OrderDirection.DESC]],
   });
+};
+
+transactionSrv.search = async (user, query) => {
+  logger.debug(
+    "Search transaction for user=[%s] and query=[%j]",
+    user,
+    query,
+  );
+  assert(user, "Missing user");
+  const q = {
+    limit: 15,
+    page: 0,
+    ...query,
+  };
+  const where = {
+    userId: user.id,
+    data: {[Op.ne]: null},
+    deletedOn: {[Op.eq]: null},
+  };
+  if (q.startingDate) {
+    const d = new Date(q.startingDate);
+    const f = new Date(q.endingDate);
+    where.transactionDate = {
+      [Op.and]: {
+        [Op.gte]: d,
+        [Op.between]: [
+          new moment(d).add(1, "day"),
+          new moment(f).add(1, "day"),
+        ],
+      },
+    };
+  }
+
+  if (q.account) {
+    where.accountId = parseInt(q.account, 10);
+  }
+
+  if (q.genre) {
+    where.type = q.genre;
+  }
+  const dataConditions = [];
+  if (q.category) {
+    dataConditions.push({[Op.like]: `%{"category":{"id":${q.category},%`});
+    if (q.subCategory) {
+      dataConditions.push({[Op.like]: `%"subCategory":{"id":${q.subCategory},%`});
+    }
+  }
+  if (dataConditions.length) where.data = {[Op.and]: dataConditions};
+
+  const docs = await Transaction.findAndCountAll({
+    where,
+    include: [{association: Transaction.Account}],
+    order: [["transactionDate", OrderDirection.DESC]],
+    offset: (q.limit && q.page) ? q.limit * q.page : 0,
+    limit: q.limit,
+    subQuery: false,
+  });
+  return docs;
 };
 
 module.exports = transactionSrv;
