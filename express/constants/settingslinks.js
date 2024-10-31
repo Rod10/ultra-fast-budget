@@ -10,10 +10,10 @@ const user = {
   routes: "/settings/user",
 };
 
-const preference = {
+const preferences = {
   label: "Préférence",
   logo: "/images/svg/home_operation.svg",
-  routes: "/settings/preference",
+  routes: "/settings/preferences",
 };
 
 const parameters = {
@@ -25,6 +25,6 @@ const parameters = {
 module.exports = {
   tools,
   user,
-  preference,
+  preferences,
   parameters,
 };

@@ -24,8 +24,6 @@ router.get("/", (req, res) => {
   res.render("generic", {navbar, data, content, components: ["settingshomepage"]});
 });
 
-router.use("/category", require("./category.js"));
-router.use("/preference", require("./preference.js"));
-router.use("/account-type", require("./account-type.js"));
+router.use("/preferences", require("./preferences/index.js"));
 
 module.exports = router;

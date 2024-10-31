@@ -1,9 +1,9 @@
 /* global React ReactDOM */
 
-const Preference = require("../../react/components/preference.js");
+const Preferences = require("../../react/components/preferences.js");
 
 ReactDOM.hydrate(
-  React.createElement(Preference, {
+  React.createElement(Preferences, {
     ...window.data,
     ...window.edwinData,
   }),

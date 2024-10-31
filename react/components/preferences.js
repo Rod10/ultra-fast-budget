@@ -11,7 +11,7 @@ const Head = require("./helpers/head.js");
 
 const Toogle = require("./form/toogleinput.js");
 
-class Preference extends React.Component {
+class Preferences extends React.Component {
   render() {
     return <div className="container is-fluid">
       <Head>
@@ -23,7 +23,7 @@ class Preference extends React.Component {
           type="themed"
           icon={<Icon size="small" icon="pen" />}
           label="Gérer vos catégories"
-          href="/settings/category/list"
+          href="/settings/preferences/category/list"
         />
         <br />
         <br />
@@ -32,7 +32,7 @@ class Preference extends React.Component {
           type="themed"
           icon={<Icon size="small" icon="pen" />}
           label="Gérer vos type de compte"
-          href="/settings/account-type"
+          href="/settings/preferences/account-type"
         />
         <br />
         <br />
@@ -41,7 +41,7 @@ class Preference extends React.Component {
           type="themed"
           icon={<Icon size="small" icon="pen" />}
           label="Gérer vos modèles de transactions"
-          href="/settings/transaction/list"
+          href="/settings/preferences/transaction/list"
         />
         <hr />
         <Button
@@ -67,8 +67,8 @@ class Preference extends React.Component {
   }
 }
 
-Preference.displayName = "Preference";
-Preference.propTypes = {};
-Preference.defaultProps = {};
+Preferences.displayName = "Preferences";
+Preferences.propTypes = {};
+Preferences.defaultProps = {};
 
-module.exports = Preference;
+module.exports = Preferences;

@@ -7,7 +7,7 @@ const NavBar = require("../../react/components/navbar.js");
 const Homepage = require("../../react/components/homepage.js");
 const SettingsHomepage = require("../../react/components/settingshomepage.js");
 const AccountList = require("../../react/components/accountlist.js");
-const Preference = require("../../react/components/preference.js");
+const Preference = require("../../react/components/preferences.js");
 const CategoryList = require("../../react/components/categorylist.js");
 const TransactionList = require("../../react/components/transaction/transactionlist.js");
 const PlannedTransactionList = require("../../react/components/transaction/plannedtransactionlist.js");
@@ -25,7 +25,7 @@ const render = [
   {name: "homepage", component: Homepage},
   {name: "accountList", component: AccountList},
   {name: "settingsHomepage", component: SettingsHomepage},
-  {name: "preference", component: Preference},
+  {name: "preferences", component: Preference},
   {name: "categoryList", component: CategoryList},
   {name: "transactionList", component: TransactionList},
   {name: "plannedTransactionList", component: PlannedTransactionList},

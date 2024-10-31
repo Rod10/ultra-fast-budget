@@ -23,7 +23,7 @@ const config = {
     "plannedtransferlist": `${VIEWS}/plannedtransferlist.js`,
 
     "settingshomepage": `${VIEWS}/settingshomepage.js`,
-    "preference": `${VIEWS}/preference.js`,
+    "preferences": `${VIEWS}/preferences.js`,
     "categorylist": `${VIEWS}/categorylist.js`,
     "accounttypelist": `${VIEWS}/accounttypelist.js`,
 

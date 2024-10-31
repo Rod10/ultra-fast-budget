@@ -1,11 +1,11 @@
 const express = require("express");
 // const loggerMid = require("../../middlewares/logger.js");
-const authMid = require("../../middlewares/user.js");
+const authMid = require("../../../middlewares/user.js");
 
-const accountTypeSrv = require("../../services/accounttype.js");
-const renderSrv = require("../../services/render.js");
-const {logger} = require("../../services/logger.js");
-const {SEE_OTHER} = require("../../utils/error");
+const accountTypeSrv = require("../../../services/accounttype.js");
+const renderSrv = require("../../../services/render.js");
+const {logger} = require("../../../services/logger.js");
+const {SEE_OTHER} = require("../../../utils/error.js");
 // const {SEE_OTHER} = require("../../utils/error.js");
 
 const router = express.Router();
