@@ -15,6 +15,7 @@ const Budget = require("./budget.js");
 const Category = require("./category.js");
 const SubCategory = require("./subcategory.js");
 const Transaction = require("./transaction.js");
+const TransactionModel = require("./transactionmodel.js");
 const Transfer = require("./transfer.js");
 const PlannedTransaction = require("./plannedtransaction.js");
 const PlannedTransfer = require("./plannedtransfer.js");
@@ -45,6 +46,7 @@ const db = {};
   PlannedTransfer,
   SubCategory,
   Transaction,
+  TransactionModel,
   Transfer,
   User,
 ].forEach(def => {
