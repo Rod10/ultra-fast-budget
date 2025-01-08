@@ -140,7 +140,8 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/logout", async (req, res, next) => {
-
+  res.cookie("token", "", {expires: new Date()});
+  res.redirect(SEE_OTHER, "/login");
 });
 
 router.get("/hello", async (req, res) => {
