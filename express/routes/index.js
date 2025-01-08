@@ -50,6 +50,7 @@ router.post("/register", async (req, res, next) => {
     await userSrv.create(req.body);
     res.redirect(SEE_OTHER, "/");
   } catch (e) {
+    logger.error(e);
     return next(e);
   }
 });
@@ -62,7 +63,15 @@ router.post("/login", loggerMid(["email"]), async (req, res, next) => {
 
     res.redirect(SEE_OTHER, "/");
   } catch (e) {
-    return next(e);
+    logger.error(e);
+
+    const query = new URLSearchParams(req.query).toString();
+    const data = renderSrv.userLogin({
+      error: true,
+      email: req.body.email,
+      query: query ? `?${query}` : "",
+    });
+    res.render("login_society", {data});
   }
 });
 
