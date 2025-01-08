@@ -136,4 +136,23 @@ categorySrv.delete = async id => {
   return category.destroy();
 };
 
+categorySrv.search = (userId, query) => {
+  logger.debug("Search categories for user=[%s] with query=[%s]", userId, query);
+
+  const where = {[Op.and]: [{userId}]};
+  const condition = where[Op.and][0];
+
+  if ("genre" in query) {
+    condition.genre = query.genre;
+  }
+
+  return Category.findAndCountAll({
+    where,
+    include: [{
+      association: Category.SubCategory,
+      // where: {userId},
+    }],
+  });
+};
+
 module.exports = categorySrv;

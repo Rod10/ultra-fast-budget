@@ -11,6 +11,7 @@ const subCategoriesSrv = require("../../../services/subcategory.js");
 const renderSrv = require("../../../services/render.js");
 const {logger} = require("../../../services/logger.js");
 const {SEE_OTHER} = require("../../../utils/error.js");
+const searchMid = require("../../../middlewares/search.js");
 
 const router = express.Router();
 
@@ -29,9 +30,18 @@ const upload = multer({storage: Storage});
 
 const newFile = upload.fields([{name: "icon", maxCount: 1}]);
 
-router.get("/list", async (req, res) => {
-  const categories = await categorySrv.getAll(req.user.id);
-  const data = {categories};
+router.get("/list", searchMid.getPagination, searchMid.cookie, async (req, res) => {
+  const query = req.parsedQuery;
+
+  const cookie = req.parsedSearchCookie;
+  if (!cookie.categories) cookie.categories = {};
+  searchMid.setCookie(res, cookie);
+
+  const categories = await categorySrv.search(req.user.id, req.parsedQuery);
+  const data = {
+    query,
+    categories,
+  };
 
   const navbar = renderSrv.navbar(res.locals);
   const content = renderSrv.categoryList(data);
@@ -138,5 +148,24 @@ router.get(
     }
   },
 );
+
+router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
+  try {
+    const query = req.parsedQuery;
+
+    const cookie = req.parsedSearchCookie;
+    if (!cookie.categories) cookie.categories = {};
+    searchMid.setCookie(res, cookie);
+
+    const result = await categorySrv.search(req.user.id, query);
+    return res.json({
+      count: result.count,
+      rows: result.rows,
+    });
+  } catch (err) {
+    logger.error(err);
+    return next(err);
+  }
+});
 
 module.exports = router;

@@ -22,10 +22,12 @@ class CategoryList extends AsyncFilteredList {
     this.s = [{key: "genre"}];
     this.searchUri = "search";
 
-    this.base = "/settings/category/";
+    this.base = "/settings/preferences/category/list";
 
     this.state = {
       currentCategory: null,
+      rows: this.props.categories.rows,
+      count: this.props.categories.count,
       ...this.defaultState(),
       ...props.query,
     };
@@ -86,7 +88,7 @@ class CategoryList extends AsyncFilteredList {
   }
 
   render() {
-    const list = this.props.categories.rows.map(category => <div
+    const list = this.state.rows.map(category => <div
       className="mb-2"
       data-categoryid={category.id}
       onClick={this.handleOpenDetails}
