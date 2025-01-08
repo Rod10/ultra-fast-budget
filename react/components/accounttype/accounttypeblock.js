@@ -2,12 +2,6 @@ const React = require("react");
 const PropTypes = require("prop-types");
 
 class AccountTypeBlock extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.handleExpandClick = this.handleExpandClick.bind(this);
-  }
-
   render() {
     return <div className="box slide-in is-clickable">
       <div className="columns is-flex">
@@ -24,6 +18,7 @@ class AccountTypeBlock extends React.Component {
         </div>
         <div className="column has-text-right">
           {this._renderTag(this.props.accountType)}
+          {this.props.delete ? this.props.delete : null}
         </div>
       </div>
     </div>;
@@ -36,15 +31,14 @@ class AccountTypeBlock extends React.Component {
       title={accountType.name}
     >{accountType.name}</span>;
   }
-
-  handleExpandClick(evt) {
-    evt.preventDefault();
-
-    this.setState(prevState => ({expanded: !prevState.expanded}));
-  }
 }
 
 AccountTypeBlock.displayName = "AccountTypeBlock";
-AccountTypeBlock.propTypes = {accountType: PropTypes.object.isRequired};
+AccountTypeBlock.propTypes = {
+  accountType: PropTypes.object.isRequired,
+  delete: PropTypes.object,
+};
+
+AccountTypeBlock.defaultProps = {delete: null};
 
 module.exports = AccountTypeBlock;
