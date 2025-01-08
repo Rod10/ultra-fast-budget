@@ -124,19 +124,19 @@ class CategoryModal extends React.Component {
     if (this.state.type === "create") {
       /* if category then it's for creating a new sub-category */
       if (category) {
-        action = `/settings/category/${category.id}/create-sub-category`;
+        action = `/settings/preferences/category/${category.id}/create-sub-category`;
         title = "Créer une sous-catégorie";
       } else {
-        action = "/settings/category/new";
+        action = "/settings/preferences/category/new";
         title = "Créer une catégorie";
       }
     } else if (this.state.type === "edit") {
       /* if category then it's for creating a new sub-category */
       if (this.state.subCategory) {
-        action = `/settings/category/sub-category/${this.state.subCategory.id}/edit`;
+        action = `/settings/preferences/category/sub-category/${this.state.subCategory.id}/edit`;
         title = "Modifier une sous-catégorie";
       } else {
-        action = `/settings/category/${category.id}/edit`;
+        action = `/settings/preferences/category/${category.id}/edit`;
         title = "Modifier une catégorie";
       }
     }

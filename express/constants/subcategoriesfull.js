@@ -34,7 +34,7 @@ const SubCategoriesFull = Object.freeze({
   },
   [SubCategories.TECHNOLOGY]: {
     name: "Technologie",
-    imagePath: "techo.png",
+    imagePath: "technology.png",
     parent: [Category.SHOPPING],
   },
   [SubCategories.GIFT]: {

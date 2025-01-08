@@ -29,7 +29,7 @@ router.post("/new", async (req, res, next) => {
   try {
     const {user} = req;
     await accountTypeSrv.create(user.id, req.body);
-    res.redirect(SEE_OTHER, "/account-type");
+    res.redirect(SEE_OTHER, "/settings/preferences/account-type");
   } catch (e) {
     logger.error(e);
     return next(e);

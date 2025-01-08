@@ -86,10 +86,10 @@ class AccountTypeModal extends React.Component {
     let action = null;
     let title = null;
     if (account) {
-      action = `/settings/account-type/${account.id}/edit`;
+      action = `/settings/preferences/account-type/${account.id}/edit`;
       title = "Modifier le type de compte";
     } else {
-      action = "/settings/account-type/new";
+      action = "/settings/preferences/account-type/new";
       title = "Créer un type de compte";
     }
 
