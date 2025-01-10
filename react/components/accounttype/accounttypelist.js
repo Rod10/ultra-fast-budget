@@ -36,7 +36,7 @@ class AccountTypeList extends React.Component {
     const el = getElFromDataset(evt, "id");
     const id = parseInt(el.dataset.id, 10);
     const accountType = this.props.accountTypes.rows.find(row => row.id === id);
-    return this.openDeletionModal({item: accountType, action: "/settings/preferences/account-type"});
+    return this.openDeletionModal(accountType, `/settings/preferences/account-type/${id}`);
   }
 
   _renderAccountTypeRow(id, accountType) {
