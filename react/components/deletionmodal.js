@@ -2,6 +2,8 @@ const React = require("react");
 const PropTypes = require("prop-types");
 
 const Modal = require("./modal.js");
+const axios = require("axios");
+const {OK} = require("../../express/utils/error.js");
 
 class DeletionModal extends React.Component {
   static handleAlertClick() {
@@ -13,9 +15,10 @@ class DeletionModal extends React.Component {
     super(props);
     this.state = {
       item: {},
-      action: "",
+      type: "",
       confirm: false,
       alert: false,
+      error: false,
       pending: false,
     };
 
@@ -32,11 +35,11 @@ class DeletionModal extends React.Component {
     }
   }
 
-  componentDidUpdate(_prevProps, prevState) {
+  /* componentDidUpdate(_prevProps, prevState) {
     if (!prevState.pending && this.state.pending) {
       this.deletionFormRef.current.submit();
     }
-  }
+  } */
 
   render() {
     return <div>
@@ -47,51 +50,13 @@ class DeletionModal extends React.Component {
 
   _renderConfirm() {
     let content = null;
-    /*if (this.state.item.type === "work-order" || this.state.item.type === "work-order-updated") {
-      if (this.state.item.docId) {
-        content = <p>{`Supprimer le document ${this.state.item.docName} associé au bon de travail ${this.state.item.reference}`}</p>;
-        action = `${base}/document/${this.state.item.docId}/delete`;
-      } else {
-        content = <p>{`Supprimer le bon de travail ${this.state.item.reference} ?`}</p>;
-      }
-    } else if (this.state.item.type === "manoeuvre") {
-      content = <p>{`Supprimer la fiche de manœuvre ${this.state.item.reference} ?`}</p>;
-    } else if (this.state.item.type === "other-documents") {
-      if (this.state.item.docId) {
-        content = (
-          <p>{`Supprimer le document ${this.state.item.docName} associé au document ${this.state.item.reference}`}</p>
-        );
-        action = `${base}/document/${this.state.item.docId}/delete`;
-      } else {
-        content = <p>{`Supprimer le document ${this.state.item.reference} ?`}</p>;
-      }
-    } else if (this.state.item.type === "otst-byes") {
-      if (this.state.item.docId) {
-        content = <p>{`Supprimer le document ${this.state.item.docName} associé a l'ordre de travail sous tension' ${this.state.item.reference}`}</p>;
-        action = `${base}/document/${this.state.item.docId}/delete`;
-      } else {
-        content = <p>{`Supprimer l'ordre de travail sous tension ${this.state.item.reference} ?`}</p>;
-      }
-    } else if (this.state.item.type === "rapport-depannage") {
-      if (this.state.item.docId) {
-        content = <p>{`Supprimer le document ${this.state.item.docName} associé au rapport après dépannage ${this.state.item.reference}`}</p>;
-        action = `${base}/document/${this.state.item.docId}/delete`;
-      } else {
-        content = <p>{`Supprimer le rapport après dépannage ${this.state.item.reference} ?`}</p>;
-      }
-    } else if (this.state.item.type === "quizz") {
-      if (this.state.item.subType === "userQuizz") {
-        content = <p>{`Supprimer le quiz de ${this.state.item.user} ?`}</p>;
-        action = `${base}/delete-quizz`;
-      } else {
-        content = <p>{`Supprimer la question n°${this.state.item.reference} ?`}</p>;
-      }
-    } else if (this.state.item.type === "annex-work-order") {
-      content = <p>{`Attention si vous supprimer l'annexe reliée au BT+ n°${this.state.item.reference}, vous ne pourrez pas en recréer une`}</p>;
-    } else {
-      content = <p>Supprimer l'article ?</p>;
-    }*/
-    content = "test";
+    let action = null;
+    if (this.state.type === "accountType") {
+      content = <p>{`Voulez vous vraiment supprimer le type de compte ${this.state.item.name} ?`} <br/>
+        Assurez vous que le solde de ce compte est bien à 0€ car <span className="has-text-danger">cette action est définitive et irréversible</span>
+      </p>;
+      action = `/settings/preferences/account-type/${this.state.item.id}/delete`;
+    }
     return <Modal
       visible={this.state.confirm}
       pending={this.state.pending}
@@ -105,7 +70,7 @@ class DeletionModal extends React.Component {
       <form
         ref={this.deletionFormRef}
         method="POST"
-        action={`${this.state.action}/delete`}
+        action={action}
       >
         {content}
         {this.state.pending && <p>
@@ -122,13 +87,13 @@ class DeletionModal extends React.Component {
       confirmText="Recharger la page"
       onConfirm={this.handleAlertClick}
     >
-      <p>Une erreur est survenue lors de l'effacement, rechargez la page et ré-essayez</p>
-      <p>Si le problème persiste, merci de contacter les responsables du site.</p>
+      <p>Une erreur est survenue lors de l'effacement:</p>
+      <p>{this.state.error}</p>
     </Modal>;
   }
 
-  openModal(item, action) {
-    this.setState({item, action, confirm: true});
+  openModal(type, item) {
+    this.setState({type, item, action: `/settings/preferences/account-type/${item.id}/delete`, confirm: true});
   }
 
   handleCloseClick() {
@@ -140,10 +105,19 @@ class DeletionModal extends React.Component {
 
   handleConfirmClick() {
     if (this.state.pending) return;
-
-    if (this.deletionFormRef.current.reportValidity()) {
-      this.setState({pending: true});
-    }
+    console.log("test");
+    axios.post(this.state.action)
+      .then(response => {
+        console.log(response);
+        if (response.status === OK && response.data.status === OK) {
+          this.setState({confirm: false});
+        } else {
+          this.setState({alert: true, error: response.data.error});
+        }
+      })
+      .catch(error => {
+        this.setState({alert: true, error});
+      });
   }
 }
 DeletionModal.displayName = "DeletionModal";

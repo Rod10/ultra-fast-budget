@@ -48,11 +48,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    deletedOn: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     freezeTableName: true,
     tableName: "ACCOUNT_TYPE",
     createdAt: "creationDate",
     updatedAt: "modificationDate",
+    deletedAt: "deletedOn",
   });
   AccountType.associate = models => {
     AccountType.User = AccountType.belongsTo(models.User, {

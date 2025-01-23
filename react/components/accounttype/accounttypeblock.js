@@ -18,6 +18,7 @@ class AccountTypeBlock extends React.Component {
         </div>
         <div className="column has-text-right">
           {this._renderTag(this.props.accountType)}
+          {this.props.edit ? this.props.edit : null}
           {this.props.delete ? this.props.delete : null}
         </div>
       </div>
@@ -37,8 +38,12 @@ AccountTypeBlock.displayName = "AccountTypeBlock";
 AccountTypeBlock.propTypes = {
   accountType: PropTypes.object.isRequired,
   delete: PropTypes.object,
+  edit: PropTypes.object,
 };
 
-AccountTypeBlock.defaultProps = {delete: null};
+AccountTypeBlock.defaultProps = {
+  delete: null,
+  edit: null,
+};
 
 module.exports = AccountTypeBlock;

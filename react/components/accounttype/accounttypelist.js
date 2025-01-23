@@ -18,10 +18,10 @@ class AccountTypeList extends React.Component {
     super(props);
     this.base = `/account-type/${this.props.user.id}`;
 
-    this.state = {};
+    this.state = {accountTypes: this.props.accountTypes};
 
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
-    this.handleOpenDeletionModal = this.handleOpenDeletionModal.bind(this);
+    this.handleOpenModal = this.handleOpenModal.bind(this);
   }
 
   handleRegisterModal(modal, fn) {
@@ -32,20 +32,31 @@ class AccountTypeList extends React.Component {
     }
   }
 
-  handleOpenDeletionModal(evt) {
+  handleOpenModal(evt) {
     const el = getElFromDataset(evt, "id");
     const id = parseInt(el.dataset.id, 10);
     const accountType = this.props.accountTypes.rows.find(row => row.id === id);
-    return this.openDeletionModal(accountType, `/settings/preferences/account-type/${id}`);
+    const modal = el.dataset.modal;
+    return this[modal]("accountType", accountType);
   }
 
   _renderAccountTypeRow(id, accountType) {
     const deleteBtn = <a
       data-id={id}
-      onClick={this.handleOpenDeletionModal}
+      data-modal="openDeletionModal"
+      onClick={this.handleOpenModal}
       title="Supprimer"
     >
       <span className="icon"><i className="fa fa-trash" /></span>
+    </a>;
+
+    const editBtn = <a
+      data-id={id}
+      data-modal="openAccountTypeModal"
+      onClick={this.handleOpenModal}
+      title="Supprimer"
+    >
+      <span className="icon"><i className="fa fa-pencil" /></span>
     </a>;
 
     return <div
@@ -57,12 +68,13 @@ class AccountTypeList extends React.Component {
         key={accountType.id}
         accountType={accountType}
         delete={deleteBtn}
+        edit={editBtn}
       />
     </div>;
   }
 
   render() {
-    const list = this.props.accountTypes.rows.map(e => this._renderAccountTypeRow(e.id, e));
+    const list = this.state.accountTypes.rows.map(e => this._renderAccountTypeRow(e.id, e));
     /* const list = this.props.accountTypes.rows.map(accountType => <div
       className="mb-2"
       key={accountType.id}
@@ -84,7 +96,7 @@ class AccountTypeList extends React.Component {
               type="themed"
               icon={<Icon size="small" icon="plus" />}
               label="Ajouter un Type de compte"
-              onClick={() => this.openAccountTypeModal()}
+              onClick={this.handleOpenModal}
             />
           </div>
         </Column>

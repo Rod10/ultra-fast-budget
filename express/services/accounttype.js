@@ -38,12 +38,33 @@ accountTypeSrv.create = (userId, data) => {
 
 accountTypeSrv.getAllByUser = userId => {
   logger.debug("Get all Account Type for user=[%s]", userId);
-  return AccountType.findAndCountAll({where: {userId}});
+  return AccountType.findAndCountAll({
+    where: {
+      userId,
+      deletedOn: {[Op.eq]: null},
+    },
+  });
 };
 
 accountTypeSrv.getByType = (userId, type) => {
   logger.debug("Get all Account Type for user=[%s]", userId);
   return AccountType.findOne({where: {userId, type}});
+};
+
+accountTypeSrv.getById = (userId, id) => {
+  logger.debug("Get Account Type=[%s] for user=[%s]", id, userId);
+  return AccountType.findOne({
+    where: {userId, id},
+    include: [{association: AccountType.Account}],
+  });
+};
+
+accountTypeSrv.delete = (userId, id) => {
+  logger.debug("Delete Account Type=[%s] for user=[%]", id, userId);
+  return AccountType.update(
+    {deletedOn: new Date()},
+    {where: {userId, id}},
+  );
 };
 
 module.exports = accountTypeSrv;

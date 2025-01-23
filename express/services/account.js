@@ -53,7 +53,10 @@ accountSrv.getAllByUser = userId => {
   logger.debug("Get all accounts for userId=[%s]", userId);
   return Account.findAndCountAll({
     where: {userId},
-    include: [{association: Account.AccountType}],
+    include: [{
+      association: Account.AccountType,
+      where: {deletedOn: {[Op.eq]: null}},
+    }],
   });
 };
 
