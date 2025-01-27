@@ -1,5 +1,6 @@
 const React = require("react");
 const PropTypes = require("prop-types");
+const ReactSelect = require("react-select");
 
 const {getElFromDataset} = require("../../utils/html.js");
 const Button = require("../bulma/button.js");
@@ -150,7 +151,7 @@ class AccountTypeModal extends React.Component {
             />
           </Column>
           <Column>
-            <Input
+            {/* <Input
               className="input"
               label="ClassName (tag)"
               type="text"
@@ -158,6 +159,28 @@ class AccountTypeModal extends React.Component {
               value={this.state.className}
               data-key={"className"}
               onChange={this.handleChange}
+            />*/}
+            <ReactSelect
+              // label="ClassName (tag)"
+              // type="text"
+              // name="className"
+              // defaultValue={this.state.className}
+              // data-propname={"className"}
+              // onChange={this.handleChange}
+              options={[
+                /*{
+                  value: ".is-white",
+                  label: "<p><span className=\"tag is-white is-medium is-rounded\">Blanc</span></p>",
+                },
+                {
+                  value: ".is-black",
+                  label: "<p><span className=\"tag is-black is-medium is-rounded\">Noire</span></p>",
+                },*/
+                {
+                  value: "",
+                  label: "",
+                },
+              ]}
             />
           </Column>
         </Columns>

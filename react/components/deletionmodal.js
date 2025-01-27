@@ -92,7 +92,7 @@ class DeletionModal extends React.Component {
     </Modal>;
   }
 
-  openModal(type, item) {
+  openModal(item, type) {
     this.setState({type, item, action: `/settings/preferences/account-type/${item.id}/delete`, confirm: true});
   }
 
@@ -108,7 +108,6 @@ class DeletionModal extends React.Component {
     console.log("test");
     axios.post(this.state.action)
       .then(response => {
-        console.log(response);
         if (response.status === OK && response.data.status === OK) {
           this.setState({confirm: false});
         } else {

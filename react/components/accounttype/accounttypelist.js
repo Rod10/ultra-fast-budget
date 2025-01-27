@@ -37,7 +37,7 @@ class AccountTypeList extends React.Component {
     const id = parseInt(el.dataset.id, 10);
     const accountType = this.props.accountTypes.rows.find(row => row.id === id);
     const modal = el.dataset.modal;
-    return this[modal]("accountType", accountType);
+    return this[modal](accountType, "accountType");
   }
 
   _renderAccountTypeRow(id, accountType) {
