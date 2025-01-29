@@ -28,7 +28,7 @@ class AccountTypeBlock extends React.Component {
   // eslint-disable-next-line class-methods-use-this
   _renderTag(accountType) {
     return <span
-      className={`tag ${accountType.className} is-medium is-rounded`}
+      className={`tag ${accountType.tag} is-medium is-rounded`}
       title={accountType.name}
     >{accountType.name}</span>;
   }

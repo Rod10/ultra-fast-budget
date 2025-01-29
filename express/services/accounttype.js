@@ -29,7 +29,7 @@ accountTypeSrv.create = (userId, data) => {
     name: data.name,
     type: data.type,
     color: data.color,
-    className: data.className,
+    tag: data.tag,
     interest: data.interest,
     maxAmount: data.maxAmount,
     unit: data.unit,

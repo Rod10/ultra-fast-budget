@@ -39,24 +39,33 @@ router.post("/:id/delete", async (req, res, next) => {
   try {
     const accountType = await accountTypeSrv.getById(req.user.id, req.params.id);
     const accountBalanceIsZero = accountType.account.filter(account => account.balance !== 0).length === 0;
-    console.log(accountBalanceIsZero);
     if (accountBalanceIsZero) {
       await accountTypeSrv.delete(req.user.id, accountType.id);
       const {user} = req;
       const accountTypes = await accountTypeSrv.getAllByUser(user.id);
       return res.json({accountTypes});
-    } else {
-      const accountList = accountType.account.filter(account => account.balance !== 0);
-      let error = "";
-      for (const account of accountList) {
-        error += `- ${account.name}\r\n`;
-      }
-      return res.json({status: "ERROR", error: `Le/Les compte(s) suivant(s) ont un solde supérieur à zéro:\r\n ${error}`});
     }
+    const accountList = accountType.account.filter(account => account.balance !== 0);
+    let error = "";
+    for (const account of accountList) {
+      error += `- ${account.name}\r\n`;
+    }
+    return res.json({status: "ERROR", error: `Le/Les compte(s) suivant(s) ont un solde supérieur à zéro:\r\n ${error}`});
   } catch (e) {
     logger.error(e);
     return next(e);
   }
 });
+
+router.post("/:id/edit", async (req, res, next) => {
+  try {
+    const {user} = req;
+    const data = req.body;
+    console.log(data);
+  } catch (e) {
+    logger.error(e);
+    return next(e);
+  }
+})
 
 module.exports = router;
