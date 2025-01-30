@@ -67,4 +67,20 @@ accountTypeSrv.delete = (userId, id) => {
   );
 };
 
+accountTypeSrv.update = (userId, accountTypeId, accountType) => {
+  logger.debug("Update Account Type=[%s] for user=[%s]", accountTypeId, userId);
+  return AccountType.update(
+    {
+      name: accountType.name,
+      type: accountType.type,
+      color: accountType.color,
+      tag: accountType.tag,
+      interest: accountType.interest,
+      maxAmount: accountType.maxAmount,
+      unit: accountType.unit,
+    },
+    {where: {id: accountTypeId, userId}},
+  );
+};
+
 module.exports = accountTypeSrv;

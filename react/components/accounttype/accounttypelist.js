@@ -34,9 +34,12 @@ class AccountTypeList extends React.Component {
 
   handleOpenModal(evt) {
     const el = getElFromDataset(evt, "id");
+    const modal = el.dataset.modal;
+    if (el.dataset.id === "new") {
+      return this[modal](null, "accountType");
+    }
     const id = parseInt(el.dataset.id, 10);
     const accountType = this.props.accountTypes.rows.find(row => row.id === id);
-    const modal = el.dataset.modal;
     return this[modal](accountType, "accountType");
   }
 
@@ -54,7 +57,7 @@ class AccountTypeList extends React.Component {
       data-id={id}
       data-modal="openAccountTypeModal"
       onClick={this.handleOpenModal}
-      title="Supprimer"
+      title="Editer"
     >
       <span className="icon"><i className="fa fa-pencil" /></span>
     </a>;
@@ -93,6 +96,8 @@ class AccountTypeList extends React.Component {
           <div className="has-text-right">
             <Button
               className="has-text-weight-bold mr-3"
+              data-id="new"
+              data-modal="openAccountTypeModal"
               type="themed"
               icon={<Icon size="small" icon="plus" />}
               label="Ajouter un Type de compte"

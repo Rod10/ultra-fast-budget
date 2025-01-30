@@ -107,6 +107,14 @@ const UnitsOptions = [
   },
 ];
 
+const hexToRGB = hexValue => {
+  const numericValue = parseInt(hexValue.slice(1), 16);
+  const r = numericValue >> 16 & 0xFF;
+  const g = numericValue >> 8 & 0xFF;
+  const b = numericValue & 0xFF;
+  return {r, g, b};
+};
+
 class AccountTypeModal extends React.Component {
   static handleAlertClick() {
     /* eslint-disable-next-line no-self-assign */
@@ -164,29 +172,33 @@ class AccountTypeModal extends React.Component {
 
   openModal(account) {
     this.setState(() => {
-      const tagIndex = TagOptions.findIndex(tag => tag.value === account.tag);
-      const unitIndex = UnitsOptions.findIndex(unit => unit.value.toUpperCase() === account.unit);
+      const tagIndex = account
+        ? TagOptions.findIndex(tag => tag.value === account.tag)
+        : 0;
+      const unitIndex = account
+        ? UnitsOptions.findIndex(unit => unit.value.toUpperCase() === account.unit)
+        : 0;
+      const accountColor = hexToRGB(account ? account.color : "#333");
       return {
         visible: true,
         account,
         name: account ? account.name : "",
         type: account ? account.type : "",
-        color: account ? account.color
-          : {
-            hex: "#333",
-            rgb: {
-              r: 51,
-              g: 51,
-              b: 51,
-              a: 1,
-            },
-            hsl: {
-              h: 0,
-              s: 0,
-              l: 0.20,
-              a: 1,
-            },
+        color: {
+          hex: account ? account.color : "#333",
+          rgb: {
+            r: accountColor.r,
+            g: accountColor.g,
+            b: accountColor.b,
+            a: 1,
           },
+          hsl: {
+            h: 0,
+            s: 0,
+            l: 0.20,
+            a: 1,
+          },
+        },
         tag: TagOptions[tagIndex],
         interest: account ? account.interest : "",
         maxAmount: account ? account.maxAmount : "",
@@ -202,7 +214,7 @@ class AccountTypeModal extends React.Component {
   }
 
   handleColorChange(color) {
-    this.setState({color: color.hex});
+    this.setState({color});
   }
 
   handleConfirmClick() {
@@ -261,12 +273,14 @@ class AccountTypeModal extends React.Component {
       left: "0px",
     };
 
+    console.log(this.state.color.rgb);
+
     const styles = reactCSS({
       "default": {
         color: {
-          width: "36px",
-          height: "14px",
-          borderRadius: "2px",
+          // width: "36px",
+          // height: "14px",
+          // borderRadius: "2px",
           background: `rgba(${this.state.color.rgb.r}, ${this.state.color.rgb.g}, ${this.state.color.rgb.b}, ${this.state.color.rgb.a})`,
         },
         swatch: {
@@ -278,7 +292,7 @@ class AccountTypeModal extends React.Component {
           cursor: "pointer",
         },
         popover: {
-          position: "absolute",
+          // position: "absolute",
           zIndex: "2",
         },
         cover: {
@@ -337,26 +351,26 @@ class AccountTypeModal extends React.Component {
         </Columns>
         <Columns>
           <Column>
-            {/* <Input
+            {<Input
               className="input"
+              style={styles.color}
               label={<span>Couleur <a className="anchor-color">?</a></span>}
               type="text"
               name="color"
-              value={this.state.color}
+              value={this.state.color.hex}
               data-key={"color"}
-              onChange={this.handleChange}
               onClick={this.handleOpenColorPicker}
-            /> */}
-            {/* this.state.displayColorPicker ? <div style={popover}>
-              <div style={cover} onClick={this.handleOpenColorPicker} />
+            />}
+            {/* this.state.displayColorPicker ? <div style={styles.popover}>
+              <div style={styles.cover} onClick={this.handleOpenColorPicker} />
               <ChromePicker onChange={this.handleColorChange} />
             </div> : null */}
-            <div style={styles.swatch} onClick={this.handleClick}>
+            {/* <div style={styles.swatch} onClick={this.handleOpenColorPicker}>
               <div style={styles.color} />
-            </div>
+            </div> */}
             { this.state.displayColorPicker ? <div style={styles.popover}>
-              <div style={styles.cover} onClick={this.handleClose} />
-              <SketchPicker color={this.state.color} onChange={this.handleChange} />
+              <div style={styles.cover} onClick={this.handleCloseColorPicker} />
+              <SketchPicker color={this.state.color} onChange={this.handleColorChange} />
             </div> : null }
           </Column>
           <Column>
@@ -403,6 +417,7 @@ class AccountTypeModal extends React.Component {
               <label className="label"><span>Périodicité <a className="anchor-interest">?</a></span></label>
               <div className="control">
                 <Select
+                  name="unit"
                   value={this.state.unit}
                   onChange={this.handleUnitChange}
                   options={UnitsOptions}

@@ -1,4 +1,5 @@
-const React = require("react");
+const React = require("react")
+const reactCSS = require("reactcss").default;
 const PropTypes = require("prop-types");
 
 class AccountTypeBlock extends React.Component {
@@ -7,7 +8,7 @@ class AccountTypeBlock extends React.Component {
       <div className="columns is-flex">
         <div className="column">
           <div>
-            <a>{this.props.accountType.name}</a> •&nbsp;
+            <a style={{color: this.props.accountType.color}}>{this.props.accountType.name}</a> •&nbsp;
             <b>Montant maximal du compte: </b>&nbsp;
             <b>{this.props.accountType.maxAmount} €</b>&nbsp;
           </div>

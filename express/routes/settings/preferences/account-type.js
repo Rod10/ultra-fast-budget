@@ -62,6 +62,8 @@ router.post("/:id/edit", async (req, res, next) => {
     const {user} = req;
     const data = req.body;
     console.log(data);
+    await accountTypeSrv.update(user.id, req.params.id, data);
+    res.redirect(SEE_OTHER, "/settings/preferences/account-type");
   } catch (e) {
     logger.error(e);
     return next(e);
