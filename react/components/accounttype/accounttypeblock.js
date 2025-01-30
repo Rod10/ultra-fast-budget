@@ -1,5 +1,4 @@
-const React = require("react")
-const reactCSS = require("reactcss").default;
+const React = require("react");
 const PropTypes = require("prop-types");
 
 class AccountTypeBlock extends React.Component {

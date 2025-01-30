@@ -47,7 +47,7 @@ accountTypeSrv.getAllByUser = userId => {
 };
 
 accountTypeSrv.getByType = (userId, type) => {
-  logger.debug("Get all Account Type for user=[%s]", userId);
+  logger.debug("Get all Account Type for user=[%s] and type=[%s]", userId, type);
   return AccountType.findOne({where: {userId, type}});
 };
 

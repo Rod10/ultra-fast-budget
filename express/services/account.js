@@ -22,10 +22,11 @@ const accountSrv = {};
  * @param {string} data.currency - Currency of the account
  * @param {string} data.type - Type of the account
  * @param {string} data.initialBalance - Initial balance of the account
- * @returns {object} user - User instance
+ * @param {object} accountType - Account Type instance
+ * @returns {object} account - Account instance
  */
 accountSrv.create = (userId, data, accountType) => {
-  logger.debug("Create account with data=[%s] for user=[%s]", data, userId);
+  logger.debug("Create account with data=[%s] for user=[%s] and accountType=[%s]", data, userId, accountType.id);
   // if (AccountsTypeFull[data.type].maxAmount !== 0) {
   //   assert(parseInt(data.initialBalance, 10) <= AccountsTypeFull[data.type].maxAmount, "Initial balance cannot be more than the maximum amount allowed");
   // }
@@ -34,7 +35,6 @@ accountSrv.create = (userId, data, accountType) => {
     userId,
     name: data.name,
     currency: data.currency,
-    type: data.type,
     accountTypeId: accountType.id,
     initialBalance: data.initialBalance,
     balance: data.initialBalance,
@@ -63,20 +63,26 @@ accountSrv.getAllByUser = userId => {
 /**
  * update the account with the data provided
  * @param {number} userId - The user Id
- * @param {object} account - The account that need to me modified
+ * @param {number} accountId - The account that need to me modified
  * @param {object} data - The transaction data
+ * @param {number} accountTypeId - The transaction data
  */
-accountSrv.updateData = async (userId, account, data) => {
-  logger.debug("Update user=[%s] account=[%s] with data=[%s]", userId, account.id, data);
+accountSrv.updateData = async (userId, accountId, data, accountTypeId) => {
+  logger.debug("Update user=[%s] account=[%s] with data=[%s]", userId, accountId, data);
   assert(userId, "UserId cannot be null");
-  assert(account.id, "AccountId cannot be null");
+  assert(accountId, "AccountId cannot be null");
   assert(data, "Data cannot be null");
-
-  account.name = data.name;
-  account.type = data.type;
-  account.balance = data.initialBalance;
-
-  return account.save();
+  assert(accountTypeId, "accountTypeId cannot be null");
+  console.log(accountId);
+  return Account.update(
+    {
+      name: data.name,
+      accountTypeId,
+      // currency: data.currency,
+      // initialBalance: parseFloat(data.initialBalance),
+    },
+    {where: {id: accountId, userId}},
+  );
 };
 
 accountSrv.update = async (userId, accountId, data) => {

@@ -52,6 +52,7 @@ class AccountModal extends React.Component {
   }
 
   openModal(account, accountsType) {
+    console.log(account.initialBalance);
     this.setState(() => ({
       visible: true,
       account,
@@ -61,9 +62,8 @@ class AccountModal extends React.Component {
         label: row.name,
       })),
       name: account ? account.name : "",
-      type: account ? account.type : "",
-      initialBalance: account ? account.initialBalance : "",
-      balance: account ? account.balance : 0,
+      type: account ? account.accountType.type : "",
+      initialBalance: account ? account.initialBalance : 0,
       currency: account ? account.currency : "",
     }));
   }
@@ -161,7 +161,9 @@ class AccountModal extends React.Component {
               label="Montant initial"
               type="text"
               name="initialBalance"
-              defaultValue={this.state.initialBalance}
+              value={this.state.initialBalance}
+              data-key={"initialBalance"}
+              onChange={this.handleChange}
               horizontal
             />
           </Column>

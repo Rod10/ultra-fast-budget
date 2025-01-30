@@ -16,7 +16,7 @@ class AccountBlock extends React.Component {
       <div className="columns is-flex">
         <div className="column">
           <div>
-            <a>{this.props.account.name}</a> •&nbsp;
+            <a style={{color: this.props.account.accountType.color}}>{this.props.account.name}</a> •&nbsp;
             <b>Solde: </b>&nbsp;
             <b>{this.props.account.balance} {CurrenciesFull[this.props.account.currency].sign}</b>&nbsp;
           </div>

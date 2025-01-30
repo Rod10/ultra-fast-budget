@@ -168,8 +168,8 @@ router.post("/new", async (req, res, next) => {
 
 router.post("/:id/edit", async (req, res, next) => {
   try {
-    const account = await accountSrv.get(req.params.id);
-    await accountSrv.updateData(req.user.id, account, req.body);
+    const accountType = await accountTypeSrv.getByType(req.user.id, req.body.type);
+    await accountSrv.updateData(req.user.id, req.params.id, req.body, accountType.id);
     res.redirect(SEE_OTHER, "/account");
   } catch (e) {
     return next(e);
