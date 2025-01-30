@@ -52,13 +52,6 @@ class BudetBlock extends React.Component {
     </div>;
   }
 
-  /* _renderTag(budget) {
-    return <span
-      className={`tag ${AccountsTypeFull[budget.type].className} is-medium is-rounded`}
-      title={AccountsTypeFull[budget.type].label}
-    >{AccountsTypeFull[budget.type].label}</span>;
-  }*/
-
   handleExpandClick(evt) {
     evt.preventDefault();
 
