@@ -175,8 +175,10 @@ class AccountModal extends React.Component {
               label="Devise"
               type="text"
               name="currency"
-              defaultValue={this.state.currency}
+              data-key={"currency"}
+              value={this.state.currency}
               options={currenciesOptions}
+              onChange={this.handleChange}
             />
           </Column>
         </Columns>

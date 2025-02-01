@@ -78,8 +78,8 @@ accountSrv.updateData = async (userId, accountId, data, accountTypeId) => {
     {
       name: data.name,
       accountTypeId,
-      // currency: data.currency,
-      // initialBalance: parseFloat(data.initialBalance),
+      currency: data.currency,
+      initialBalance: parseFloat(data.initialBalance),
     },
     {where: {id: accountId, userId}},
   );
