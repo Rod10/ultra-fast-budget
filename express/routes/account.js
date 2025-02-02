@@ -7,7 +7,7 @@ const renderSrv = require("../services/render.js");
 const transactionSrv = require("../services/transaction.js");
 const transferSrv = require("../services/transfer.js");
 const {logger} = require("../services/logger.js");
-const {SEE_OTHER} = require("../utils/error.js");
+const {SEE_OTHER, OK} = require("../utils/error.js");
 const TransactionTypes = require("../constants/transactiontype.js");
 const accountTypeSrv = require("../services/accounttype.js");
 
@@ -40,7 +40,7 @@ router.get("/", async (req, res, next) => {
     const userAccounts = await accountSrv.getAllByUser(req.user.id);
     const accountsType = await accountTypeSrv.getAllByUser(req.user.id);
     const data = {
-      userAccounts,
+      rows: userAccounts.rows,
       accountsType,
       user: req.user,
     };
@@ -346,6 +346,17 @@ router.get("/rebalance-all", async (req, res, next) => {
       await accountSrv.update(req.user.id, accountSender.id, accountSender);
     }
     res.redirect("/account");
+  } catch (err) {
+    logger.error(err);
+    return next(err);
+  }
+});
+
+router.post("/:id/delete", async (req, res, next) => {
+  try {
+    await accountSrv.delete(req.user.id, req.params.id);
+    const userAccounts = await accountSrv.getAllByUser(req.user.id);
+    return res.json({status: OK, rows: userAccounts.rows});
   } catch (err) {
     logger.error(err);
     return next(err);

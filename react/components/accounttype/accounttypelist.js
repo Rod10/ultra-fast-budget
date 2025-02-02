@@ -123,8 +123,6 @@ AccountTypeList.displayName = "AccountTypeList";
 AccountTypeList.propTypes = {
   user: PropTypes.object.isRequired,
   accountTypes: PropTypes.object.isRequired,
-  graphs: PropTypes.object,
 };
-AccountTypeList.defaultProps = {graphs: undefined};
 
 module.exports = AccountTypeList;

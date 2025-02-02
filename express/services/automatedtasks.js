@@ -36,7 +36,6 @@ const calculateTotalTransactionData = data => data.map(row => parseFloat(row.amo
 );
 
 automatedSrv.plannedTransactions = async () => {
-  console.log("test");
   const where = {
     [Op.and]: [
       {transactionDate: {[Op.gte]: new moment().startOf("date")}},

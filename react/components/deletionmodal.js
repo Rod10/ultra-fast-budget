@@ -57,6 +57,12 @@ class DeletionModal extends React.Component {
       </p>;
       action = `/settings/preferences/account-type/${this.state.item.id}/delete`;
     }
+    if (this.state.type === "account") {
+      content = <p>{`Voulez vous vraiment supprimer le compte ${this.state.item.name} ?`} <br/>
+        Assurez vous que le solde de ce compte est bien à 0€ car <span className="has-text-danger">cette action est définitive et irréversible</span>
+      </p>;
+      action = `/account/${this.state.item.id}/delete`;
+    }
     return <Modal
       visible={this.state.confirm}
       pending={this.state.pending}
@@ -93,7 +99,14 @@ class DeletionModal extends React.Component {
   }
 
   openModal(item, type) {
-    this.setState({type, item, action: `/settings/preferences/account-type/${item.id}/delete`, confirm: true});
+    let action = "";
+    if (type === "accountType") {
+      action = `/settings/preferences/account-type/${item.id}/delete`;
+    }
+    if (type === "account") {
+      action = `/account/${item.id}/delete`;
+    }
+    this.setState({type, item, action, confirm: true});
   }
 
   handleCloseClick() {
@@ -105,10 +118,10 @@ class DeletionModal extends React.Component {
 
   handleConfirmClick() {
     if (this.state.pending) return;
-    console.log("test");
     axios.post(this.state.action)
       .then(response => {
         if (response.status === OK && response.data.status === OK) {
+          this.props.updateData(response.data.rows);
           this.setState({confirm: false});
         } else {
           this.setState({alert: true, error: response.data.error});

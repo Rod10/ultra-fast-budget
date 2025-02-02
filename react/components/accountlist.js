@@ -14,6 +14,7 @@ const AccountExpand = require("./accountexpand.js");
 const TransferModal = require("./transfermodal.js");
 
 const utils = require("./utils.js");
+const DeletionModal = require("./deletionmodal.js");
 
 class AccountList extends React.Component {
   constructor(props) {
@@ -21,15 +22,15 @@ class AccountList extends React.Component {
     this.base = `/account/${this.props.user.id}`;
 
     this.state = {
-      modal: "",
+      rows: props.rows,
       currentAccount: null,
     };
 
-    this.handleOpenAccountModal = this.handleOpenAccountModal.bind(this);
-    this.handleCloseModal = this.handleCloseModal.bind(this);
     this.handleOpenDetails = this.handleOpenDetails.bind(this);
     this.handleCloseDetails = this.handleCloseDetails.bind(this);
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
+    this.updateData = this.updateData.bind(this);
   }
 
   handleRegisterModal(modal, fn) {
@@ -37,15 +38,9 @@ class AccountList extends React.Component {
       this.openAccountModal = fn;
     } else if (modal === "transfer") {
       this.openTransferModal = fn;
+    } else if (modal === "deletion") {
+      this.openDeletionModal = fn;
     }
-  }
-
-  handleOpenAccountModal() {
-    this.setState({modal: "account"});
-  }
-
-  handleCloseModal() {
-    this.setState({modal: null});
   }
 
   handleCloseDetails() {
@@ -55,17 +50,25 @@ class AccountList extends React.Component {
   handleOpenDetails(evt) {
     const el = getElFromDataset(evt, "accountid");
     const accountId = parseInt(el.dataset.accountid, 10);
-    const account = this.props.userAccounts.rows.find(acc => acc.id === accountId);
+    const account = this.props.rows.find(acc => acc.id === accountId);
     this.setState({currentAccount: account});
   }
 
+  handleDeleteClick(evt) {
+    return this.openDeletionModal(this.state.currentAccount, "account");
+  }
+
+  updateData(rows) {
+    this.setState({rows, currentAccount: null});
+  }
+
   render() {
-    const totalAmount = this.props.userAccounts.rows.map(account => account.balance).reduce(
+    const totalAmount = this.state.rows.map(account => account.balance).reduce(
       (accumulator, currentValue) => accumulator + currentValue,
       0,
     );
 
-    const list = this.props.userAccounts.rows.map(account => <div
+    const list = this.state.rows.map(account => <div
       className="mb-2"
       data-accountid={account.id}
       onClick={this.handleOpenDetails}
@@ -87,11 +90,12 @@ class AccountList extends React.Component {
           onClick={() => this.openAccountModal(this.state.currentAccount, this.props.accountsType)}
           openTransferModal={() => this.openTransferModal({
             currentAccount: this.state.currentAccount,
-            accounts: this.props.userAccounts,
+            accounts: this.state.rows,
             transfer: null,
           }, this.props.accountsType)}
+          onDeleteClick={this.handleDeleteClick}
           graphs={this.props.graphs}
-          userAccounts={this.props.userAccounts}
+          rows={this.state.rows}
         />;
 
     return <div className="body-content">
@@ -137,13 +141,14 @@ class AccountList extends React.Component {
       </Columns>
       <AccountModal onRegisterModal={this.handleRegisterModal} />
       <TransferModal onRegisterModal={this.handleRegisterModal} />
+      <DeletionModal onRegisterModal={this.handleRegisterModal} updateData={this.updateData} />
     </div>;
   }
 }
 AccountList.displayName = "AccountList";
 AccountList.propTypes = {
   user: PropTypes.object.isRequired,
-  userAccounts: PropTypes.object.isRequired,
+  rows: PropTypes.object.isRequired,
   accountsType: PropTypes.object.isRequired,
   graphs: PropTypes.object,
 };

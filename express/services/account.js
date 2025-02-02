@@ -52,7 +52,10 @@ accountSrv.get = id => {
 accountSrv.getAllByUser = userId => {
   logger.debug("Get all accounts for userId=[%s]", userId);
   return Account.findAndCountAll({
-    where: {userId},
+    where: {
+      userId,
+      deletedOn: {[Op.eq]: null},
+    },
     include: [{
       association: Account.AccountType,
       where: {deletedOn: {[Op.eq]: null}},
@@ -152,6 +155,14 @@ accountSrv.rebalanceTransfer = async (senderId, receiverId, transfers) => {
   }
   receiver.balance = newReceiverAccountBalance;
   receiver.save();
+};
+
+accountSrv.delete = (userId, id) => {
+  logger.debug("Delete account=[%s] of user=[%s]", id, userId);
+  return Account.update(
+    {deletedOn: new Date()},
+    {where: {id, userId}},
+  );
 };
 
 module.exports = accountSrv;

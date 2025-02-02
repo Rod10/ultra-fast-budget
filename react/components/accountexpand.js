@@ -228,6 +228,13 @@ class AccountExpand extends React.Component {
         label="Éditer"
         onClick={this.handleEditClick}
       />
+      <Button
+        className="ml-2 has-text-weight-bold"
+        type="danger"
+        icon={<Icon size="small" icon="trash" />}
+        label="Supprimer"
+        onClick={this.props.onDeleteClick}
+      />
     </div>;
   }
 }
@@ -239,6 +246,7 @@ AccountExpand.propTypes = {
   account: PropTypes.object.isRequired,
   graphs: PropTypes.object.isRequired,
   openTransferModal: PropTypes.func.isRequired,
+  onDeleteClick: PropTypes.func.isRequired,
 };
 AccountExpand.defaultProps = {onClose: undefined};
 
