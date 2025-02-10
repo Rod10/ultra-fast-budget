@@ -43,7 +43,7 @@ router.post("/:id/delete", async (req, res, next) => {
       await accountTypeSrv.delete(req.user.id, accountType.id);
       const {user} = req;
       const accountTypes = await accountTypeSrv.getAllByUser(user.id);
-      return res.json({accountTypes});
+      return res.json({status: OK, rows: accountTypes});
     }
     const accountList = accountType.account.filter(account => account.balance !== 0);
     let error = "";
@@ -61,13 +61,12 @@ router.post("/:id/edit", async (req, res, next) => {
   try {
     const {user} = req;
     const data = req.body;
-    console.log(data);
     await accountTypeSrv.update(user.id, req.params.id, data);
     res.redirect(SEE_OTHER, "/settings/preferences/account-type");
   } catch (e) {
     logger.error(e);
     return next(e);
   }
-})
+});
 
 module.exports = router;

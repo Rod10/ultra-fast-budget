@@ -37,7 +37,6 @@ class AsyncFilteredList extends React.Component {
     const doSearch = () => axios.get(`${this.searchUri + queryStr}&t=${Date.now()}`)
       .then(response => {
         if (response.status === OK) {
-          console.log(response.data);
           this.setState({
             count: response.data.count,
             rows: response.data.rows,

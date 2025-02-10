@@ -94,12 +94,15 @@ class AccountModal extends React.Component {
     const account = this.state.account;
     let action = null;
     let title = null;
+    let confirmText = null;
     if (account) {
       action = `/account/${account.id}/edit`;
       title = "Modifier votre compte";
+      confirmText = "Modifier";
     } else {
       action = "/account/new";
       title = "Créer un compte";
+      confirmText = "Créer";
     }
 
     const currenciesOptions = Object.keys(Currencies).map(currency => ({
@@ -112,7 +115,7 @@ class AccountModal extends React.Component {
       pending={this.state.pending}
       type="confirm"
       cancelText="Annuler"
-      confirmText="Créer"
+      confirmText={confirmText}
       onClose={this.handleClose}
       onConfirm={this.handleConfirmClick}
       iconType="is-info"

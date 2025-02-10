@@ -18,10 +18,11 @@ class AccountTypeList extends React.Component {
     super(props);
     this.base = `/account-type/${this.props.user.id}`;
 
-    this.state = {accountTypes: this.props.accountTypes};
+    this.state = {rows: this.props.accountTypes.rows};
 
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
     this.handleOpenModal = this.handleOpenModal.bind(this);
+    this.updateData = this.updateData.bind(this);
   }
 
   handleRegisterModal(modal, fn) {
@@ -39,8 +40,13 @@ class AccountTypeList extends React.Component {
       return this[modal](null, "accountType");
     }
     const id = parseInt(el.dataset.id, 10);
-    const accountType = this.props.accountTypes.rows.find(row => row.id === id);
+    const accountType = this.state.rows.find(row => row.id === id);
     return this[modal](accountType, "accountType");
+  }
+
+  updateData(rows) {
+    console.log(rows);
+    this.setState({rows});
   }
 
   _renderAccountTypeRow(id, accountType) {
@@ -77,7 +83,7 @@ class AccountTypeList extends React.Component {
   }
 
   render() {
-    const list = this.state.accountTypes.rows.map(e => this._renderAccountTypeRow(e.id, e));
+    const list = this.state.rows.map(e => this._renderAccountTypeRow(e.id, e));
     /* const list = this.props.accountTypes.rows.map(accountType => <div
       className="mb-2"
       key={accountType.id}
@@ -115,7 +121,7 @@ class AccountTypeList extends React.Component {
         </div>
       </Columns>
       <AccountTypeModal onRegisterModal={this.handleRegisterModal} />
-      <DeletionModal onRegisterModal={this.handleRegisterModal} />
+      <DeletionModal onRegisterModal={this.handleRegisterModal} updateData={this.updateData} />
     </div>;
   }
 }

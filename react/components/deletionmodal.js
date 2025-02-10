@@ -1,9 +1,9 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
-const Modal = require("./modal.js");
 const axios = require("axios");
 const {OK} = require("../../express/utils/error.js");
+const Modal = require("./modal.js");
 
 class DeletionModal extends React.Component {
   static handleAlertClick() {
@@ -52,13 +52,13 @@ class DeletionModal extends React.Component {
     let content = null;
     let action = null;
     if (this.state.type === "accountType") {
-      content = <p>{`Voulez vous vraiment supprimer le type de compte ${this.state.item.name} ?`} <br/>
+      content = <p>{`Voulez vous vraiment supprimer le type de compte ${this.state.item.name} ?`} <br />
         Assurez vous que le solde de ce compte est bien à 0€ car <span className="has-text-danger">cette action est définitive et irréversible</span>
       </p>;
       action = `/settings/preferences/account-type/${this.state.item.id}/delete`;
     }
     if (this.state.type === "account") {
-      content = <p>{`Voulez vous vraiment supprimer le compte ${this.state.item.name} ?`} <br/>
+      content = <p>{`Voulez vous vraiment supprimer le compte ${this.state.item.name} ?`} <br />
         Assurez vous que le solde de ce compte est bien à 0€ car <span className="has-text-danger">cette action est définitive et irréversible</span>
       </p>;
       action = `/account/${this.state.item.id}/delete`;
@@ -73,16 +73,10 @@ class DeletionModal extends React.Component {
       onConfirm={this.handleConfirmClick}
       iconType="danger"
     >
-      <form
-        ref={this.deletionFormRef}
-        method="POST"
-        action={action}
-      >
-        {content}
-        {this.state.pending && <p>
-          <span className="has-text-info">Traitement en cours, veuillez patienter.</span>
-        </p>}
-      </form>
+      {content}
+      {this.state.pending && <p>
+        <span className="has-text-info">Traitement en cours, veuillez patienter.</span>
+      </p>}
     </Modal>;
   }
 
@@ -91,7 +85,7 @@ class DeletionModal extends React.Component {
       visible={this.state.alert}
       type="alert"
       confirmText="Recharger la page"
-      onConfirm={this.handleAlertClick}
+      onConfirm={DeletionModal.handleAlertClick}
     >
       <p>Une erreur est survenue lors de l'effacement:</p>
       <p>{this.state.error}</p>
@@ -121,7 +115,7 @@ class DeletionModal extends React.Component {
     axios.post(this.state.action)
       .then(response => {
         if (response.status === OK && response.data.status === OK) {
-          this.props.updateData(response.data.rows);
+          this.props.updateData(response.data.rows.rows);
           this.setState({confirm: false});
         } else {
           this.setState({alert: true, error: response.data.error});
@@ -133,7 +127,10 @@ class DeletionModal extends React.Component {
   }
 }
 DeletionModal.displayName = "DeletionModal";
-DeletionModal.propTypes = {onRegisterModal: PropTypes.func};
+DeletionModal.propTypes = {
+  onRegisterModal: PropTypes.func,
+  updateData: PropTypes.func.isRequired,
+};
 DeletionModal.defaultProps = {onRegisterModal: undefined};
 
 module.exports = DeletionModal;
