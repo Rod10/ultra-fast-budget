@@ -356,7 +356,7 @@ router.post("/:id/delete", async (req, res, next) => {
   try {
     await accountSrv.delete(req.user.id, req.params.id);
     const userAccounts = await accountSrv.getAllByUser(req.user.id);
-    return res.json({status: OK, rows: userAccounts.rows});
+    return res.json({status: OK, rows: userAccounts});
   } catch (err) {
     logger.error(err);
     return next(err);
