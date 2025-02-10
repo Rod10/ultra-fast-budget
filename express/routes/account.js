@@ -354,7 +354,11 @@ router.get("/rebalance-all", async (req, res, next) => {
 
 router.post("/:id/delete", async (req, res, next) => {
   try {
-    await accountSrv.delete(req.user.id, req.params.id);
+    const accountToDelete = await accountSrv.get(req.user.id, req.params.id);
+    if (accountToDelete.balance >= 1) {
+      return res.json({status: "ERROR", error: "Le solde du compte est supérieure à 0"});
+    }
+    await accountSrv.delete(req.user.id, accountToDelete.id);
     const userAccounts = await accountSrv.getAllByUser(req.user.id);
     return res.json({status: OK, rows: userAccounts});
   } catch (err) {

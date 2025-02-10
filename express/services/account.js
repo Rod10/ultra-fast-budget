@@ -41,10 +41,10 @@ accountSrv.create = (userId, data, accountType) => {
   });
 };
 
-accountSrv.get = id => {
+accountSrv.get = (userId, id) => {
   logger.debug("Get account by id=[%s]", id);
   return Account.findOne({
-    where: {id},
+    where: {id, userId},
     include: [{association: Account.AccountType}],
   });
 };
@@ -76,7 +76,6 @@ accountSrv.updateData = async (userId, accountId, data, accountTypeId) => {
   assert(accountId, "AccountId cannot be null");
   assert(data, "Data cannot be null");
   assert(accountTypeId, "accountTypeId cannot be null");
-  console.log(accountId);
   return Account.update(
     {
       name: data.name,
