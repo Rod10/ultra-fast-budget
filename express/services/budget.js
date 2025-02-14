@@ -136,40 +136,43 @@ budgetSrv.updateAmount = async (user, transaction) => {
 };
 
 budgetSrv.recalculate = async user => {
-  logger.debug("Recalutate all amount for all budget");
+  logger.debug("Recalutate all amount for all budget for user=[%s]", user.id);
 
   const test = {};
 
   const budgets = await budgetSrv.getAllByUser(user.id);
   for (const budget of budgets.rows) {
-    const newBudgetData = budget.data;
-    for (const newBudget of newBudgetData) {
-      newBudget.amount = 0;
-    }
-    newBudgetData.totalAmount = 0;
-    const transactions = await transactionSrv.getAllByUserAndRange(user.id, {unit: budget.unit});
-    for (const transaction of transactions.rows) {
-      for (const data of transaction.data) {
-        if (test[data.category.id]) {
-          if (test[data.category.id][data.subCategory.id]) {
-            test[data.category.id][data.subCategory.id] += parseFloat(data.amount);
-          } else {
-            test[data.category.id][data.subCategory.id] = parseFloat(data.amount);
-          }
-        } else {
-          test[data.category.id] = {};
-          test[data.category.id][data.subCategory.id] = parseFloat(data.amount);
-        }
-        const index = budget.data.findIndex(budgetData => budgetData.subCategory.id === data.subCategory.id);
-        newBudgetData[index] = {
-          ...budget.data[index],
-          amount: parseFloat(data.amount),
-        };
-        budget.totalAmount += test[data.category.id][data.subCategory.id];
-      }
-    }
-    budget.data = newBudgetData;
-    budget.save();
+    const newBudget = budget;
+    console.log(1, newBudget.data);
+
+    // const newBudgetData = budget.data;
+    // for (const newBudget of newBudgetData) {
+    //   newBudget.amount = 0;
+    // }
+    // newBudgetData.totalAmount = 0;
+    // const transactions = await transactionSrv.getAllByUserAndRange(user.id, {unit: budget.unit});
+    // for (const transaction of transactions.rows) {
+    //   for (const data of transaction.data) {
+    //     if (test[data.category.id]) {
+    //       if (test[data.category.id][data.subCategory.id]) {
+    //         test[data.category.id][data.subCategory.id] += parseFloat(data.amount);
+    //       } else {
+    //         test[data.category.id][data.subCategory.id] = parseFloat(data.amount);
+    //       }
+    //     } else {
+    //       test[data.category.id] = {};
+    //       test[data.category.id][data.subCategory.id] = parseFloat(data.amount);
+    //     }
+    //     const index = budget.data.findIndex(budgetData => budgetData.subCategory.id === data.subCategory.id);
+    //     newBudgetData[index] = {
+    //       ...budget.data[index],
+    //       amount: parseFloat(data.amount),
+    //     };
+    //     newBudgetData.totalAmount += test[data.category.id][data.subCategory.id];
+    //   }
+    // }
+    // budget.data = newBudgetData;
+    // budget.save();
   }
 };
 

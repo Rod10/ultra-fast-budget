@@ -1,9 +1,9 @@
 const React = require("react");
 const PropTypes = require("prop-types");
+const df = require("dateformat");
 const Column = require("./bulma/column.js");
 const Columns = require("./bulma/columns.js");
 const Icon = require("./bulma/icon.js");
-const df = require("dateformat");
 
 class TransferBlock extends React.Component {
   constructor(props) {
@@ -26,6 +26,8 @@ class TransferBlock extends React.Component {
         </Column>
         <Column className="has-text-right">
           <b>{this.props.transfer.amount} €</b> {this._renderTag()}
+          {this.props.edit ? this.props.edit : null}
+          {this.props.delete ? this.props.delete : null}
         </Column>
       </div>
     </div>;
@@ -46,6 +48,10 @@ class TransferBlock extends React.Component {
 }
 
 TransferBlock.displayName = "TransferBlock";
-TransferBlock.propTypes = {transfer: PropTypes.object.isRequired};
+TransferBlock.propTypes = {
+  transfer: PropTypes.object.isRequired,
+  delete: PropTypes.object.isRequired,
+  edit: PropTypes.object.isRequired,
+};
 
 module.exports = TransferBlock;

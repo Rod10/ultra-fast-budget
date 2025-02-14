@@ -60,9 +60,11 @@ class PlannedTransferModal extends React.Component {
       const other = items.plannedTransfer ? items.plannedTransfer.other : 0;
       const date = items.plannedTransfer ? new Date(items.plannedTransfer.transferDate)
         : new Date();
-      const occurence = items.plannedTransfer ? items.plannedTransfer.other : 0;
-      const unit = items.plannedTransfer ? items.plannedTransfer.other : "month";
-      const number = items.plannedTransfer ? items.plannedTransfer.other : 0;
+      const occurence = items.plannedTransfer ? items.plannedTransfer.occurence : 0;
+      const unit = items.plannedTransfer ? items.plannedTransfer.unit : "month";
+      const number = items.plannedTransfer ? items.plannedTransfer.number : 0;
+      const sender = items.plannedTransfer ? items.plannedTransfer.sender.id : 0;
+      const receiver = items.plannedTransfer ? items.plannedTransfer.receiver.id : 0;
       return {
         id,
         amount,
@@ -71,6 +73,8 @@ class PlannedTransferModal extends React.Component {
         occurence,
         unit,
         number,
+        sender,
+        receiver,
         accounts: items.accounts.rows,
         visible: true,
       };
@@ -107,11 +111,14 @@ class PlannedTransferModal extends React.Component {
     if (this.state.id === null) return null;
     let action = null;
     let title = null;
+    let confirmText = null;
     if (this.state.id !== 0) {
       action = `/planned-transfer/${this.state.id}/edit`;
       title = "Modifier le virement planifié";
+      confirmText = "Modifier";
     } else {
       title = "Créer un virement planifié";
+      confirmText = "Créer";
       action = "/planned-transfer/new";
     }
 
@@ -126,7 +133,7 @@ class PlannedTransferModal extends React.Component {
       pending={this.state.pending}
       type="confirm"
       cancelText="Annuler"
-      confirmText="Créer"
+      confirmText={confirmText}
       onClose={this.handleClose}
       onConfirm={this.handleConfirmClick}
       iconType="is-info"
@@ -147,7 +154,7 @@ class PlannedTransferModal extends React.Component {
               label="De:"
               type="text"
               name="sender"
-              defaultValue={this.state.sender}
+              value={this.state.sender}
               data-propname={"sender"}
               onChange={this.handleChange}
               options={accountsOptions}
@@ -158,7 +165,7 @@ class PlannedTransferModal extends React.Component {
               label="A:"
               type="text"
               name="receiver"
-              defaultValue={this.state.receiver}
+              value={this.state.receiver}
               data-propname={"receiver"}
               onChange={this.handleChange}
               options={accountsOptions}
@@ -228,19 +235,19 @@ class PlannedTransferModal extends React.Component {
               onChange={this.handleChange}
               options={[
                 {
-                  value: "year",
+                  value: "YEAR",
                   label: "Annuel",
                 },
                 {
-                  value: "month",
+                  value: "MONTH",
                   label: "Mensuel",
                 },
                 {
-                  value: "week",
+                  value: "WEEK",
                   label: "Hebdomadaire",
                 },
                 {
-                  value: "day",
+                  value: "DAY",
                   label: "Quotidien",
                 },
               ]}

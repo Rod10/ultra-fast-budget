@@ -42,7 +42,7 @@ router.post("/new", async (req, res, next) => {
 router.post("/:id/edit", async (req, res, next) => {
   try {
     const data = req.body;
-    await transferSrv.update(req.params.id, data);
+    await plannedTransferSrv.update(req.params.id, data);
     res.redirect(SEE_OTHER, "/account");
   } catch (e) {
     logger.error(e);
@@ -54,7 +54,7 @@ router.get(
   "/:id/delete",
   async (req, res, next) => {
     try {
-      await transferSrv.delete(req.params.id);
+      await plannedTransferSrv.delete(req.params.id);
       res.redirect(SEE_OTHER, "/account");
     } catch (e) {
       logger.error(e);

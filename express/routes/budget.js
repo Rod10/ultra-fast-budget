@@ -70,6 +70,16 @@ router.get("/:id/delete", async (req, res, next) => {
     logger.error(err);
     return next(err);
   }
-})
+});
+
+router.get("/rebalance-all", async (req, res, next) => {
+  try {
+    await budgetSrv.recalculate(req.user);
+    res.redirect(SEE_OTHER, "/budget");
+  } catch (err) {
+    logger.error(err);
+    return next(err);
+  }
+});
 
 module.exports = router;

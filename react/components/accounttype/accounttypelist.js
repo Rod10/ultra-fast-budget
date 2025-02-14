@@ -45,7 +45,6 @@ class AccountTypeList extends React.Component {
   }
 
   updateData(rows) {
-    console.log(rows);
     this.setState({rows});
   }
 
@@ -84,18 +83,6 @@ class AccountTypeList extends React.Component {
 
   render() {
     const list = this.state.rows.map(e => this._renderAccountTypeRow(e.id, e));
-    /* const list = this.props.accountTypes.rows.map(accountType => <div
-      className="mb-2"
-      key={accountType.id}
-    >
-      <AccountBlock
-        base={this.base}
-        key={accountType.id}
-        accountType={accountType}
-        delete={deleteBtn}
-      />
-    </div>);*/
-
     return <div className="body-content">
       <Columns>
         <Column>

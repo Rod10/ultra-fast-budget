@@ -70,6 +70,7 @@ plannedTransferSrv.update = async (id, data) => {
 
   return PlannedTransfer.update({
     amount: data.amount,
+    from: data.from,
     to: data.to,
     other: data.notes,
     transferDate: new Date(data.date),

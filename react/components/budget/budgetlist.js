@@ -89,6 +89,13 @@ class BudgetList extends React.Component {
               label="Créer un nouveau budget"
               onClick={() => this.openBudgetCreationModal({budget: null, categories: this.props.categories})}
             />
+            <Button
+              className="has-text-weight-bold mr-3"
+              type="themed"
+              icon={<Icon size="small" icon="rotate" />}
+              label="Recalculer les budgets"
+              href="/budget/rebalance-all"
+            />
           </div>
         </Column>
       </Columns>

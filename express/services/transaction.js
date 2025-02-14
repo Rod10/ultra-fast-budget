@@ -159,6 +159,13 @@ transactionSrv.getAllByUserAndRange = (userId, query) => {
           [Op.lt]: new moment().endOf(query.unit),
         },
       };
+    } else if (query.range === "month") {
+      condition.transactionDate = {
+        [Op.between]: [
+          new moment().startOf("month"),
+          new moment().endOf("month"),
+        ],
+      };
     } else {
       condition.transactionDate = {
         [Op.and]: {
