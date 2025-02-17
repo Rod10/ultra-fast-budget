@@ -176,6 +176,14 @@ transactionSrv.getAllByUserAndRange = (userId, query) => {
     }
   }
 
+  if ("type" in query) {
+    condition.type = query.type;
+  }
+
+  if ("isPlanned" in query) {
+    condition.isPlanned = query.isPlanned;
+  }
+
   return Transaction.findAndCountAll({
     where,
     include: [{association: Transaction.Account}],
