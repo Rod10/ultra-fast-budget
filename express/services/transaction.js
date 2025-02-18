@@ -226,8 +226,16 @@ transactionSrv.search = async (user, query) => {
     where.accountId = parseInt(q.account, 10);
   }
 
-  if (q.genre) {
-    where.type = q.genre;
+  if ("genre" in query) {
+    where.type = query.genre;
+  }
+
+  if ("type" in query) {
+    where.type = query.type;
+  }
+
+  if ("isPlanned" in query) {
+    where.isPlanned = query.isPlanned === "null" ? null : 1;
   }
   const dataConditions = [];
   if (q.category) {

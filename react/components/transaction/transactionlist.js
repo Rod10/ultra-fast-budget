@@ -10,7 +10,6 @@ const Column = require("../bulma/column.js");
 const DatePicker = require("../datepicker.js");
 const Icon = require("../bulma/icon.js");
 const Title = require("../bulma/title.js");
-const {preventDefault} = require("../../utils/html");
 const AsyncFilteredList = require("./../asyncfilteredlist.js");
 
 const TransactionBlock = require("./transactionblock.js");
@@ -30,6 +29,7 @@ class TransactionList extends AsyncFilteredList {
       {key: "genre"},
       {key: "category"},
       {key: "subCategory"},
+      {key: "isPlanned"},
       {key: "orderBy"},
       {key: "orderDirection"},
     ];
@@ -116,6 +116,20 @@ class TransactionList extends AsyncFilteredList {
           {
             value: "INCOME",
             label: "Revenue",
+          },
+        ],
+      )}
+      {this._renderFilterSelect(
+        "isPlanned",
+        "Planifiée:",
+        [
+          {
+            value: 1,
+            label: "Oui",
+          },
+          {
+            value: "null",
+            label: "Non",
           },
         ],
       )}

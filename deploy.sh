@@ -12,7 +12,7 @@ npm run check
 NODE_ENV=${NODE_ENV} npx grunt ${GRUNT_ARG}
 
 # copy files
-rsync -urv dist/* dist/.sequelizerc package.json package-lock.json ${REMOTE}:${TARGET_FOLDER}
+rsync -urv dist/* dist/.sequelizerc package.json package-lock.json ${REMOTE}:${TARGET_FOLDER}/dist
 
 # run post_deploy script
 ssh "${REMOTE}" "cd ${TARGET_FOLDER} && bash ./bin/post_deploy.sh ${NODE_ENV}"

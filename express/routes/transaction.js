@@ -30,7 +30,7 @@ const prepareCategoryData = async transactionData => {
 router.get("/", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
     const query = req.parsedQuery || {};
-    const transactions = await transactionSrv.getAllByUser(req.user.id);
+    const transactions = await transactionSrv.search(req.user, req.parsedQuery);
     const categories = await categorySrv.getAll(req.user.id);
     const accounts = await accountSrv.getAllByUser(req.user.id);
     const data = {
