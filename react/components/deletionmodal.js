@@ -50,18 +50,16 @@ class DeletionModal extends React.Component {
 
   _renderConfirm() {
     let content = null;
-    let action = null;
     if (this.state.type === "accountType") {
       content = <p>{`Voulez vous vraiment supprimer le type de compte ${this.state.item.name} ?`} <br />
         Assurez vous que le solde de ce compte est bien à 0€ car <span className="has-text-danger">cette action est définitive et irréversible</span>
       </p>;
-      action = `/settings/preferences/account-type/${this.state.item.id}/delete`;
-    }
-    if (this.state.type === "account") {
+    } else if (this.state.type === "account") {
       content = <p>{`Voulez vous vraiment supprimer le compte ${this.state.item.name} ?`} <br />
         Assurez vous que le solde de ce compte est bien à 0€ car <span className="has-text-danger">cette action est définitive et irréversible</span>
       </p>;
-      action = `/account/${this.state.item.id}/delete`;
+    } else if (this.state.type === "planned-transfer") {
+      content = <p>{`Voulez vous vraiment supprimer le virement planifié ${this.state.item.plannedTransfer.other} ?`}</p>;
     }
     return <Modal
       visible={this.state.confirm}
@@ -96,9 +94,10 @@ class DeletionModal extends React.Component {
     let action = "";
     if (type === "accountType") {
       action = `/settings/preferences/account-type/${item.id}/delete`;
-    }
-    if (type === "account") {
+    } else if (type === "account") {
       action = `/account/${item.id}/delete`;
+    } else if (type === "planned-transfer") {
+      action = `/planned-transfer/${item.plannedTransfer.id}/delete`;
     }
     this.setState({type, item, action, confirm: true});
   }

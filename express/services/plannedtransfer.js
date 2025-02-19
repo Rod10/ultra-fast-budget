@@ -19,7 +19,10 @@ plannedTransferSrv.get = id => {
 plannedTransferSrv.getAllByUser = (userId, query) => {
   logger.debug("Get all transaction for user=[%s]", userId);
   assert(userId, "User Id cannot be null");
-  const cond = {userId};
+  const cond = {
+    userId,
+    deletedOn: {[Op.eq]: null},
+  };
   if (query) {
     if (query.notTransfersId) {
       cond.id = {[Op.not]: query.notTransfersId};
@@ -77,10 +80,12 @@ plannedTransferSrv.update = async (id, data) => {
   }, {where: {id}});
 };
 
-plannedTransferSrv.delete = async id => {
+plannedTransferSrv.delete = id => {
   logger.debug("Delete transaction=[%s]", id);
-  const transaction = await plannedTransferSrv.get(id);
-  return transaction.destroy({where: {id}});
+  return PlannedTransfer.update(
+    {deletedOn: new Date()},
+    {where: {id}},
+  );
 };
 
 plannedTransferSrv.getAllByAccount = accountId => {

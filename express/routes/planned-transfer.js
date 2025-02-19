@@ -6,6 +6,7 @@ const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
 const renderSrv = require("../services/render.js");
 const accountSrv = require("../services/account.js");
+const {OK} = require("../utils/error");
 
 const router = express.Router();
 
@@ -50,12 +51,14 @@ router.post("/:id/edit", async (req, res, next) => {
   }
 });
 
-router.get(
+router.post(
   "/:id/delete",
   async (req, res, next) => {
     try {
       await plannedTransferSrv.delete(req.params.id);
-      res.redirect(SEE_OTHER, "/account");
+      const transfers = await plannedTransferSrv.getAllByUser(req.user.id);
+      console.log(transfers);
+      return res.json({status: OK, rows: transfers});
     } catch (e) {
       logger.error(e);
       return next(e);
