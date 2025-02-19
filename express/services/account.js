@@ -42,7 +42,7 @@ accountSrv.create = (userId, data, accountType) => {
 };
 
 accountSrv.get = (userId, id) => {
-  logger.debug("Get account by id=[%s]", id);
+  logger.debug("Get account by id=[%s] for user=[%s]", id, userId);
   return Account.findOne({
     where: {id, userId},
     include: [{association: Account.AccountType}],

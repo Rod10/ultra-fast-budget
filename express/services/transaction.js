@@ -65,7 +65,8 @@ transactionSrv.getAllByAccountAndRange = (accountId, query) => {
 transactionSrv.create = async (userId, transactionData) => {
   logger.debug("Create transaction for user=[%s] with data=[%s]", userId, transactionData);
 
-  const account = await accountSrv.get(transactionData.account);
+  const account = await accountSrv.get(userId, transactionData.account);
+  console.log(account);
   if (transactionData.type === TransactionTypes.INCOME || transactionData.type === TransactionTypes.EXPECTED_INCOME) {
     account.balance += transactionData.data.map(row => parseFloat(row.amount)).reduce(
       (accumulator, currentValue) => accumulator + currentValue,
