@@ -14,6 +14,7 @@ const Icon = require("../bulma/icon.js");
 const Input = require("../bulma/input.js");
 const Select = require("../bulma/select.js");
 const Title = require("../bulma/title.js");
+const Notifications = require("../bulma/notifications.js");
 const DatePicker = require("../datepicker.js");
 
 const {addKeyToArray} = require("../utils.js");
@@ -122,10 +123,15 @@ class TransactionModal extends React.Component {
     preventDefault(evt);
     if (this.state.pending) return;
 
-    if (this.transactionFormRef.current.reportValidity()) {
+    const missingCategory = this.state.data.find(data => data.category === null);
+    const missingCategoryIndex = this.state.data.findIndex(data => data === missingCategory);
+    console.log(missingCategory);
+    if (this.transactionFormRef.current.reportValidity() && missingCategory === undefined) {
       this.setState(({pending: true}), () => {
         this.transactionFormRef.current.submit();
       });
+    } else if (missingCategory !== undefined) {
+      Notifications.addNotification("is-danger", `Veuillez renseigner une catégorie pour la ligne ${missingCategoryIndex + 1}.`);
     }
   }
 
@@ -270,6 +276,7 @@ class TransactionModal extends React.Component {
           data-key={item.key}
           onChange={this.handleListChange}
           horizontal
+          required
         />
       </Column>
       <Column>
@@ -446,6 +453,7 @@ class TransactionModal extends React.Component {
         categories={this.state.categories}
         genre={this.state.type === "EXPENSE" ? "OUTCOME" : this.state.type}
       />
+      <Notifications />
     </Modal>;
   }
 
