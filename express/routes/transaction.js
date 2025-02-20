@@ -68,7 +68,7 @@ router.post("/:id/edit", async (req, res, next) => {
   try {
     const data = await prepareCategoryData(req.body);
     const transfers = await transferSrv.getAllByUser(req.user.id);
-    await transactionSrv.update(req.params.id, data, transfers.rows);
+    await transactionSrv.update(req.params.id, req.user.id, data, transfers.rows);
     await budgetSrv.recalculate(req.user);
     res.redirect(SEE_OTHER, "/transaction");
   } catch (e) {

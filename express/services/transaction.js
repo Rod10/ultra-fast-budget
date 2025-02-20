@@ -95,7 +95,7 @@ transactionSrv.create = async (userId, transactionData) => {
   });
 };
 
-transactionSrv.update = async (id, data, transfers) => {
+transactionSrv.update = async (id, userId, data, transfers) => {
   logger.debug("Edit transaction=[%s] with data=[%s]", id, data);
 
   const transaction = await Transaction.update({
@@ -103,9 +103,9 @@ transactionSrv.update = async (id, data, transfers) => {
     to: data.to,
     other: data.notes,
     transactionDate: new Date(data.date),
-  }, {where: {id}});
+  }, {where: {id, userId}});
   const transactions = await transactionSrv.getAllByAccount(data.account);
-  await accountSrv.rebalance(data.account, transactions, transfers);
+  await accountSrv.rebalance(userId, data.account, transactions, transfers);
   return transaction;
 };
 
