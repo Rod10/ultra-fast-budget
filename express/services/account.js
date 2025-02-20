@@ -100,9 +100,9 @@ accountSrv.update = async (userId, accountId, data) => {
   );
 };
 
-accountSrv.rebalance = async (accountId, transactions, transfers) => {
+accountSrv.rebalance = async (userId, accountId, transactions, transfers) => {
   logger.debug("Rebalance account=[%s]", accountId);
-  const account = await accountSrv.get(accountId);
+  const account = await accountSrv.get(userId, accountId);
   let newAccountBalance = account.initialBalance;
   for (const transaction of transactions.rows) {
     if (transaction.type === TransactionTypes.INCOME || transaction.type === TransactionTypes.EXPECTED_INCOME) {

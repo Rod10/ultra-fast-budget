@@ -202,7 +202,7 @@ const groupByDaysTransfert = (month, data) => {
 
 router.get("/:userId/detail/:id", async (req, res, next) => {
   try {
-    const account = await accountSrv.get(req.params.id);
+    const account = await accountSrv.get(req.user.id, req.params.id);
     const transactions = await transactionSrv.getAllByAccount(account.id);
     const transfers = await transferSrv.getAllByAccount(account.id);
     const currentMonth = new moment().month();
@@ -331,19 +331,20 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
 
 router.get("/rebalance-all", async (req, res, next) => {
   try {
-    const accounts = await accountSrv.getAllByUser(req.user.id);
+    const {user} = req;
+    const accounts = await accountSrv.getAllByUser(user.id);
     for (const account of accounts.rows) {
       const transactions = await transactionSrv.getAllByAccount(account.id);
-      await accountSrv.rebalance(account.id, transactions);
+      await accountSrv.rebalance(user.id, account.id, transactions);
     }
-    const transfers = await transferSrv.getAllByUser(req.user.id);
+    const transfers = await transferSrv.getAllByUser(user.id);
     for (const transfer of transfers.rows) {
-      const accountReceiver = await accountSrv.get(transfer.receiverId);
-      const accountSender = await accountSrv.get(transfer.senderId);
+      const accountReceiver = await accountSrv.get(user.id, transfer.receiverId);
+      const accountSender = await accountSrv.get(user.id, transfer.senderId);
       accountReceiver.balance += parseFloat(transfer.amount);
       accountSender.balance -= parseFloat(transfer.amount);
-      await accountSrv.update(req.user.id, accountReceiver.id, accountReceiver);
-      await accountSrv.update(req.user.id, accountSender.id, accountSender);
+      await accountSrv.update(user.id, accountReceiver.id, accountReceiver);
+      await accountSrv.update(user.id, accountSender.id, accountSender);
     }
     res.redirect("/account");
   } catch (err) {
