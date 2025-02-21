@@ -53,7 +53,9 @@ router.get("/", async (req, res, next) => {
       const outcomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const incomeTransferts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const outcomeTransferts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      totalBalance[new moment(account.creationDate).month() - 1] = account.initialBalance;
+      totalBalance[new moment(account.creationDate).month()] = account.initialBalance;
+      console.log(new moment(account.creationDate).month());
+      console.log(totalBalance);
       const transactions = await transactionSrv.getAllByAccount(account.id);
       const transferts = await transferSrv.getAllByAccount(account.id);
       const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
