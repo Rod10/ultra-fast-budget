@@ -217,7 +217,7 @@ class AccountExpand extends React.Component {
       <Button
         className="ml-2 has-text-weight-bold"
         type="themed"
-        href={`${this.props.base}/detail/${account.id}`}
+        href={`${this.props.base}/details/${account.id}`}
         icon={<Icon size="small" icon="eye" />}
         label="Détail"
       />

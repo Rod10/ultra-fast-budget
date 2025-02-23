@@ -54,8 +54,6 @@ router.get("/", async (req, res, next) => {
       const incomeTransferts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       const outcomeTransferts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       totalBalance[new moment(account.creationDate).month()] = account.initialBalance;
-      console.log(new moment(account.creationDate).month());
-      console.log(totalBalance);
       const transactions = await transactionSrv.getAllByAccount(account.id);
       const transferts = await transferSrv.getAllByAccount(account.id);
       const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
@@ -185,24 +183,28 @@ const groupByDays = (month, data) => {
   }, () => []);
   if (data.length > 0) {
     for (const transaction of data) {
-      days[new moment(transaction.transactionDate).day()].push(transaction);
+      days[new moment(transaction.transactionDate).date()].push(transaction);
     }
   }
-  days.reverse();
-  return days.filter(day => day.length > 0);
+  return days.reverse();
+  // return days.filter(day => day.length > 0);
 };
 const groupByDaysTransfert = (month, data) => {
   const days = Array.from({
     length: new moment().month(month)
       .daysInMonth(),
   }, () => []);
-  days[new moment(data.transferDate).day()] = data;
-  days.reverse();
-  return days.filter(day => day.length > 0);
+  if (data.length > 0) {
+    for (const transfer of data) {
+      days[new moment(transfer.transferDate).date()].push(transfer);
+    }
+  }
+  return days.reverse();
+  // return days.filter(day => day.length > 0);
 };
 // transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
 
-router.get("/:userId/detail/:id", async (req, res, next) => {
+router.get("/:userId/details/:id", async (req, res, next) => {
   try {
     const account = await accountSrv.get(req.user.id, req.params.id);
     const transactions = await transactionSrv.getAllByAccount(account.id);
@@ -217,7 +219,7 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
     const outcomeTransfers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const period = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     if (new moment(account.creationDate).year() === currentYear) {
-      totalBalance[new moment(account.creationDate).month() - 1] = account.initialBalance;
+      totalBalance[new moment(account.creationDate).month()] = account.initialBalance;
     }
     const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
     const transactionsByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
@@ -311,6 +313,14 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
       }
     }
 
+    const dataPerMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+    for (let month = 0; month <= currentMonth; month++) {
+      for (let day = 0; day <= new moment().month(month).daysInMonth(); day++) {
+        dataPerMonth[month].push(transactionsByMonthAndDays[month][day]);
+
+        dataPerMonth[month].push(transfersByMonthAndDays[month][day]);
+      }
+    }
     const data = {
       account,
       totalBalance: totalBalance.splice(0, currentMonth + 1).reverse(),
@@ -320,6 +330,7 @@ router.get("/:userId/detail/:id", async (req, res, next) => {
       transfersByMonthAndDays: transfersByMonthAndDays.splice(0, currentMonth + 1).reverse(),
       period: period.splice(0, currentMonth + 1).reverse(),
       graphs: graphs.reverse(),
+      dataPerMonth,
     };
 
     const navbar = renderSrv.navbar(res.locals);
