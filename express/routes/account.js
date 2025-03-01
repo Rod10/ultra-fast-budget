@@ -176,7 +176,7 @@ router.post("/:id/edit", async (req, res, next) => {
   }
 });
 
-const groupByDays = (month, data) => {
+const groupByDaysTransaction = (month, data) => {
   const days = Array.from({
     length: new moment().month(month)
       .daysInMonth(),
@@ -236,7 +236,7 @@ router.get("/:userId/details/:id", async (req, res, next) => {
       let balanceAccount = totalBalance[month];
       let periodByMonth = 0;
       if (transactionsByMonth.length > 0) {
-        transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
+        transactionsByMonthAndDays[month] = groupByDaysTransaction(month, transactionsByMonth[month]);
         for (const transaction of transactionsByMonth[month]) {
           if (transaction.type === TransactionTypes.INCOME
             || transaction.type === TransactionTypes.EXPECTED_INCOME) {
@@ -315,12 +315,20 @@ router.get("/:userId/details/:id", async (req, res, next) => {
 
     const dataPerMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
     for (let month = 0; month <= currentMonth; month++) {
-      for (let day = 0; day <= new moment().month(month).daysInMonth(); day++) {
-        dataPerMonth[month].push(transactionsByMonthAndDays[month][day]);
-
-        dataPerMonth[month].push(transfersByMonthAndDays[month][day]);
+      dataPerMonth[month] = Array.from({
+        length: new moment().month(month)
+          .daysInMonth(),
+      }, () => []);
+      for (let day = 0; day < dataPerMonth[month].length; day++) {
+        for (const transaction of transactionsByMonthAndDays[month][day]) {
+          dataPerMonth[month][day].push(transaction);
+        }
+        for (const transfer of transfersByMonthAndDays[month][day]) {
+          dataPerMonth[month][day].push(transfer);
+        }
       }
     }
+    dataPerMonth.reverse().splice(0, dataPerMonth.length - currentMonth - 1);
     const data = {
       account,
       totalBalance: totalBalance.splice(0, currentMonth + 1).reverse(),

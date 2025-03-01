@@ -90,7 +90,65 @@ class TransactionModalList extends React.Component {
 
   _renderDays() {
     const days = [];
-    for (let i = 0; i < this.props.transactions.length; i++) {
+    for (const dayData of this.props.dataPerMonth) {
+      const day = [];
+      for (const data of dayData) {
+        if (data?.transactionDate) {
+          day.push(<div className="box slide-in is-clickable" key={data.id}>
+            <Columns className="is-flex is-vcentered">
+              <Column className="has-text-left">
+                <div className="icon-category">
+                  <img
+                    src={`${data?.data
+                      ? `/icon/${data.data[0].subCategory.imagePath}`
+                      : "https://cdn-icons-png.flaticon.com/512/2879/2879357.png"}`}
+                    style={{width: "15%"}}
+                  />
+                </div>
+              </Column>
+              <Column className="has-text-right">
+                {TransactionModalList.getAmount(data, this.props.account)} € {this._renderTag(data)}
+              </Column>
+            </Columns>
+          </div>);
+        } else if (data?.transferDate) {
+          day.push(<div className="box slide-in is-clickable" key={data.id}>
+            <Columns className="is-flex is-vcentered">
+              <Column className="has-text-left">
+                <div className="icon-category">
+                  <img
+                    src={"https://cdn-icons-png.flaticon.com/512/2879/2879357.png"}
+                    style={{width: "15%"}}
+                  />
+                </div>
+              </Column>
+              <Column className="has-text-right">
+                {data.senderId === this.props.account.id ? "-" : ""} {parseFloat(data.amount)} € {this._renderTag({type: "TRANSFER"})}
+              </Column>
+            </Columns>
+          </div>);
+        }
+      }
+      if (day.length) {
+        console.log(TransactionModalList.getTotalAmount(dayData, this.props.account));
+        days.push(<div
+          style={{backgroundColor: "#e3e3e3", borderRadius: "10px"}}
+          key={dayData[0].id}
+        >
+          <Columns>
+            <Column className="has-text-left ml-3">
+              <Title size={5}>{df(dayData[0]?.transactionDate || dayData[0]?.transferDate, "dd/mm/yyyy")}</Title>
+            </Column>
+            <Column className="has-text-right mr-3">
+              <Title size={5}>Total de la
+                journée: {TransactionModalList.getTotalAmount(dayData, this.props.account)} €</Title>
+            </Column>
+          </Columns>
+          {day}
+        </div>);
+      }
+    }
+    /* for (let i = 0; i < this.props.transactions.length; i++) {
       const day = [];
       if (this.props.transactions[i].length > 0) {
         for (const transaction of this.props.transactions[i]) {
@@ -138,7 +196,7 @@ class TransactionModalList extends React.Component {
         >
           <Columns>
             <Column className="has-text-left ml-3">
-              <Title size={5}>{df(this.props.transactions[i][0]?.transactionDate || this.props.transfers[i][0]?.transferDate, "dd/mm/yyyy")}</Title>
+              <Title size={5}>{df(this.props.dataPerMonth[i][0]?.transactionDate || this.props.dataPerMonth[i][0]?.transferDate, "dd/mm/yyyy")}</Title>
             </Column>
             <Column className="has-text-right mr-3">
               <Title size={5}>Total de la
@@ -148,7 +206,7 @@ class TransactionModalList extends React.Component {
           {day}
         </div>);
       }
-    }
+    }*/
     return days;
   }
 
@@ -166,38 +224,6 @@ class TransactionModalList extends React.Component {
         <h4 className="title is-4">Transaction du mois de: {this.props.month}</h4>
         <div className="content transaction-scrollblock">
           {this._renderDays()}
-          {/* this.props.transactions.map((transaction, index) => <div
-            style={{backgroundColor: "#e3e3e3", borderRadius: "10px"}}
-            key={index}
-          >
-            <Columns>
-              <Column className="has-text-left ml-3">
-                <Title size={5}>{df(transaction[0].transactionDate, "dd/mm/yyyy")}</Title>
-              </Column>
-              <Column className="has-text-right mr-3">
-                <Title size={5}>Total de la
-                  journée: {TransactionModalList.getTotalAmount(transaction, this.props.account)} €</Title>
-              </Column>
-            </Columns>
-            {transaction.map((row, i) => <div className="box slide-in is-clickable" key={i}>
-              <Columns className="is-flex is-vcentered">
-                <Column className="has-text-left">
-                  <div className="icon-category">
-                    <img
-                      src={`${row.data
-                        ? `/icon/${row.data[0].subCategory.imagePath}`
-                        : "https://cdn-icons-png.flaticon.com/512/2879/2879357.png"}`}
-                      style={{width: "15%"}}
-                    />
-                  </div>
-                </Column>
-                <Column className="has-text-right">
-                  {TransactionModalList.getAmount(row, this.props.account)} € {this._renderTag(row)}
-                </Column>
-              </Columns>
-            </div>)}
-            <hr />
-          </div>)*/}
         </div>
       </div>
     </Modal>;
@@ -208,6 +234,7 @@ TransactionModalList.displayName = "TransactionModalList";
 TransactionModalList.propTypes = {
   transactions: PropTypes.array.isRequired,
   transfers: PropTypes.array.isRequired,
+  dataPerMonth: PropTypes.array.isRequired,
   month: PropTypes.string.isRequired,
   onCloseClick: PropTypes.func.isRequired,
   visible: PropTypes.bool,

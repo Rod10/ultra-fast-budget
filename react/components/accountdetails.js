@@ -171,6 +171,7 @@ class AccountDetails extends React.Component {
         month={this.state.monthSelectedName}
         onCloseClick={this.handleCloseClick}
         account={this.props.account}
+        dataPerMonth={this.props.dataPerMonth[this.state.monthSelectedIndex]}
       />
     </div>;
   }
@@ -183,6 +184,7 @@ AccountDetails.propTypes = {
   transactionsByMonthAndDays: PropTypes.array.isRequired,
   transfersByMonth: PropTypes.array.isRequired,
   transfersByMonthAndDays: PropTypes.array.isRequired,
+  dataPerMonth: PropTypes.array.isRequired,
 };
 AccountDetails.defaultProps = {graphs: undefined};
 
