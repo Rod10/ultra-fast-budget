@@ -9,20 +9,31 @@ const Icon = require("../bulma/icon.js");
 const Title = require("../bulma/title.js");
 const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
+const DatePicker = require("../datepicker.js");
 
 // const AccountModal = require("../budgetmodal.js");
 const utils = require("../utils.js");
+const AsyncFilteredList = require("../asyncfilteredlist.js");
 const BudgetExpanded = require("./budgetexpand.js");
 const BudgetBlock = require("./budgetblock.js");
 const BudgetCreationModal = require("./budgetcreationmodal.js");
 
-class BudgetList extends React.Component {
+class BudgetList extends AsyncFilteredList {
   constructor(props) {
     super(props);
+    this.s = [
+      {key: "date", format: date => date.toISOString()},
+      {key: "month"},
+      {key: "orderBy"},
+      {key: "orderDirection"},
+    ];
+    this.searchUri = "budget/search";
     this.base = "/budget/";
     this.charts = [];
 
     this.state = {
+      ...this.defaultState(),
+      ...props.query,
       modal: "",
       currentBudget: null,
     };
@@ -47,6 +58,22 @@ class BudgetList extends React.Component {
     const budgetId = parseInt(el.dataset.budgetid, 10);
     const budget = this.props.budget.rows.find(acc => acc.id === budgetId);
     this.setState({currentBudget: budget});
+  }
+
+  _renderFilters() {
+    return <form className="filters">
+      {this._renderFilterWrapper(
+        "Année: ",
+        <DatePicker
+          name="date"
+          selected={this.state.date || new Date()}
+          autoComplete="off"
+          dateFormat="MM/yyyy"
+          showMonthYearPicker
+          onChangeLegacy={date => this.handleChange(date, "date")}
+        />,
+      )}
+    </form>;
   }
 
   render() {
@@ -99,7 +126,7 @@ class BudgetList extends React.Component {
           </div>
         </Column>
       </Columns>
-
+      {this._renderFilters()}
       <Columns>
         <div className="column">
           <div className="content operator-scrollblock">
