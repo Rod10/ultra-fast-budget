@@ -1,9 +1,5 @@
 /* eslint-disable max-lines */
 const assert = require("assert");
-const nodeCrypto = require("node:crypto");
-
-delete global._bitcore;
-const Bitcore = require("bitcore-lib");
 
 const {
   sequelize,

@@ -273,8 +273,6 @@ class AccountTypeModal extends React.Component {
       left: "0px",
     };
 
-    console.log(this.state.color.rgb);
-
     const styles = reactCSS({
       "default": {
         color: {

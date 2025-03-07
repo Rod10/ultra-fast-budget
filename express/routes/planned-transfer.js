@@ -57,7 +57,6 @@ router.post(
     try {
       await plannedTransferSrv.delete(req.params.id);
       const transfers = await plannedTransferSrv.getAllByUser(req.user.id);
-      console.log(transfers);
       return res.json({status: OK, rows: transfers});
     } catch (e) {
       logger.error(e);

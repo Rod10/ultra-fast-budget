@@ -52,7 +52,6 @@ class AccountModal extends React.Component {
   }
 
   openModal(account, accountsType) {
-    console.log(account.initialBalance);
     this.setState(() => ({
       visible: true,
       account,

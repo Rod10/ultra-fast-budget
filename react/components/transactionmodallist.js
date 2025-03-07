@@ -130,7 +130,6 @@ class TransactionModalList extends React.Component {
         }
       }
       if (day.length) {
-        console.log(TransactionModalList.getTotalAmount(dayData, this.props.account));
         days.push(<div
           style={{backgroundColor: "#e3e3e3", borderRadius: "10px"}}
           key={dayData[0].id}

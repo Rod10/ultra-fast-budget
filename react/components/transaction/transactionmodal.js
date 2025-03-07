@@ -125,7 +125,7 @@ class TransactionModal extends React.Component {
 
     const missingCategory = this.state.data.find(data => data.category === null);
     const missingCategoryIndex = this.state.data.findIndex(data => data === missingCategory);
-    console.log(missingCategory);
+
     if (this.transactionFormRef.current.reportValidity() && missingCategory === undefined) {
       this.setState(({pending: true}), () => {
         this.transactionFormRef.current.submit();
