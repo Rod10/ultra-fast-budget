@@ -8,7 +8,6 @@ const {logger} = require("../services/logger.js");
 const categorySrv = require("../services/category.js");
 const subCategorySrv = require("../services/subcategory.js");
 const searchMid = require("../middlewares/search.js");
-const transactionSrv = require("../services/transaction");
 
 const router = express.Router();
 
@@ -17,10 +16,10 @@ router.use(authMid.strict);
 router.get("/", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
     const query = req.parsedQuery || {};
-    const budget = await budgetSrv.getAllByUser(req.user.id);
+    const budgets = await budgetSrv.getAllByUser(req.user.id);
     const categories = await categorySrv.getAll(req.user.id);
     const data = {
-      budget,
+      budgets,
       categories,
       query,
     };
@@ -88,7 +87,13 @@ router.get("/rebalance-all", async (req, res, next) => {
 
 router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
-    console.log(req.query);
+    const query = req.parsedQuery || {};
+    console.log(query);
+    const budget = await budgetSrv.search(req.user, query);
+    res.json({
+      count: budget.count,
+      rows: budget.rows,
+    });
   } catch (e) {
     logger.error(e);
     return next(e);

@@ -7,7 +7,7 @@ const {
   Op,
 } = require("../models/index.js");
 const OrderDirection = require("../constants/orderdirection.js");
-const TransactionType = require("../constants/transactiontype");
+const TransactionType = require("../constants/transactiontype.js");
 const {logger} = require("./logger.js");
 const transactionSrv = require("./transaction.js");
 
@@ -108,7 +108,7 @@ budgetSrv.update = (oldBudget, newBudget) => {
 
   return Budget.update({
     name: newBudget.name,
-    category: newBudget.category,
+    categoryId: newBudget.category,
     totalAllocatedAmount: newBudget.totalAllocatedAmount,
     duration: newBudget.duration,
     unit: newBudget.unit,
@@ -161,6 +161,70 @@ budgetSrv.recalculate = async user => {
     newBudgetData.data = newBudgetData;
     budget.save();
   }
+};
+
+budgetSrv.search = (user, query) => {
+  logger.debug("Search budget for user=[%s] with query=[%s]", user.id, query);
+  const where = {[Op.and]: [{userId: user.id}]};
+  const condition = where[Op.and][0];
+
+  if ("period" in query) {
+    if (query.period === "now") {
+      condition.creationDate = {
+        [Op.between]: [
+          new moment().startOf("month"),
+          new moment().endOf("month"),
+        ],
+      };
+    } else if (query.period === "last") {
+      condition.creationDate = {
+        [Op.between]: [
+          new moment().subtract(1, "month")
+            .startOf("month"),
+          new moment().subtract(1, "month")
+            .endOf("month"),
+        ],
+      };
+    } else if (query.period === "between") {
+      condition.creationDate = {
+        [Op.between]: [
+          new moment(query.startingDate).startOf("month"),
+          new moment(query.endingDate).endOf("month"),
+        ],
+      };
+    } else if (query.period === "exact") {
+      condition.creationDate = {
+        [Op.between]: [
+          new moment(query.date).startOf("month"),
+          new moment(query.date).endOf("month"),
+        ],
+      };
+    }
+  }
+
+  if ("date" in query) {
+    condition.creationDate = {
+      [Op.between]: [
+        new moment(query.date).startOf("month"),
+        new moment(query.date).endOf("month"),
+      ],
+    };
+  }
+  if ("category" in query) {
+    condition.categoryId = query.category.id;
+  }
+
+  const dataConditions = [];
+  if ("subCategory" in query) {
+    dataConditions.push({[Op.like]: `%"subCategory":{"id":${query.subCategory.id},%`});
+  }
+  if (dataConditions.length) where.data = {[Op.and]: dataConditions};
+
+  return Budget.findAndCountAll({
+    where,
+    include: [{association: Budget.User}, {association: Budget.Category}],
+    order: [["creationDate", OrderDirection.DESC]],
+  });
 };
 
 module.exports = budgetSrv;

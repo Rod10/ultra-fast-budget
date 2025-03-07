@@ -17,7 +17,7 @@ class BudetBlock extends React.Component {
   render() {
     const {budget} = this.props;
     const totalBudget = parseFloat(budget.totalAmount) / parseFloat(budget.totalAllocatedAmount);
-    const date = new Date();
+    const date = new Date(budget.creationDate);
     const expandedWith = this.props.homepage ? "2" : "1";
     return <div className="box slide-in is-clickable">
       <Columns className="is-flex">

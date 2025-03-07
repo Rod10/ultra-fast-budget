@@ -44,7 +44,7 @@ class DatePicker extends React.Component {
     }
   }
 
-    handleChange(date, evt) {
+  handleChange(date, evt) {
     this.props.onChange({
       nativeEvent: evt,
       target: {

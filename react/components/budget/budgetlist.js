@@ -22,8 +22,10 @@ class BudgetList extends AsyncFilteredList {
   constructor(props) {
     super(props);
     this.s = [
+      {key: "period"},
       {key: "date", format: date => date.toISOString()},
-      {key: "month"},
+      {key: "startingDate", format: date => date.toISOString()},
+      {key: "endingDate", format: date => date.toISOString()},
       {key: "orderBy"},
       {key: "orderDirection"},
     ];
@@ -34,6 +36,9 @@ class BudgetList extends AsyncFilteredList {
     this.state = {
       ...this.defaultState(),
       ...props.query,
+      rows: props.budgets.rows,
+      category: "",
+      period: "now",
       modal: "",
       currentBudget: null,
     };
@@ -56,28 +61,87 @@ class BudgetList extends AsyncFilteredList {
   handleOpenDetails(evt) {
     const el = getElFromDataset(evt, "budgetid");
     const budgetId = parseInt(el.dataset.budgetid, 10);
-    const budget = this.props.budget.rows.find(acc => acc.id === budgetId);
+    const budget = this.state.rows.find(acc => acc.id === budgetId);
     this.setState({currentBudget: budget});
   }
 
   _renderFilters() {
+    const category = this.state.category ? this.props.categories.rows
+      .filter(e => this.state.category !== "" && parseInt(this.state.category, 10) === e.id)
+      : null;
     return <form className="filters">
-      {this._renderFilterWrapper(
-        "Année: ",
+      {this._renderFilterSelect(
+        "period",
+        "Période:",
+        [
+          {
+            value: "now",
+            label: "Ce mois-ci",
+          },
+          {
+            value: "last",
+            label: "Dernier mois",
+          },
+          {
+            value: "between",
+            label: "Entre",
+          },
+          {
+            value: "exact",
+            label: "Préciser un mois",
+          },
+        ],
+      )}
+      {/* this._renderFilterSelect(
+        "category",
+        "Catégorie:",
+        this.props.categories.rows
+          .map(e => ({value: e.id, label: e.name})),
+      )}
+      {category !== null && this._renderFilterSelect(
+        "subCategory",
+        "Sous-Catégorie:",
+        category[0].subCategories
+          .map(e => ({value: e.id, label: e.name})),
+      )*/}
+      {this.state.period === "exact" && this._renderFilterWrapper(
+        "Mois/Année: ",
         <DatePicker
           name="date"
-          selected={this.state.date || new Date()}
+          selected={this.state.date}
           autoComplete="off"
           dateFormat="MM/yyyy"
           showMonthYearPicker
           onChangeLegacy={date => this.handleChange(date, "date")}
         />,
       )}
+      {this.state.period === "between" && this._renderFilterWrapper(
+        "Date de début: ",
+        <DatePicker
+          name="startingDate"
+          selected={this.state.startingDate}
+          autoComplete="off"
+          dateFormat="MM/yyyy"
+          showMonthYearPicker
+          onChangeLegacy={date => this.handleChange(date, "startingDate")}
+        />,
+      )}
+      {this.state.period === "between" && this._renderFilterWrapper(
+        "Date de fin: ",
+        <DatePicker
+          name="endingDate"
+          selected={this.state.endingDate}
+          autoComplete="off"
+          dateFormat="MM/yyyy"
+          showMonthYearPicker
+          onChangeLegacy={date => this.handleChange(date, "endingDate")}
+        />,
+      )}
     </form>;
   }
 
   render() {
-    const list = this.props.budget.rows.map(budget => <div
+    const list = this.state.rows.map(budget => <div
       className="mb-2"
       data-budgetid={budget.id}
       onClick={this.handleOpenDetails}
@@ -93,14 +157,14 @@ class BudgetList extends AsyncFilteredList {
     </div>);
 
     const expanded = this.state.currentBudget !== null
-      && <BudgetExpanded
-        base={this.base}
-        key={this.state.currentBudget.id}
-        budget={this.state.currentBudget}
-        onClose={this.handleCloseDetails}
-        user={this.props.user}
-        onClick={() => this.openBudgetCreationModal({budget: this.state.currentBudget, categories: this.props.categories})}
-      />;
+     && <BudgetExpanded
+       base={this.base}
+       key={this.state.currentBudget.id}
+       budget={this.state.currentBudget}
+       onClose={this.handleCloseDetails}
+       user={this.props.user}
+       onClick={() => this.openBudgetCreationModal({budget: this.state.currentBudget, categories: this.props.categories})}
+     />;
 
     return <div className="body-content">
       <Columns>
@@ -127,6 +191,7 @@ class BudgetList extends AsyncFilteredList {
         </Column>
       </Columns>
       {this._renderFilters()}
+      <hr />
       <Columns>
         <div className="column">
           <div className="content operator-scrollblock">
@@ -139,10 +204,11 @@ class BudgetList extends AsyncFilteredList {
     </div>;
   }
 }
+
 BudgetList.displayName = "BudgetList";
 BudgetList.propTypes = {
   user: PropTypes.object.isRequired,
-  budget: PropTypes.object.isRequired,
+  rows: PropTypes.object.isRequired,
   categories: PropTypes.object.isRequired,
 };
 
