@@ -148,7 +148,7 @@ class AsyncFilteredList extends React.Component {
         <div className="select is-fullwidth">
           <select
             name={key}
-            value={this.statekey}
+            value={this.state[key]}
             onChange={this.handleChange}
           >
             {all && <option value="">Tout</option>}
