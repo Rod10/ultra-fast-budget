@@ -65,10 +65,13 @@ class BudgetList extends AsyncFilteredList {
     this.setState({currentBudget: budget});
   }
 
+  // eslint-disable-next-line max-lines-per-function
   _renderFilters() {
-    const category = this.state.category ? this.props.categories.rows
+    /* const category = this.state.category ? this.props.categories.rows
       .filter(e => this.state.category !== "" && parseInt(this.state.category, 10) === e.id)
-      : null;
+      : null;*/
+    const totalAmount = this.state.rows.reduce((acc, row) => acc + row.totalAmount, 0);
+    const totalAllocatedAmount = this.state.rows.reduce((acc, row) => acc + row.totalAllocatedAmount, 0);
     return <form className="filters">
       {this._renderFilterSelect(
         "period",
@@ -137,6 +140,22 @@ class BudgetList extends AsyncFilteredList {
           onChangeLegacy={date => this.handleChange(date, "endingDate")}
         />,
       )}
+      {this.state.period === "now" && <div className="field">
+        <label className="label">Total dépenser/Total alloué:</label>
+        <b><span className={`has-text-${totalAmount >= totalAllocatedAmount
+          ? "danger"
+          : "success"}`}
+        >{totalAmount}</span>/<span className="has-text-danger">{totalAllocatedAmount} €</span>
+        </b>
+      </div>}
+      {this.state.period === "now" && <div className="field">
+        <label className="label">Budget total restant:</label>
+        <b><span className={`has-text-${totalAllocatedAmount - totalAmount <= 0
+          ? "danger"
+          : "success"}`}
+        >{totalAllocatedAmount - totalAmount} €</span>
+        </b>
+      </div>}
     </form>;
   }
 
