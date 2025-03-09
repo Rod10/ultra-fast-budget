@@ -436,7 +436,7 @@ a.link:hover {
     .transaction-homepage-scrollblock {
         overflow-x: hidden;
         overflow-y: scroll;
-        height: calc(100vh - 800px);
+        height: calc(100vh - 688px);
     }
 }
 

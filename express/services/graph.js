@@ -124,6 +124,7 @@ graphSrv.lastSeventhDays = async user => {
     type: "bar",
     label: "7 derniers jours",
     labels: labels.reverse(),
+    column: 1,
     datasets: [
       {
         label: "Dépense",
