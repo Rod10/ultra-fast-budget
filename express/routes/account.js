@@ -183,7 +183,7 @@ const groupByDaysTransaction = (month, data) => {
   }, () => []);
   if (data.length > 0) {
     for (const transaction of data) {
-      days[new moment(transaction.transactionDate).date()].push(transaction);
+      days[new moment(transaction.transactionDate).date() - 1].push(transaction);
     }
   }
   return days.reverse();
@@ -196,7 +196,7 @@ const groupByDaysTransfert = (month, data) => {
   }, () => []);
   if (data.length > 0) {
     for (const transfer of data) {
-      days[new moment(transfer.transferDate).date()].push(transfer);
+      days[new moment(transfer.transferDate).date() - 1].push(transfer);
     }
   }
   return days.reverse();
@@ -321,10 +321,10 @@ router.get("/:userId/details/:id", async (req, res, next) => {
       }, () => []);
       for (let day = 0; day < dataPerMonth[month].length; day++) {
         for (const transaction of transactionsByMonthAndDays[month][day]) {
-          dataPerMonth[month][day].push(transaction);
+          dataPerMonth[month][new moment(transaction.transactionDate).date() - 1].push(transaction);
         }
         for (const transfer of transfersByMonthAndDays[month][day]) {
-          dataPerMonth[month][day].push(transfer);
+          dataPerMonth[month][new moment(transfer.transferDate).date() - 1].push(transfer);
         }
       }
     }
