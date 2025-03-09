@@ -52,6 +52,7 @@ class AccountDetails extends React.Component {
   }
 
   componentDidMount() {
+    AccountDetails._updateUriSearch(this._getQueryString());
     Chart.register(CategoryScale);
     Chart.register(LinearScale);
     Chart.register(BarController);
