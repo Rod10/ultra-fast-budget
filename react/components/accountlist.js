@@ -19,7 +19,7 @@ const DeletionModal = require("./deletionmodal.js");
 class AccountList extends React.Component {
   constructor(props) {
     super(props);
-    this.base = `/account/${this.props.user.id}`;
+    this.base = "/account/";
 
     this.state = {
       rows: props.rows,

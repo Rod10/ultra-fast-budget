@@ -19,7 +19,7 @@ const Head = require("../helpers/head.js");
 const AsyncFilteredList = require("../asyncfilteredlist.js");
 const Icon = require("../bulma/icon.js");
 const OrderDirection = require("../../../express/constants/orderdirection.js");
-const {getElFromDataset} = require("../../utils/html");
+const {getElFromDataset} = require("../../utils/html.js");
 
 class Forecast extends AsyncFilteredList {
   static splitArrayIntoChunks(array, chunkSize) {

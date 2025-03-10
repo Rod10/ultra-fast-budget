@@ -204,7 +204,7 @@ const groupByDaysTransfert = (month, data) => {
 };
 // transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
 
-router.get("/:userId/details/:id", async (req, res, next) => {
+router.get("/details/:id", async (req, res, next) => {
   try {
     const account = await accountSrv.get(req.user.id, req.params.id);
     const transactions = await transactionSrv.getAllByAccount(account.id);
@@ -387,6 +387,10 @@ router.post("/:id/delete", async (req, res, next) => {
     logger.error(err);
     return next(err);
   }
+});
+
+router.get("/details/:id/search", async (req, res, next) => {
+  console.log("test");
 });
 
 module.exports = router;
