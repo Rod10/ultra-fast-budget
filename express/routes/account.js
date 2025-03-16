@@ -204,6 +204,142 @@ const groupByDaysTransfert = (month, data) => {
 };
 // transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
 
+const getAccoundDetails = (res, currentYear, currentMonth, account, transactions, transfers) => {
+  const graphs = [];
+  const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const outcomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const incomeTransfers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const outcomeTransfers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const period = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  if (new moment(account.creationDate).year() === currentYear) {
+    totalBalance[new moment(account.creationDate).month()] = account.initialBalance;
+  }
+  const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+  const transactionsByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
+  const transfersByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+  const transfersByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
+  for (const transaction of transactions.rows) {
+    transactionsByMonth[new moment(transaction.transactionDate).month()].push(transaction);
+  }
+  for (const transfer of transfers.rows) {
+    transfersByMonth[new moment(transfer.transferDate).month()].push(transfer);
+  }
+  // eslint-disable-next-line no-magic-numbers
+  for (let month = 0; month <= currentMonth; month++) {
+    let balanceAccount = totalBalance[month];
+    let periodByMonth = 0;
+    if (transactionsByMonth.length > 0) {
+      transactionsByMonthAndDays[month] = groupByDaysTransaction(month, transactionsByMonth[month]);
+      for (const transaction of transactionsByMonth[month]) {
+        if (transaction.type === TransactionTypes.INCOME
+            || transaction.type === TransactionTypes.EXPECTED_INCOME) {
+          incomeTransactions[month] += calculateAmount(transaction.data);
+          balanceAccount += calculateAmount(transaction.data);
+          periodByMonth += calculateAmount(transaction.data);
+        } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
+            || transaction.type === TransactionTypes.EXPENSE) {
+          outcomeTransactions[month] += calculateAmount(transaction.data);
+          balanceAccount -= calculateAmount(transaction.data);
+          periodByMonth -= calculateAmount(transaction.data);
+        }
+      }
+
+      if (transfersByMonth.length > 0) {
+        transfersByMonthAndDays[month]
+            = groupByDaysTransfert(month, transfersByMonth[month]);
+        for (const transfer of transfersByMonth[month]) {
+          if (account.id === transfer.senderId) {
+            outcomeTransfers[month] += parseFloat(transfer.amount);
+            periodByMonth -= parseFloat(transfer.amount);
+            balanceAccount -= parseFloat(transfer.amount);
+          } else {
+            incomeTransfers[month] += parseFloat(transfer.amount);
+            periodByMonth += parseFloat(transfer.amount);
+            balanceAccount += parseFloat(transfer.amount);
+          }
+        }
+      }
+      period[month] = periodByMonth;
+      if (month === 0) {
+        totalBalance[month] = balanceAccount;
+      } else {
+        totalBalance[month] = balanceAccount + totalBalance[month - 1];
+      }
+    }
+    if (incomeTransactions[month] > 0 || outcomeTransactions[month] > 0) {
+      graphs.push({
+        type: "pie",
+        label: [Months[month], totalBalance[month], period[month]],
+        labels: [
+          "Revenue",
+          "Dépense",
+          "Virement reçus",
+          "Virement émis",
+        ],
+        column: 4,
+        backgroundColor: [
+          "#48c78e",
+          "#f14668",
+          "#d5ffea",
+          "#ffc6cf",
+        ],
+        data: [
+          incomeTransactions[month],
+          outcomeTransactions[month],
+          incomeTransfers[month],
+          outcomeTransfers[month],
+        ],
+      });
+    } else {
+      graphs.push({
+        type: "pie",
+        label: [Months[month], totalBalance[month], period[month]],
+        labels: [
+          "Aucune Données",
+        ],
+        column: 4,
+        backgroundColor: [
+          "#c7c7c7",
+        ],
+        data: [1],
+      });
+    }
+  }
+
+  const dataPerMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
+  for (let month = 0; month <= currentMonth; month++) {
+    dataPerMonth[month] = Array.from({
+      length: new moment().month(month)
+        .daysInMonth(),
+    }, () => []);
+    for (let day = 0; day < dataPerMonth[month].length; day++) {
+      for (const transaction of transactionsByMonthAndDays[month][day]) {
+        dataPerMonth[month][new moment(transaction.transactionDate).date() - 1].push(transaction);
+      }
+      for (const transfer of transfersByMonthAndDays[month][day]) {
+        dataPerMonth[month][new moment(transfer.transferDate).date() - 1].push(transfer);
+      }
+    }
+  }
+  dataPerMonth.reverse().splice(0, dataPerMonth.length - currentMonth - 1);
+  const data = {
+    account,
+    totalBalance: totalBalance.splice(0, currentMonth + 1).reverse(),
+    transactionsByMonth: transactionsByMonth.splice(0, currentMonth + 1).reverse(),
+    transactionsByMonthAndDays: transactionsByMonthAndDays.splice(0, currentMonth + 1).reverse(),
+    transfersByMonth: transfersByMonth.splice(0, currentMonth + 1).reverse(),
+    transfersByMonthAndDays: transfersByMonthAndDays.splice(0, currentMonth + 1).reverse(),
+    period: period.splice(0, currentMonth + 1).reverse(),
+    graphs: graphs.reverse(),
+    dataPerMonth,
+  };
+
+  const navbar = renderSrv.navbar(res.locals);
+  const content = renderSrv.accountDetails(data);
+  res.render("generic", {navbar, data, content, components: ["accountdetails"]});
+};
+
 router.get("/details/:id", async (req, res, next) => {
   try {
     const account = await accountSrv.get(req.user.id, req.params.id);
@@ -211,139 +347,7 @@ router.get("/details/:id", async (req, res, next) => {
     const transfers = await transferSrv.getAllByAccount(account.id);
     const currentMonth = new moment().month();
     const currentYear = new moment().year();
-    const graphs = [];
-    const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    const outcomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    const incomeTransfers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    const outcomeTransfers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    const period = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    if (new moment(account.creationDate).year() === currentYear) {
-      totalBalance[new moment(account.creationDate).month()] = account.initialBalance;
-    }
-    const transactionsByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
-    const transactionsByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
-    const transfersByMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
-    const transfersByMonthAndDays = [[], [], [], [], [], [], [], [], [], [], [], []];
-    for (const transaction of transactions.rows) {
-      transactionsByMonth[new moment(transaction.transactionDate).month()].push(transaction);
-    }
-    for (const transfer of transfers.rows) {
-      transfersByMonth[new moment(transfer.transferDate).month()].push(transfer);
-    }
-    // eslint-disable-next-line no-magic-numbers
-    for (let month = 0; month <= currentMonth; month++) {
-      let balanceAccount = totalBalance[month];
-      let periodByMonth = 0;
-      if (transactionsByMonth.length > 0) {
-        transactionsByMonthAndDays[month] = groupByDaysTransaction(month, transactionsByMonth[month]);
-        for (const transaction of transactionsByMonth[month]) {
-          if (transaction.type === TransactionTypes.INCOME
-            || transaction.type === TransactionTypes.EXPECTED_INCOME) {
-            incomeTransactions[month] += calculateAmount(transaction.data);
-            balanceAccount += calculateAmount(transaction.data);
-            periodByMonth += calculateAmount(transaction.data);
-          } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
-            || transaction.type === TransactionTypes.EXPENSE) {
-            outcomeTransactions[month] += calculateAmount(transaction.data);
-            balanceAccount -= calculateAmount(transaction.data);
-            periodByMonth -= calculateAmount(transaction.data);
-          }
-        }
-
-        if (transfersByMonth.length > 0) {
-          transfersByMonthAndDays[month]
-            = groupByDaysTransfert(month, transfersByMonth[month]);
-          for (const transfer of transfersByMonth[month]) {
-            if (account.id === transfer.senderId) {
-              outcomeTransfers[month] += parseFloat(transfer.amount);
-              periodByMonth -= parseFloat(transfer.amount);
-              balanceAccount -= parseFloat(transfer.amount);
-            } else {
-              incomeTransfers[month] += parseFloat(transfer.amount);
-              periodByMonth += parseFloat(transfer.amount);
-              balanceAccount += parseFloat(transfer.amount);
-            }
-          }
-        }
-        period[month] = periodByMonth;
-        if (month === 0) {
-          totalBalance[month] = balanceAccount;
-        } else {
-          totalBalance[month] = balanceAccount + totalBalance[month - 1];
-        }
-      }
-      if (incomeTransactions[month] > 0 || outcomeTransactions[month] > 0) {
-        graphs.push({
-          type: "pie",
-          label: [Months[month], totalBalance[month], period[month]],
-          labels: [
-            "Revenue",
-            "Dépense",
-            "Virement reçus",
-            "Virement émis",
-          ],
-          column: 4,
-          backgroundColor: [
-            "#48c78e",
-            "#f14668",
-            "#d5ffea",
-            "#ffc6cf",
-          ],
-          data: [
-            incomeTransactions[month],
-            outcomeTransactions[month],
-            incomeTransfers[month],
-            outcomeTransfers[month],
-          ],
-        });
-      } else {
-        graphs.push({
-          type: "pie",
-          label: [Months[month], totalBalance[month], period[month]],
-          labels: [
-            "Aucune Données",
-          ],
-          column: 4,
-          backgroundColor: [
-            "#c7c7c7",
-          ],
-          data: [1],
-        });
-      }
-    }
-
-    const dataPerMonth = [[], [], [], [], [], [], [], [], [], [], [], []];
-    for (let month = 0; month <= currentMonth; month++) {
-      dataPerMonth[month] = Array.from({
-        length: new moment().month(month)
-          .daysInMonth(),
-      }, () => []);
-      for (let day = 0; day < dataPerMonth[month].length; day++) {
-        for (const transaction of transactionsByMonthAndDays[month][day]) {
-          dataPerMonth[month][new moment(transaction.transactionDate).date() - 1].push(transaction);
-        }
-        for (const transfer of transfersByMonthAndDays[month][day]) {
-          dataPerMonth[month][new moment(transfer.transferDate).date() - 1].push(transfer);
-        }
-      }
-    }
-    dataPerMonth.reverse().splice(0, dataPerMonth.length - currentMonth - 1);
-    const data = {
-      account,
-      totalBalance: totalBalance.splice(0, currentMonth + 1).reverse(),
-      transactionsByMonth: transactionsByMonth.splice(0, currentMonth + 1).reverse(),
-      transactionsByMonthAndDays: transactionsByMonthAndDays.splice(0, currentMonth + 1).reverse(),
-      transfersByMonth: transfersByMonth.splice(0, currentMonth + 1).reverse(),
-      transfersByMonthAndDays: transfersByMonthAndDays.splice(0, currentMonth + 1).reverse(),
-      period: period.splice(0, currentMonth + 1).reverse(),
-      graphs: graphs.reverse(),
-      dataPerMonth,
-    };
-
-    const navbar = renderSrv.navbar(res.locals);
-    const content = renderSrv.accountDetails(data);
-    res.render("generic", {navbar, data, content, components: ["accountdetails"]});
+    return getAccoundDetails(res, currentYear, currentMonth, account, transactions, transfers);
   } catch (err) {
     logger.error(err);
     return next(err);
@@ -390,7 +394,18 @@ router.post("/:id/delete", async (req, res, next) => {
 });
 
 router.get("/details/:id/search", async (req, res, next) => {
-  console.log("test");
+  try {
+    console.log(req.params);
+    const account = await accountSrv.get(req.user.id, req.params.id);
+    const transactions = await transactionSrv.getAllByAccount(account.id);
+    const transfers = await transferSrv.getAllByAccount(account.id);
+    const currentMonth = 11;
+    const currentYear = new moment().year();
+    return getAccoundDetails(res, currentYear, currentMonth, account, transactions, transfers);
+  } catch (err) {
+    logger.error(err);
+    return next(err);
+  }
 });
 
 module.exports = router;

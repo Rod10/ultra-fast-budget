@@ -48,7 +48,7 @@ class AccountDetails extends React.Component {
       {key: "orderBy"},
       {key: "orderDirection"},
     ];
-    this.searchUri = "budget/search";
+    this.searchUri = `${this.props.account.id}/search`;
     this.base = `/account/details/${this.props.account.id}`;
 
     this.charts = [];
@@ -67,6 +67,7 @@ class AccountDetails extends React.Component {
 
     this.handleOpenTransactionsModal = this.handleOpenTransactionsModal.bind(this);
     this.handleCloseClick = this.handleCloseClick.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
@@ -93,7 +94,7 @@ class AccountDetails extends React.Component {
 
     const queryStr = this._getQueryString();
     AccountDetails._updateUriSearch(queryStr);
-
+    console.log(this.delaiLastSearch);
     const doSearch = () => axios.get(`${this.searchUri + queryStr}&t=${Date.now()}`)
       .then(response => {
         if (response.status === OK) {
