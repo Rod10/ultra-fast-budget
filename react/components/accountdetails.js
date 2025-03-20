@@ -15,6 +15,7 @@ const {
 const {getElFromDataset} = require("../utils/html.js");
 const {preventDefault} = require("../utils/html.js");
 const {OK} = require("../../express/utils/error.js");
+const OrderDirection = require("../../express/constants/orderdirection");
 const Button = require("./bulma/button.js");
 const Icon = require("./bulma/icon.js");
 const Title = require("./bulma/title.js");
@@ -49,7 +50,7 @@ class AccountDetails extends React.Component {
       {key: "orderDirection"},
     ];
     this.searchUri = `${this.props.account.id}/search`;
-    this.base = `/account/details/${this.props.account.id}`;
+    this.base = `account/details/${this.props.account.id}`;
 
     this.charts = [];
     if (this.props.graphs) {
@@ -59,10 +60,21 @@ class AccountDetails extends React.Component {
     }
 
     this.state = {
+      qId: 0,
+      orderBy: this.props.query.orderBy || "id",
+      orderDirection: this.props.query.orderDirection || OrderDirection.DESC,
+      limit: this.props.query.limit,
+      page: this.props.query.page,
+      count: this.props.query.count,
       modal: false,
       monthSelectedIndex: 0,
       monthSelectedName: "",
       year: new Date(),
+      transactionsByMonthAndDays: this.props.transactionsByMonthAndDays,
+      transfersByMonthAndDays: this.props.transfersByMonthAndDays,
+      dataPerMonth: this.props.dataPerMonth,
+      graphs: this.props.graphs,
+      refresh: false,
     };
 
     this.handleOpenTransactionsModal = this.handleOpenTransactionsModal.bind(this);
@@ -90,17 +102,34 @@ class AccountDetails extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (prevState.year !== this.state.year && this.state.refresh === true) {
+      // update charts ?
+      /* for (const chart in this.charts) {
+        console.log(chart);
+      }
+      this.state.graphs.forEach(graph => {
+        if (graph.type === "pie") {
+          this.createPieChart(graph, this.charts[graph.label].current.getContext("2d"));
+        } else {
+          this.createLineChart(graph, this.charts[graph.label].current.getContext("2d"));
+        }
+      });*/
+      this.setState({refresh: false});
+    }
     if (prevState.qId === this.state.qId) return;
-
     const queryStr = this._getQueryString();
     AccountDetails._updateUriSearch(queryStr);
-    console.log(this.delaiLastSearch);
     const doSearch = () => axios.get(`${this.searchUri + queryStr}&t=${Date.now()}`)
       .then(response => {
         if (response.status === OK) {
           this.setState({
             count: response.data.count,
             rows: response.data.rows,
+            transactionsByMonthAndDays: response.data.transactionsByMonthAndDays,
+            transfersByMonthAndDays: response.data.transfersByMonthAndDays,
+            dataPerMonth: response.data.dataPerMonth,
+            graphs: response.data.graphs,
+            refresh: true,
           });
         }
       });
@@ -201,9 +230,11 @@ class AccountDetails extends React.Component {
     if (evt?.target) {
       if (!_key) _key = evt.target.name;
       value = evt.target.value;
-      this.delaiLastSearch = Boolean(evt.target.tagName === "INPUT"
-          && evt.target.type === "text");
+      /* this.delaiLastSearch = Boolean(evt.target.tagName === "INPUT"
+          && evt.target.type === "text");*/
+      this.delaiLastSearch = true;
     }
+    this.delaiLastSearch = true;
     this.setState(prevState => ({
       page: 0,
       [_key]: value,
@@ -263,7 +294,7 @@ class AccountDetails extends React.Component {
   }
 
   render() {
-    const graphs = AccountDetails.splitArrayIntoChunks(this.props.graphs, 4);
+    const graphs = AccountDetails.splitArrayIntoChunks(this.state.graphs, 4);
 
     return <div className="body-content">
       <Column className="has-text-centered">
@@ -287,12 +318,12 @@ class AccountDetails extends React.Component {
       </Columns>
       <TransactionModalList
         visible={this.state.modal}
-        transactions={this.props.transactionsByMonthAndDays[this.state.monthSelectedIndex]}
-        transfers={this.props.transfersByMonthAndDays[this.state.monthSelectedIndex]}
+        transactions={this.state.transactionsByMonthAndDays[this.state.monthSelectedIndex]}
+        transfers={this.state.transfersByMonthAndDays[this.state.monthSelectedIndex]}
         month={this.state.monthSelectedName}
         onCloseClick={this.handleCloseClick}
         account={this.props.account}
-        dataPerMonth={this.props.dataPerMonth[this.state.monthSelectedIndex]}
+        dataPerMonth={this.state.dataPerMonth[this.state.monthSelectedIndex]}
       />
     </div>;
   }
@@ -301,12 +332,20 @@ AccountDetails.displayName = "AccountDetails";
 AccountDetails.propTypes = {
   graphs: PropTypes.array,
   account: PropTypes.object.isRequired,
+  query: PropTypes.object,
   transactionsByMonth: PropTypes.array.isRequired,
   transactionsByMonthAndDays: PropTypes.array.isRequired,
   transfersByMonth: PropTypes.array.isRequired,
   transfersByMonthAndDays: PropTypes.array.isRequired,
   dataPerMonth: PropTypes.array.isRequired,
 };
-AccountDetails.defaultProps = {graphs: undefined};
+AccountDetails.defaultProps = {
+  graphs: undefined,
+  query: {
+    count: 1,
+    limit: DEFAULT_LIMIT,
+    page: 0,
+  },
+};
 
 module.exports = AccountDetails;

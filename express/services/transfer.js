@@ -9,6 +9,7 @@ const {
 const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
 const accountSrv = require("./account.js");
+const moment = require("moment");
 
 const transferSrv = {};
 
@@ -97,6 +98,53 @@ transferSrv.delete = async id => {
   transfer.destroy({where: {id}});
   const transfers = await transferSrv.getAllByAccount(transfer.accountId);
   return accountSrv.rebalance(transfer.accountId, transfers);
+};
+
+transferSrv.search = async (user, query) => {
+  logger.debug(
+    "Search transfer for user=[%s] and query=[%j]",
+    user,
+    query,
+  );
+  assert(user, "Missing user");
+  const q = {
+    limit: 15,
+    page: 0,
+    ...query,
+  };
+  const where = {
+    userId: user.id,
+    deletedOn: {[Op.eq]: null},
+  };
+  if (q.year) {
+    console.log(new moment().year(q.year).startOf("year"));
+    console.log(new moment().year(q.year).endOf("year"));
+    where.transferDate = {
+      [Op.and]: {
+        [Op.gte]: new moment().year(q.year).startOf("year"),
+        [Op.between]: [
+          new moment().year(q.year).startOf("year"),
+          new moment().year(q.year).endOf("year"),
+        ],
+      },
+    };
+  }
+  const docs = await Transfer.findAndCountAll({
+    where,
+    order: [["transferDate", OrderDirection.DESC]],
+    include: [
+      {
+        association: Transfer.Sender,
+        include: [{association: Account.AccountType}],
+      },
+      {
+        association: Transfer.Receiver,
+        include: [{association: Account.AccountType}],
+      },
+    ],
+    subQuery: false,
+  });
+  return docs;
 };
 
 module.exports = transferSrv;

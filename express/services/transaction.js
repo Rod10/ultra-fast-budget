@@ -220,6 +220,18 @@ transactionSrv.search = async (user, query) => {
         ],
       },
     };
+  } else if (q.year) {
+    console.log(new moment().year(q.year).startOf("year"));
+    console.log(new moment().year(q.year).endOf("year"));
+    where.transactionDate = {
+      [Op.and]: {
+        [Op.gte]: new moment().year(q.year).startOf("year"),
+        [Op.between]: [
+          new moment().year(q.year).startOf("year"),
+          new moment().year(q.year).endOf("year"),
+        ],
+      },
+    };
   }
 
   if (q.account) {
@@ -250,8 +262,6 @@ transactionSrv.search = async (user, query) => {
     where,
     include: [{association: Transaction.Account}],
     order: [["transactionDate", OrderDirection.DESC]],
-    offset: (q.limit && q.page) ? q.limit * q.page : 0,
-    limit: q.limit,
     subQuery: false,
   });
   return docs;

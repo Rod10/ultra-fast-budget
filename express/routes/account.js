@@ -10,6 +10,7 @@ const {logger} = require("../services/logger.js");
 const {SEE_OTHER, OK} = require("../utils/error.js");
 const TransactionTypes = require("../constants/transactiontype.js");
 const accountTypeSrv = require("../services/accounttype.js");
+const searchMid = require("../middlewares/search");
 
 const router = express.Router();
 
@@ -204,7 +205,8 @@ const groupByDaysTransfert = (month, data) => {
 };
 // transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
 
-const getAccoundDetails = (res, currentYear, currentMonth, account, transactions, transfers) => {
+const getAccoundDetails = (req, res, currentYear, currentMonth, account, transactions, transfers) => {
+  console.log(currentYear);
   const graphs = [];
   const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -334,20 +336,24 @@ const getAccoundDetails = (res, currentYear, currentMonth, account, transactions
     graphs: graphs.reverse(),
     dataPerMonth,
   };
-
+  if (req.query.year) {
+    return res.json(data);
+  }
   const navbar = renderSrv.navbar(res.locals);
   const content = renderSrv.accountDetails(data);
   res.render("generic", {navbar, data, content, components: ["accountdetails"]});
 };
 
-router.get("/details/:id", async (req, res, next) => {
+router.get("/details/:id", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
-    const account = await accountSrv.get(req.user.id, req.params.id);
-    const transactions = await transactionSrv.getAllByAccount(account.id);
-    const transfers = await transferSrv.getAllByAccount(account.id);
     const currentMonth = new moment().month();
     const currentYear = new moment().year();
-    return getAccoundDetails(res, currentYear, currentMonth, account, transactions, transfers);
+    const account = await accountSrv.get(req.user.id, req.params.id);
+    const transactions = await transactionSrv.search(req.user, {accountId: account.id, year: currentYear});
+    console.log(1);
+    const transfers = await transferSrv.search(req.user, {senderId: account.id, receiverId: account.id, year: currentYear});
+    console.log(2);
+    return getAccoundDetails(req, res, currentYear, currentMonth, account, transactions, transfers);
   } catch (err) {
     logger.error(err);
     return next(err);
@@ -393,15 +399,16 @@ router.post("/:id/delete", async (req, res, next) => {
   }
 });
 
-router.get("/details/:id/search", async (req, res, next) => {
+router.get("/details/:id/search", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
-    console.log(req.params);
+    const currentYear = new moment(req.query.year).year();
+    const currentMonth = new moment().year() === currentYear ? new moment().month() : 11;
     const account = await accountSrv.get(req.user.id, req.params.id);
-    const transactions = await transactionSrv.getAllByAccount(account.id);
-    const transfers = await transferSrv.getAllByAccount(account.id);
-    const currentMonth = 11;
-    const currentYear = new moment().year();
-    return getAccoundDetails(res, currentYear, currentMonth, account, transactions, transfers);
+    const transactions = await transactionSrv.search(req.user, {accountId: account.id, year: currentYear});
+    console.log(1);
+    const transfers = await transferSrv.search(req.user, {accountId: account.id, year: currentYear});
+    console.log(2);
+    return getAccoundDetails(req, res, currentYear, currentMonth, account, transactions, transfers);
   } catch (err) {
     logger.error(err);
     return next(err);

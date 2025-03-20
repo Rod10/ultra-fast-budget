@@ -141,7 +141,7 @@ class BudgetList extends AsyncFilteredList {
         />,
       )}
       {this.state.period === "now" && <div className="field">
-        <label className="label">Total dépenser/Total alloué:</label>
+        <label className="label">Total dépensé/Total alloué:</label>
         <b><span className={`has-text-${totalAmount >= totalAllocatedAmount
           ? "danger"
           : "success"}`}
