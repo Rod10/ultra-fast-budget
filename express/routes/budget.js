@@ -88,7 +88,6 @@ router.get("/rebalance-all", async (req, res, next) => {
 router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   try {
     const query = req.parsedQuery || {};
-    console.log(query);
     const budget = await budgetSrv.search(req.user, query);
     res.json({
       count: budget.count,

@@ -221,8 +221,6 @@ transactionSrv.search = async (user, query) => {
       },
     };
   } else if (q.year) {
-    console.log(new moment().year(q.year).startOf("year"));
-    console.log(new moment().year(q.year).endOf("year"));
     where.transactionDate = {
       [Op.and]: {
         [Op.gte]: new moment().year(q.year).startOf("year"),

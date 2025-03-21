@@ -206,7 +206,6 @@ const groupByDaysTransfert = (month, data) => {
 // transactionsByMonthAndDays[month] = groupByDays(month, transactionsByMonth[month]);
 
 const getAccoundDetails = (req, res, currentYear, currentMonth, account, transactions, transfers) => {
-  console.log(currentYear);
   const graphs = [];
   const totalBalance = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   const incomeTransactions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -350,9 +349,7 @@ router.get("/details/:id", searchMid.getPagination, searchMid.cookie, async (req
     const currentYear = new moment().year();
     const account = await accountSrv.get(req.user.id, req.params.id);
     const transactions = await transactionSrv.search(req.user, {accountId: account.id, year: currentYear});
-    console.log(1);
     const transfers = await transferSrv.search(req.user, {senderId: account.id, receiverId: account.id, year: currentYear});
-    console.log(2);
     return getAccoundDetails(req, res, currentYear, currentMonth, account, transactions, transfers);
   } catch (err) {
     logger.error(err);
@@ -405,9 +402,7 @@ router.get("/details/:id/search", searchMid.getPagination, searchMid.cookie, asy
     const currentMonth = new moment().year() === currentYear ? new moment().month() : 11;
     const account = await accountSrv.get(req.user.id, req.params.id);
     const transactions = await transactionSrv.search(req.user, {accountId: account.id, year: currentYear});
-    console.log(1);
     const transfers = await transferSrv.search(req.user, {accountId: account.id, year: currentYear});
-    console.log(2);
     return getAccoundDetails(req, res, currentYear, currentMonth, account, transactions, transfers);
   } catch (err) {
     logger.error(err);

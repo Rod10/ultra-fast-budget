@@ -117,8 +117,6 @@ transferSrv.search = async (user, query) => {
     deletedOn: {[Op.eq]: null},
   };
   if (q.year) {
-    console.log(new moment().year(q.year).startOf("year"));
-    console.log(new moment().year(q.year).endOf("year"));
     where.transferDate = {
       [Op.and]: {
         [Op.gte]: new moment().year(q.year).startOf("year"),
