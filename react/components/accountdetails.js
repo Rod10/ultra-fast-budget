@@ -102,18 +102,14 @@ class AccountDetails extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.year !== this.state.year && this.state.refresh === true) {
-      // update charts ?
-      /* for (const chart in this.charts) {
-        console.log(chart);
-      }
+    if (this.state.refresh === true) {
       this.state.graphs.forEach(graph => {
         if (graph.type === "pie") {
           this.createPieChart(graph, this.charts[graph.label].current.getContext("2d"));
         } else {
           this.createLineChart(graph, this.charts[graph.label].current.getContext("2d"));
         }
-      });*/
+      });
       this.setState({refresh: false});
     }
     if (prevState.qId === this.state.qId) return;
@@ -122,6 +118,13 @@ class AccountDetails extends React.Component {
     const doSearch = () => axios.get(`${this.searchUri + queryStr}&t=${Date.now()}`)
       .then(response => {
         if (response.status === OK) {
+          this.charts.forEach(graph => {
+            this.charts[graph.label].destroy();
+          });
+          this.charts = [];
+          response.data.graphs.forEach(graph => {
+            this.charts[graph.label] = React.createRef();
+          });
           this.setState({
             count: response.data.count,
             rows: response.data.rows,
