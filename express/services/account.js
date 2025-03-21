@@ -137,9 +137,9 @@ accountSrv.rebalance = async (userId, accountId, transactions, transfers) => {
   account.save();
 };
 
-accountSrv.rebalanceTransfer = async (senderId, receiverId, transfers) => {
+accountSrv.rebalanceTransfer = async (userId, senderId, receiverId, transfers) => {
   logger.debug("Rebalance account=[%s] and [%s] for transfer", senderId, receiverId);
-  const sender = await accountSrv.get(senderId);
+  const sender = await accountSrv.get(userId, senderId);
   let newSenderAccountBalance = sender.balance;
   for (const transfer of transfers.rows) {
     newSenderAccountBalance -= parseFloat(transfer.amount);
@@ -147,7 +147,7 @@ accountSrv.rebalanceTransfer = async (senderId, receiverId, transfers) => {
   sender.balance = newSenderAccountBalance;
   sender.save();
 
-  const receiver = await accountSrv.get(receiverId);
+  const receiver = await accountSrv.get(userId, receiverId);
   let newReceiverAccountBalance = receiver.balance;
   for (const transfer of transfers.rows) {
     newReceiverAccountBalance += parseFloat(transfer.amount);

@@ -75,7 +75,7 @@ transferSrv.create = async (userId, transferData) => {
   });
 
   const transfers = await transferSrv.getAllByAccount(transfer.senderId);
-  return accountSrv.rebalanceTransfer(transfer.senderId, transfer.receiverId, transfers);
+  return accountSrv.rebalanceTransfer(userId, transfer.senderId, transfer.receiverId, transfers);
 };
 
 transferSrv.update = async (id, data) => {

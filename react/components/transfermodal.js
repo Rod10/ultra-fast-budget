@@ -54,6 +54,7 @@ class TransferModal extends React.Component {
   }
 
   openModal(items) {
+    console.log(items);
     this.setState(() => {
       const id = items.transfer ? items.transfer.id : 0;
       const amount = items.transfer ? items.transfer.amount : 0;
@@ -62,7 +63,7 @@ class TransferModal extends React.Component {
         id,
         amount,
         other,
-        accounts: items.accounts.rows,
+        accounts: items.accounts,
         currentAccount: items.currentAccount,
         visible: true,
       };
