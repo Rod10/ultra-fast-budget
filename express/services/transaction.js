@@ -136,6 +136,30 @@ transactionSrv.getAllByUserAndCategory = (userId, categoryId, query = {}) => {
   return Transaction.findAndCountAll({where});
 };
 
+transactionSrv.getAllByUserAndNotInCategory = (userId, categoriesId, query = {}) => {
+  logger.debug("Get all transactions by user=[%s] and category=[%s]", userId, categoriesId);
+
+  const where = {[Op.and]: [{userId}]};
+  const condition = where[Op.and][0];
+  // condition.data = {[Op.notLike]: `%{"category":{"id":${categoryId},%`};
+  condition.data = {[Op.and]: []};
+  for (const categoryId of categoriesId) {
+    condition.data[Op.and].push({[Op.notLike]: `%{"category":{"id":${categoryId},%`})
+  }
+  console.log(condition.data);
+  condition.type = TransactionType.EXPENSE;
+  if (query.unit) {
+    condition.transactionDate = {
+      [Op.and]: {
+        [Op.gte]: new moment().startOf(query.unit),
+        [Op.lt]: new moment().endOf(query.unit),
+      },
+    };
+  }
+  condition.isPlanned = null;
+  return Transaction.findAndCountAll({where});
+};
+
 transactionSrv.getAllByUserAndRange = (userId, query) => {
   logger.debug("Get all transactions by user=[%s] and category=[%s]", userId);
 

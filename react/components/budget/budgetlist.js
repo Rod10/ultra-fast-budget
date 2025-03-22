@@ -14,6 +14,7 @@ const DatePicker = require("../datepicker.js");
 // const AccountModal = require("../budgetmodal.js");
 const utils = require("../utils.js");
 const AsyncFilteredList = require("../asyncfilteredlist.js");
+const TransactionModalList = require("../transactionmodallist.js");
 const BudgetExpanded = require("./budgetexpand.js");
 const BudgetBlock = require("./budgetblock.js");
 const BudgetCreationModal = require("./budgetcreationmodal.js");
@@ -37,6 +38,7 @@ class BudgetList extends AsyncFilteredList {
       ...this.defaultState(),
       ...props.query,
       rows: props.budgets.rows,
+      dataPerMonth: props.transactionNotInBudget,
       category: "",
       period: "now",
       modal: "",
@@ -46,6 +48,8 @@ class BudgetList extends AsyncFilteredList {
     this.handleOpenDetails = this.handleOpenDetails.bind(this);
     this.handleCloseDetails = this.handleCloseDetails.bind(this);
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
+    this.handleOpenTransactionsModal = this.handleOpenTransactionsModal.bind(this);
+    this.handleCloseClick = this.handleCloseClick.bind(this);
   }
 
   handleRegisterModal(modal, fn) {
@@ -65,13 +69,26 @@ class BudgetList extends AsyncFilteredList {
     this.setState({currentBudget: budget});
   }
 
+  handleOpenTransactionsModal(evt) {
+    this.setState(prevState => ({modal: prevState.modal === "details" ? null : "details"}));
+  }
+
+  handleCloseClick() {
+    this.setState({modal: null});
+  }
+
   // eslint-disable-next-line max-lines-per-function
   _renderFilters() {
-    /* const category = this.state.category ? this.props.categories.rows
-      .filter(e => this.state.category !== "" && parseInt(this.state.category, 10) === e.id)
-      : null;*/
     const totalAmount = this.state.rows.reduce((acc, row) => acc + row.totalAmount, 0);
     const totalAllocatedAmount = this.state.rows.reduce((acc, row) => acc + row.totalAllocatedAmount, 0);
+    let totalOutOfBudget = 0;
+    for (const data of this.state.dataPerMonth) {
+      if (data.length > 0) {
+        for (const transactionData of data) {
+          totalOutOfBudget += transactionData.data.reduce((acc, row) => acc + parseFloat(row.amount), 0);
+        }
+      }
+    }
     return <form className="filters">
       {this._renderFilterSelect(
         "period",
@@ -95,18 +112,6 @@ class BudgetList extends AsyncFilteredList {
           },
         ],
       )}
-      {/* this._renderFilterSelect(
-        "category",
-        "Catégorie:",
-        this.props.categories.rows
-          .map(e => ({value: e.id, label: e.name})),
-      )}
-      {category !== null && this._renderFilterSelect(
-        "subCategory",
-        "Sous-Catégorie:",
-        category[0].subCategories
-          .map(e => ({value: e.id, label: e.name})),
-      )*/}
       {this.state.period === "exact" && this._renderFilterWrapper(
         "Mois/Année: ",
         <DatePicker
@@ -150,12 +155,19 @@ class BudgetList extends AsyncFilteredList {
       </div>}
       {this.state.period === "now" && <div className="field">
         <label className="label">Budget total restant:</label>
-        <b><span className={`has-text-${totalAllocatedAmount - totalAmount <= 0
+        <b><span className={`has-text-${totalAllocatedAmount - totalAmount - totalOutOfBudget <= 0
           ? "danger"
           : "success"}`}
-        >{totalAllocatedAmount - totalAmount} €</span>
+        >{totalAllocatedAmount - totalAmount - totalOutOfBudget} €</span>
         </b>
       </div>}
+      <div className="field">
+        <label className="label">Dépense hors budget: {totalOutOfBudget} €</label>
+        <span><a
+          className="button has-text-weight-bold mr-3 is-link is-themed"
+          onClick={this.handleOpenTransactionsModal}
+        >Détails</a></span>
+      </div>
     </form>;
   }
 
@@ -220,6 +232,13 @@ class BudgetList extends AsyncFilteredList {
         {expanded}
       </Columns>
       <BudgetCreationModal onRegisterModal={this.handleRegisterModal} />
+      <TransactionModalList
+        visible={this.state.modal === "details"}
+        month={"Détails"}
+        onCloseClick={this.handleCloseClick}
+        account={this.props.account}
+        dataPerMonth={this.state.dataPerMonth}
+      />
     </div>;
   }
 }
