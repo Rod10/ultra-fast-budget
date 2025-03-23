@@ -130,7 +130,7 @@ class AccountList extends React.Component {
           </div>
         </Column>
       </Columns>
-
+      <hr />
       <Columns>
         <div className="column">
           <div className="content operator-scrollblock">

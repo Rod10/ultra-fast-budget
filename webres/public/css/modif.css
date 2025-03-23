@@ -154,7 +154,23 @@ a.link:hover {
 
 .scrollbar {
     top: 3.25rem;
-    left: 0;
+    left: -300px;
+    width: 330px;
+    max-width: 100vw;
+    height: calc(100vh - 3.25rem);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    background-color: #006893;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .35);
+    z-index: 2;
+    transition: all .5s;
+}
+
+.scrollbar:hover {
+    top: 3.25rem;
+    left: 0px;
     width: 330px;
     max-width: 100vw;
     height: calc(100vh - 3.25rem);
@@ -169,13 +185,13 @@ a.link:hover {
 }
 
 /* Si moins de 1223px */
-@media screen and (max-width: 1223px) {
+/* @media screen and (max-width: 1223px) {
     .scrollbar {
         left: -330px;
         opacity: 0;
         z-index: 10;
     }
-}
+} */
 
 .scrollbar.opened {
     left: 0;
@@ -266,8 +282,8 @@ a.link:hover {
 /* Si plus de 1224px */
 @media screen and (min-width: 1224px) {
     .body-content {
-        left: 330px;
-        width: calc(100vw - 330px);
+        left: 30px;
+         width: calc(100vw - 30px);
         height: calc(100vh - 3.5em);
     }
 }
@@ -335,11 +351,11 @@ a.link:hover {
 
 /* --- Burger Button --- */
 /* Si moins de 1224px */
-@media screen and (min-width: 1224px) {
+/* @media screen and (min-width: 1224px) {
     .scrollbar-button {
         display: none;
     }
-}
+}*/
 
 .scrollbar-button {
     margin: auto 20px auto 10px;
