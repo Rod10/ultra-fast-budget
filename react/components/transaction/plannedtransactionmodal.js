@@ -262,7 +262,7 @@ class PlannedTransactionModal extends React.Component {
         <Input
           className="input"
           placeholder="Montant"
-          type="text"
+          type="number"
           name={`data[${index}][amount]`}
           value={item.amount}
           data-list="data"

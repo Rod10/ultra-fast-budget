@@ -163,7 +163,7 @@ class TransferModal extends React.Component {
               className="input"
               placeholder="Montant:"
               label="Montant:"
-              type="text"
+              type="number"
               name={"amount"}
               value={this.state.amount}
               data-propname="amount"
