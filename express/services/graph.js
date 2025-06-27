@@ -70,8 +70,8 @@ graphSrv.getSummary = async (user, type) => {
       "#f14668",
     ],
     data: [
-      incomeTransactions,
-      outcomeTransactions,
+      Math.round((incomeTransactions + Number.EPSILON) * 100) / 100,
+      Math.round((outcomeTransactions + Number.EPSILON) * 100) / 100,
     ],
   };
 };

@@ -150,7 +150,6 @@ class Homepage extends React.Component {
     const graph = this.props.graphs[type][subType];
     const className = this.props.graphs[type][subType].type === "pie" ? "homepage-chart" : null;
     const side = this.props.graphs[type][subType].type === "pie";
-
     return <div className={`is-${graph.column} is-flex-grow-${graph.column}`}>
       <div className="pr-2 pb-2">
         <div className={"graph-box"}>
@@ -189,8 +188,7 @@ class Homepage extends React.Component {
               <hr className="hr-homepage" />
               <Columns className="is-centered">
                 <Title size={5}>
-                  {this.props.graphs[type][subType].data[0]
-                    - this.props.graphs[type][subType].data[1]} €
+                  {Math.round(((this.props.graphs[type][subType].data[0] - this.props.graphs[type][subType].data[1]) + Number.EPSILON) * 100) / 100} €
                 </Title>
               </Columns>
             </Column>
@@ -224,10 +222,13 @@ class Homepage extends React.Component {
             <b>Comptes: </b>
             {this.props.accounts.rows.map(account => <Columns key={account.id}>
               <Column className="has-text-left">
-                {account.name}
+                <span
+                  className={`tag ${account.accountType.tag} is-small is-rounded`}
+                  title={account.accountType.name}
+                >{account.accountType.name}</span>
               </Column>
               <Column className="has-text-right">
-                {account.balance} €
+                <b>{account.balance} €</b>
               </Column>
             </Columns>)}
           </div>
