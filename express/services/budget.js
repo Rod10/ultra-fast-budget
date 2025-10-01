@@ -145,7 +145,7 @@ budgetSrv.recalculate = async user => {
     for (const newBudget of newBudgetData) {
       newBudget.amount = 0;
     }
-    const transactions = await transactionSrv.getAllByUserAndRange(user.id, {unit: budget.unit, type: TransactionType.EXPENSE, isPlanned: null});
+    const transactions = await transactionSrv.getAllByUserAndRange(user.id, {unit: budget.unit, type: TransactionType.EXPENSE, isPlanned: null, range: "month"});
     for (const transaction of transactions.rows) {
       for (const data of transaction.data) {
         if (data.category.id === budget.categoryId) {
