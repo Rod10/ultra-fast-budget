@@ -10,7 +10,7 @@ const {logger} = require("../services/logger.js");
 const {SEE_OTHER, OK} = require("../utils/error.js");
 const TransactionTypes = require("../constants/transactiontype.js");
 const accountTypeSrv = require("../services/accounttype.js");
-const searchMid = require("../middlewares/search");
+const searchMid = require("../middlewares/search.js");
 
 const router = express.Router();
 

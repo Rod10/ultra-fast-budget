@@ -58,7 +58,9 @@ hbs.registerHelper("eq", function eq(v1, v2, options) {
 /* eslint-enable no-invalid-this */
 
 hbs.registerHelper("log", something => {
+  /* eslint-disable no-console */
   console.log(something);
+  /* eslint-enable no-console*/
 });
 
 const getAppVersion = () => {

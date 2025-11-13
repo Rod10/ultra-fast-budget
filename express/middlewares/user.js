@@ -35,7 +35,7 @@ const verifyToken = async req => {
   }
 };
 
-const accessError = () => new Error("Vous n'êtes pas autorisé à effectuer cette action");
+// const accessError = () => new Error("Vous n'êtes pas autorisé à effectuer cette action");
 
 module.exports = {
   /* email: async (req, res, next) => {
