@@ -38,7 +38,8 @@ router.post("/new", async (req, res, next) => {
 router.post("/:id/delete", async (req, res, next) => {
   try {
     const accountType = await accountTypeSrv.getById(req.user.id, req.params.id);
-    const accountBalanceIsZero = accountType.account.filter(account => account.balance !== 0).length === 0;
+    const accountBalanceIsZero = accountType.account.filter(account => account.balance !== 0)
+      .length === 0;
     if (accountBalanceIsZero) {
       await accountTypeSrv.delete(req.user.id, accountType.id);
       const {user} = req;

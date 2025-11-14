@@ -1,5 +1,4 @@
 const express = require("express");
-const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
 const accountSrv = require("../services/account.js");
@@ -9,7 +8,7 @@ const subCategorySrv = require("../services/subcategory.js");
 const plannedTransactionSrv = require("../services/plannedtransaction.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
-const TransactionType = require("../constants/transactiontype");
+const TransactionType = require("../constants/transactiontype.js");
 
 const router = express.Router();
 

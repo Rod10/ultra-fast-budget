@@ -1,14 +1,9 @@
 const assert = require("assert");
 
-const AccountsTypeFull = require("../constants/accountstypefull.js");
-
 const {
-  sequelize,
-  Sequelize,
   Account,
   Op,
 } = require("../models/index.js");
-const AccountTypes = require("../constants/accountstype.js");
 const TransactionTypes = require("./../constants/transactiontype.js");
 const {logger} = require("./logger.js");
 
@@ -27,9 +22,6 @@ const accountSrv = {};
  */
 accountSrv.create = (userId, data, accountType) => {
   logger.debug("Create account with data=[%s] for user=[%s] and accountType=[%s]", data, userId, accountType.id);
-  // if (AccountsTypeFull[data.type].maxAmount !== 0) {
-  //   assert(parseInt(data.initialBalance, 10) <= AccountsTypeFull[data.type].maxAmount, "Initial balance cannot be more than the maximum amount allowed");
-  // }
 
   return Account.create({
     userId,
@@ -70,7 +62,7 @@ accountSrv.getAllByUser = userId => {
  * @param {object} data - The transaction data
  * @param {number} accountTypeId - The transaction data
  */
-accountSrv.updateData = async (userId, accountId, data, accountTypeId) => {
+accountSrv.updateData = (userId, accountId, data, accountTypeId) => {
   logger.debug("Update user=[%s] account=[%s] with data=[%s]", userId, accountId, data);
   assert(userId, "UserId cannot be null");
   assert(accountId, "AccountId cannot be null");
@@ -87,7 +79,7 @@ accountSrv.updateData = async (userId, accountId, data, accountTypeId) => {
   );
 };
 
-accountSrv.update = async (userId, accountId, data) => {
+accountSrv.update = (userId, accountId, data) => {
   logger.debug("Update user account=[%s]", accountId);
   return Account.update(
     {balance: data.balance},
@@ -105,12 +97,14 @@ accountSrv.rebalance = async (userId, accountId, transactions, transfers) => {
   const account = await accountSrv.get(userId, accountId);
   let newAccountBalance = account.initialBalance;
   for (const transaction of transactions.rows) {
-    if (transaction.type === TransactionTypes.INCOME || transaction.type === TransactionTypes.EXPECTED_INCOME) {
+    if (transaction.type === TransactionTypes.INCOME
+        || transaction.type === TransactionTypes.EXPECTED_INCOME) {
       newAccountBalance += transaction.data.map(row => parseFloat(row.amount)).reduce(
         (accumulator, currentValue) => accumulator + currentValue,
         0,
       );
-    } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE || transaction.type === TransactionTypes.EXPENSE) {
+    } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
+        || transaction.type === TransactionTypes.EXPENSE) {
       newAccountBalance -= transaction.data.map(row => parseFloat(row.amount)).reduce(
         (accumulator, currentValue) => accumulator + currentValue,
         0,

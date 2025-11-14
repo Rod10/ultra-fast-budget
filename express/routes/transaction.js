@@ -1,5 +1,4 @@
 const express = require("express");
-const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
 const TransactionTypes = require("../constants/transactiontype.js");

@@ -1,8 +1,6 @@
 const assert = require("assert");
 const moment = require("moment");
 const {
-  sequelize,
-  Sequelize,
   Budget,
   Op,
 } = require("../models/index.js");
@@ -103,7 +101,8 @@ budgetSrv.update = (oldBudget, newBudget) => {
   const newData = newBudget.data.map(data => ({
     amount: oldBudget.data.find(old => old.subCategory.id === data.subCategory.id)?.amount || 0,
     totalAmount: data.totalAmount,
-    subCategory: oldBudget.data.find(old => old.subCategory.id === data.subCategory.id)?.subCategory || data.subCategory,
+    subCategory: oldBudget.data.find(old => old.subCategory.id === data.subCategory.id)?.subCategory
+        || data.subCategory,
   }));
 
   return Budget.update({
@@ -149,7 +148,8 @@ budgetSrv.recalculate = async user => {
     for (const transaction of transactions.rows) {
       for (const data of transaction.data) {
         if (data.category.id === budget.categoryId) {
-          const index = newBudgetData.findIndex(budgetData => budgetData.subCategory.id === data.subCategory.id);
+          const index = newBudgetData
+            .findIndex(budgetData => budgetData.subCategory.id === data.subCategory.id);
           newBudgetData[index].amount += parseFloat(data.amount);
         }
       }

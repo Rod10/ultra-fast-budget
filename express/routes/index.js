@@ -1,4 +1,5 @@
 const express = require("express");
+const moment = require("moment");
 const loggerMid = require("../middlewares/logger.js");
 const authMid = require("../middlewares/user.js");
 
@@ -14,7 +15,8 @@ const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
 const budgetSrv = require("../services/budget.js");
 const TransactionType = require("../constants/transactiontype.js");
-const moment = require("moment");
+
+const ONE_HUNDRED = 100;
 
 const router = express.Router();
 
@@ -55,7 +57,7 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-router.post("/login", loggerMid(["email"]), async (req, res, next) => {
+router.post("/login", loggerMid(["email"]), async (req, res) => {
   try {
     const user = await userSrv.login(req.body);
     const token = tokenSrv.user(user);
@@ -121,13 +123,24 @@ router.get("/", async (req, res) => {
       liquidity.incomeTransactionsNumber++;
     }
   }
+
   const daysInMonth = new moment().daysInMonth();
-  liquidity.totalIncome = Math.round((liquidity.totalIncome + Number.EPSILON) * 100) / 100;
-  liquidity.totalOutcome = Math.round((liquidity.totalOutcome + Number.EPSILON) * 100) / 100;
-  liquidity.average.daily.income = Math.round(liquidity.totalIncome / daysInMonth * 100) / 100;
-  liquidity.average.daily.outcome = Math.round(liquidity.totalOutcome / daysInMonth * 100) / 100;
-  liquidity.average.transactions.income = Math.round(liquidity.totalIncome / liquidity.incomeTransactionsNumber * 100) / 100;
-  liquidity.average.transactions.outcome = Math.round(liquidity.totalOutcome / liquidity.outcomeTransactionsNumber * 100) / 100;
+  liquidity.totalIncome = Math.round((liquidity.totalIncome + Number.EPSILON) * ONE_HUNDRED)
+      / ONE_HUNDRED;
+  liquidity.totalOutcome = Math.round((liquidity.totalOutcome + Number.EPSILON) * ONE_HUNDRED)
+      / ONE_HUNDRED;
+  liquidity.average.daily.income = Math.round(liquidity.totalIncome / daysInMonth * ONE_HUNDRED)
+      / ONE_HUNDRED;
+  liquidity.average.daily.outcome = Math.round(liquidity.totalOutcome / daysInMonth * ONE_HUNDRED)
+      / ONE_HUNDRED;
+  liquidity.average.transactions.income = Math.round(
+    (liquidity.totalIncome / liquidity.incomeTransactionsNumber)
+          * ONE_HUNDRED,
+  ) / ONE_HUNDRED;
+  liquidity.average.transactions.outcome = Math.round(
+    (liquidity.totalOutcome / liquidity.outcomeTransactionsNumber)
+          * ONE_HUNDRED,
+  ) / ONE_HUNDRED;
 
   const data = {
     graphs,
@@ -141,7 +154,7 @@ router.get("/", async (req, res) => {
   res.render("generic", {navbar, data, content, components: ["homepage"]});
 });
 
-router.get("/logout", async (req, res, next) => {
+router.get("/logout", (req, res) => {
   res.cookie("token", "", {expires: new Date()});
   res.redirect(SEE_OTHER, "/login");
 });

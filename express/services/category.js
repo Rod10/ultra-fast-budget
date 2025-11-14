@@ -2,8 +2,6 @@ const fs = require("fs");
 const path = require("path");
 
 const {
-  sequelize,
-  Sequelize,
   Category,
   Op,
 } = require("../models/index.js");
@@ -33,7 +31,7 @@ categorySrv.createForNewUser = user => {
   logger.debug("Create all category for new user=[%s]", user.id);
   const dir = `${user.id}-${user.lastName}/categories`;
   const categoriesToCreate = [];
-  for (const [key, value] of Object.entries(CategoryFull)) {
+  for (const [, value] of Object.entries(CategoryFull)) {
     const imagePath = `${dir}/${value.imagePath}`;
     categoriesToCreate.push({
       userId: user.id,
@@ -99,7 +97,7 @@ categorySrv.create = (user, data, file) => {
   });
 };
 
-categorySrv.edit = async (category, user, data, file) => {
+categorySrv.edit = (category, user, data, file) => {
   logger.debug("Edit category=[%s] with data=[%s]", category.id, data);
   const dir = getDir(user);
 

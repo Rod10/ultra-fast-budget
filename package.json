@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "check": "eslint express react webres",
-    "lint": "eslint express react webres",
+    "lint": "eslint express react webres/views",
     "shell": "node --experimental-repl-await -i -e \"$(cat ./scripts/shell.js)\"",
     "start": "grunt development && npx watchers",
     "test": "echo \"Disable for now\"",

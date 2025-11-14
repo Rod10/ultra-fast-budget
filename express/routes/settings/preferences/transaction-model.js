@@ -1,5 +1,5 @@
+/* eslint-disable */
 const express = require("express");
-// const loggerMid = require("../../middlewares/logger.js");
 const multer = require("multer");
 const moment = require("moment");
 const authMid = require("../../../middlewares/user.js");

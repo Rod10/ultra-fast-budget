@@ -1,15 +1,12 @@
-const assert = require("assert");
 const moment = require("moment");
 
 const {
   Account,
-  Category,
   PlannedTransaction,
   PlannedTransfer,
   SubCategory,
   Transaction,
   Transfer,
-  sequelize,
   Sequelize,
 } = require("../models/index.js");
 

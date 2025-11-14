@@ -4,7 +4,6 @@ const authMid = require("../middlewares/user.js");
 const transferSrv = require("../services/transfer.js");
 const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
-const renderSrv = require("../services/render.js");
 
 const router = express.Router();
 

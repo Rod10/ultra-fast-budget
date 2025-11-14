@@ -51,8 +51,8 @@ router.get("/forecasts", searchMid.getPagination, searchMid.cookie, async (req, 
     const accounts = await accountSrv.getAllByUser(user.id);
     const graphs = {};
     const result = query.unit === "month"
-    ? await graphSrv.allAccountsForecastMonth(user, query)
-    : await graphSrv.allAccountsForecastYear(user, query);
+      ? await graphSrv.allAccountsForecastMonth(user, query)
+      : await graphSrv.allAccountsForecastYear(user, query);
     graphs["allForecast"] = result.graphs.allForecast;
 
     for (const account of accounts.rows) {
