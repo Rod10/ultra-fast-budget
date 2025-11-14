@@ -559,8 +559,6 @@ const formatResponseData = (data, currentMonth) => {
     dataPerMonth,
   } = data;
 
-  const trimLength = dataPerMonth.length - currentMonth - 1;
-
   return {
     account,
     totalBalance: totalBalance.slice(0, currentMonth + 1).reverse(),
@@ -572,7 +570,7 @@ const formatResponseData = (data, currentMonth) => {
     transfersByMonthAndDays: transfersByMonthAndDays.slice(0, currentMonth + 1).reverse(),
     period: period.slice(0, currentMonth + 1).reverse(),
     graphs: graphs.reverse(),
-    dataPerMonth: dataPerMonth.reverse().splice(0, trimLength),
+    dataPerMonth: dataPerMonth.reverse(),
   };
 };
 
