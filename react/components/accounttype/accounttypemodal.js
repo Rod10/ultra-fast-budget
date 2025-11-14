@@ -2,17 +2,13 @@ const React = require("react");
 const reactCSS = require("reactcss").default;
 const PropTypes = require("prop-types");
 const Select = require("react-select").default;
-const {ChromePicker, SketchPicker} = require("react-color");
-
-const {ValueContainer, Placeholder} = require("react-select").components;
+const {SketchPicker} = require("react-color");
 
 const {Tooltip} = require("react-tooltip");
 const {getElFromDataset} = require("../../utils/html.js");
-const Button = require("../bulma/button.js");
 const Modal = require("../modal.js");
 const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
-const Icon = require("../bulma/icon.js");
 const Input = require("../bulma/input.js");
 // const Select = require("../bulma/select.js");
 const Title = require("../bulma/title.js");
@@ -128,8 +124,6 @@ class AccountTypeModal extends React.Component {
       account: {},
       name: "",
       type: "",
-      currency: "",
-      initialBalance: 0,
       visible: false,
       alert: false,
       pending: false,
@@ -227,7 +221,7 @@ class AccountTypeModal extends React.Component {
     }
   }
 
-  handleClose(evt) {
+  handleClose() {
     this.setState({visible: false});
   }
 
@@ -239,11 +233,11 @@ class AccountTypeModal extends React.Component {
     this.setState({unit: value});
   }
 
-  handleOpenColorPicker(evt) {
+  handleOpenColorPicker() {
     this.setState({displayColorPicker: true});
   }
 
-  handleCloseColorPicker(evt) {
+  handleCloseColorPicker() {
     this.setState({displayColorPicker: false});
   }
 
@@ -261,25 +255,16 @@ class AccountTypeModal extends React.Component {
       title = "Créer un type de compte";
     }
 
-    const popover = {
-      position: "absolute",
-      zIndex: "2",
-    };
-    const cover = {
-      position: "fixed",
-      top: "0px",
-      right: "0px",
-      bottom: "0px",
-      left: "0px",
-    };
-
     const styles = reactCSS({
       "default": {
         color: {
           // width: "36px",
           // height: "14px",
           // borderRadius: "2px",
-          background: `rgba(${this.state.color.rgb.r}, ${this.state.color.rgb.g}, ${this.state.color.rgb.b}, ${this.state.color.rgb.a})`,
+          background: `rgba(${this.state.color.rgb.r},
+          ${this.state.color.rgb.g},
+          ${this.state.color.rgb.b},
+          ${this.state.color.rgb.a})`,
         },
         swatch: {
           padding: "5px",
@@ -427,6 +412,7 @@ class AccountTypeModal extends React.Component {
         </Columns>}
       </form>
       <Tooltip anchorSelect=".anchor-color" place="top">
+        {/* eslint-disable-next-line max-len */}
         La couleur à laquelle vous voulez que les donnée de ce type de compte apparaisse dans les graphiques
       </Tooltip>
       <Tooltip anchorSelect=".anchor-amount" place="top">
@@ -445,7 +431,7 @@ class AccountTypeModal extends React.Component {
         visible={this.state.alert}
         type="alert"
         confirmText="Recharger la page"
-        handleConfirm={AccountTypeModal.handleAlertClick}
+        onConfirm={AccountTypeModal.handleAlertClick}
       >
         <p>Une erreur est survenue lors de l'effacement, rechargez la page et ré-essayez</p>
         <p>Si le problème persiste, merci de contacter les responsables du site.</p>

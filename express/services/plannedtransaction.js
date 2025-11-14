@@ -1,19 +1,12 @@
 const assert = require("assert");
-const df = require("dateformat");
-
-const moment = require("moment");
-const AccountsTypeFull = require("../constants/accountstypefull.js");
 
 const {
-  sequelize,
-  Sequelize,
   Account,
   PlannedTransaction,
   Op,
 } = require("../models/index.js");
 const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
-const accountSrv = require("./account.js");
 
 const plannedTransactionSrv = {};
 
@@ -59,7 +52,7 @@ plannedTransactionSrv.getAllByAccount = accountId => {
   return PlannedTransaction.findAndCountAll({where: {accountId}});
 };
 
-plannedTransactionSrv.create = async (userId, transactionData) => {
+plannedTransactionSrv.create = (userId, transactionData) => {
   logger.debug("Create transaction for user=[%s] with data=[%s]", userId, transactionData);
 
   return PlannedTransaction.create({
@@ -76,7 +69,7 @@ plannedTransactionSrv.create = async (userId, transactionData) => {
   });
 };
 
-plannedTransactionSrv.update = async (id, data) => {
+plannedTransactionSrv.update = (id, data) => {
   logger.debug("Edit transaction=[%s] with data=[%s]", id, data);
 
   return PlannedTransaction.update({

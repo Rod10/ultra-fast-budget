@@ -3,13 +3,13 @@ const nodeCrypto = require("crypto");
 const utils = {};
 
 utils.getRandomCode = (defaultLength = 33) => nodeCrypto.randomBytes(defaultLength)
-  .toString("base64")
+  .toString()
   .replace(/\//gu, "_")
   .replace(/\+/gu, "-");
 
 /** Escape a string to be used in a MySQL regexp */
 utils.escapeMySQLRegexString = str => {
-  const toEscape = /([\\.+*?[\]^$(){}=!<>|:-])/g;
+  const toEscape = /[\\.+*?[\]^$(){}=!<>|:-]/gu;
   return str.replace(toEscape, (_, m1) => `\\${m1}`);
 };
 

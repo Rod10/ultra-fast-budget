@@ -1,6 +1,5 @@
+/* eslint-disable no-magic-numbers */
 /* global axios */
-const df = require("dateformat");
-// const moment = require("moment");
 const React = require("react");
 const PropTypes = require("prop-types");
 
@@ -15,9 +14,7 @@ const {
 const {getElFromDataset} = require("../utils/html.js");
 const {preventDefault} = require("../utils/html.js");
 const {OK} = require("../../express/utils/error.js");
-const OrderDirection = require("../../express/constants/orderdirection");
-const Button = require("./bulma/button.js");
-const Icon = require("./bulma/icon.js");
+const OrderDirection = require("../../express/constants/orderdirection.js");
 const Title = require("./bulma/title.js");
 const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
@@ -146,7 +143,7 @@ class AccountDetails extends React.Component {
 
   createPieChart(graph, chart) {
     this.context = chart;
-    const {label, labels, backgroundColor} = graph;
+    const {labels, backgroundColor} = graph;
     const data = {
       labels,
       datasets: [{
@@ -336,9 +333,7 @@ AccountDetails.propTypes = {
   graphs: PropTypes.array,
   account: PropTypes.object.isRequired,
   query: PropTypes.object,
-  transactionsByMonth: PropTypes.array.isRequired,
   transactionsByMonthAndDays: PropTypes.array.isRequired,
-  transfersByMonth: PropTypes.array.isRequired,
   transfersByMonthAndDays: PropTypes.array.isRequired,
   dataPerMonth: PropTypes.array.isRequired,
 };

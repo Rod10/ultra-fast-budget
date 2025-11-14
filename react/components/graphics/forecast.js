@@ -230,8 +230,9 @@ class Forecast extends AsyncFilteredList {
   }
 
   _renderGraph(type) {
+    console.log(type);
     const graph = this.props.graphs[type];
-
+    console.log(graph);
     return <div className={`is-${graph.column} is-flex-grow-${graph.column}`}>
       <div className="pr-2 pb-2">
         <div className={"graph-box"}>

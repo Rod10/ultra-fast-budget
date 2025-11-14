@@ -1,15 +1,13 @@
 const assert = require("assert");
 const moment = require("moment");
 const {
-  sequelize,
-  Sequelize,
   Transaction,
   Op,
 } = require("../models/index.js");
 const OrderDirection = require("../constants/orderdirection.js");
-const TransactionType = require("../constants/transactiontype");
-const TransactionTypes = require("../constants/transactiontype");
-const AccountTypes = require("../constants/accountstype");
+const TransactionType = require("../constants/transactiontype.js");
+const TransactionTypes = require("../constants/transactiontype.js");
+const AccountTypes = require("../constants/accountstype.js");
 const accountSrv = require("./account.js");
 const {logger} = require("./logger.js");
 
@@ -66,17 +64,20 @@ transactionSrv.create = async (userId, transactionData) => {
   logger.debug("Create transaction for user=[%s] with data=[%s]", userId, transactionData);
 
   const account = await accountSrv.get(userId, transactionData.account);
-  if (transactionData.type === TransactionTypes.INCOME || transactionData.type === TransactionTypes.EXPECTED_INCOME) {
+  if (transactionData.type === TransactionTypes.INCOME
+      || transactionData.type === TransactionTypes.EXPECTED_INCOME) {
     account.balance += transactionData.data.map(row => parseFloat(row.amount)).reduce(
       (accumulator, currentValue) => accumulator + currentValue,
       0,
     );
     assert(
       (parseInt(account.balance, 10) > account.accountType.maxAmount)
-      && (account.accountType.type === AccountTypes.WALLET || account.accountType.type === AccountTypes.COURANT),
+      && (account.accountType.type === AccountTypes.WALLET
+            || account.accountType.type === AccountTypes.COURANT),
       "Balance cannot be more than the maximum amount allowed for an manual transaction",
     );
-  } else if (transactionData.type === TransactionTypes.EXPECTED_EXPENSE || transactionData.type === TransactionTypes.EXPENSE) {
+  } else if (transactionData.type === TransactionTypes.EXPECTED_EXPENSE
+      || transactionData.type === TransactionTypes.EXPENSE) {
     account.balance -= transactionData.data.map(row => parseFloat(row.amount)).reduce(
       (accumulator, currentValue) => accumulator + currentValue,
       0,
@@ -144,9 +145,9 @@ transactionSrv.getAllByUserAndNotInCategory = (userId, categoriesId, query = {})
   // condition.data = {[Op.notLike]: `%{"category":{"id":${categoryId},%`};
   condition.data = {[Op.and]: []};
   for (const categoryId of categoriesId) {
-    condition.data[Op.and].push({[Op.notLike]: `%{"category":{"id":${categoryId},%`})
+    condition.data[Op.and].push({[Op.notLike]: `%{"category":{"id":${categoryId},%`});
   }
-  console.log(condition.data);
+
   condition.type = TransactionType.EXPENSE;
   if (query.unit) {
     condition.transactionDate = {
@@ -247,10 +248,13 @@ transactionSrv.search = async (user, query) => {
   } else if (q.year) {
     where.transactionDate = {
       [Op.and]: {
-        [Op.gte]: new moment().year(q.year).startOf("year"),
+        [Op.gte]: new moment().year(q.year)
+          .startOf("year"),
         [Op.between]: [
-          new moment().year(q.year).startOf("year"),
-          new moment().year(q.year).endOf("year"),
+          new moment().year(q.year)
+            .startOf("year"),
+          new moment().year(q.year)
+            .endOf("year"),
         ],
       },
     };

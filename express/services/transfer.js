@@ -1,7 +1,6 @@
 const assert = require("assert");
+const moment = require("moment");
 const {
-  sequelize,
-  Sequelize,
   Account,
   Transfer,
   Op,
@@ -9,7 +8,6 @@ const {
 const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
 const accountSrv = require("./account.js");
-const moment = require("moment");
 
 const transferSrv = {};
 
@@ -119,10 +117,13 @@ transferSrv.search = async (user, query) => {
   if (q.year) {
     where.transferDate = {
       [Op.and]: {
-        [Op.gte]: new moment().year(q.year).startOf("year"),
+        [Op.gte]: new moment().year(q.year)
+          .startOf("year"),
         [Op.between]: [
-          new moment().year(q.year).startOf("year"),
-          new moment().year(q.year).endOf("year"),
+          new moment().year(q.year)
+            .startOf("year"),
+          new moment().year(q.year)
+            .endOf("year"),
         ],
       },
     };

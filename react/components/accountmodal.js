@@ -5,11 +5,9 @@ const Currencies = require("../../express/constants/currencies.js");
 const CurrenciesFull = require("../../express/constants/currenciesfull.js");
 
 const {getElFromDataset} = require("../utils/html.js");
-const Button = require("./bulma/button.js");
 const Modal = require("./modal.js");
 const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
-const Icon = require("./bulma/icon.js");
 const Input = require("./bulma/input.js");
 const Select = require("./bulma/select.js");
 const Title = require("./bulma/title.js");
@@ -30,7 +28,6 @@ class AccountModal extends React.Component {
       name: "",
       type: "",
       currency: "",
-      balance: 0,
       initialBalance: 0,
       visible: false,
       alert: false,
@@ -83,7 +80,7 @@ class AccountModal extends React.Component {
     }
   }
 
-  handleClose(evt) {
+  handleClose() {
     this.setState({visible: false});
   }
 
@@ -170,7 +167,12 @@ class AccountModal extends React.Component {
             />
           </Column>
         </Columns>
-        {this.state.type && <p>Montant Maximal: {this.state.accountsType.rows.find(accountType => accountType.type === this.state.type).maxAmount}</p>}
+        {this.state.type
+            && <p>Montant Maximal:
+              {this.state.accountsType.rows
+                .find(accountType => accountType.type === this.state.type)
+                .maxAmount}
+            </p>}
         <Columns>
           <Column>
             <Select
@@ -195,7 +197,7 @@ class AccountModal extends React.Component {
         visible={this.state.alert}
         type="alert"
         confirmText="Recharger la page"
-        handleConfirm={AccountModal.handleAlertClick}
+        onConfirm={AccountModal.handleAlertClick}
       >
         <p>Une erreur est survenue lors de l'effacement, rechargez la page et ré-essayez</p>
         <p>Si le problème persiste, merci de contacter les responsables du site.</p>

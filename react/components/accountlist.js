@@ -13,7 +13,6 @@ const AccountBlock = require("./accountblock.js");
 const AccountExpand = require("./accountexpand.js");
 const TransferModal = require("./transfermodal.js");
 
-const utils = require("./utils.js");
 const DeletionModal = require("./deletionmodal.js");
 
 class AccountList extends React.Component {
@@ -54,7 +53,7 @@ class AccountList extends React.Component {
     this.setState({currentAccount: account});
   }
 
-  handleDeleteClick(evt) {
+  handleDeleteClick() {
     return this.openDeletionModal(this.state.currentAccount, "account");
   }
 
@@ -62,13 +61,8 @@ class AccountList extends React.Component {
     this.setState({rows, currentAccount: null});
   }
 
-  render() {
-    const totalAmount = this.state.rows.map(account => account.balance).reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0,
-    );
-
-    const list = this.state.rows.map(account => <div
+  generateList() {
+    return this.state.rows.map(account => <div
       className="mb-2"
       data-accountid={account.id}
       onClick={this.handleOpenDetails}
@@ -80,15 +74,17 @@ class AccountList extends React.Component {
         account={account}
       />
     </div>);
+  }
 
-    const expanded = this.state.currentAccount !== null
+  _renderExpanded() {
+    return this.state.currentAccount !== null
         && <AccountExpand
           base={this.base}
           key={this.state.currentAccount.id}
           account={this.state.currentAccount}
           onClose={this.handleCloseDetails}
           onClick={() => this.openAccountModal(this.state.currentAccount, this.props.accountsType)}
-          openTransferModal={() => this.openTransferModal({
+          handleOpenTransferModal={() => this.openTransferModal({
             currentAccount: this.state.currentAccount,
             accounts: this.state.rows,
             transfer: null,
@@ -97,6 +93,29 @@ class AccountList extends React.Component {
           graphs={this.props.graphs}
           rows={this.state.rows}
         />;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  _renderList(list, expanded) {
+    return <Columns>
+      <div className="column">
+        <div className="content operator-scrollblock">
+          {list}
+        </div>
+      </div>
+      {expanded}
+    </Columns>;
+  }
+
+  render() {
+    const totalAmount = this.state.rows.map(account => account.balance).reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0,
+    );
+
+    const list = this.generateList();
+
+    const expanded = this._renderExpanded();
 
     return <div className="body-content">
       <Columns>
@@ -131,14 +150,7 @@ class AccountList extends React.Component {
         </Column>
       </Columns>
       <hr />
-      <Columns>
-        <div className="column">
-          <div className="content operator-scrollblock">
-            {list}
-          </div>
-        </div>
-        {expanded}
-      </Columns>
+      {this._renderList(list, expanded)}
       <AccountModal onRegisterModal={this.handleRegisterModal} />
       <TransferModal onRegisterModal={this.handleRegisterModal} />
       <DeletionModal onRegisterModal={this.handleRegisterModal} updateData={this.updateData} />
@@ -147,7 +159,6 @@ class AccountList extends React.Component {
 }
 AccountList.displayName = "AccountList";
 AccountList.propTypes = {
-  user: PropTypes.object.isRequired,
   rows: PropTypes.object.isRequired,
   accountsType: PropTypes.object.isRequired,
   graphs: PropTypes.object,

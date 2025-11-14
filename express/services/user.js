@@ -1,23 +1,13 @@
 /* eslint-disable max-lines */
 const assert = require("assert");
 
-const {
-  sequelize,
-  Sequelize,
-  User,
-  Op,
-} = require("../models/index.js");
-
-const {FORBIDDEN} = require("../utils/error.js");
-const utils = require("../utils/index.js");
+const {User} = require("../models/index.js");
 
 const categorySrv = require("./category.js");
-const subCategoriesSrv = require("./subcategory.js");
-const mailSrv = require("./mail.js");
 const passwordSrv = require("./password.js");
 const {logger} = require("./logger.js");
 const subCatogeriesSrv = require("./subcategory.js");
-const accountTypeSrv = require("./accounttype");
+const accountTypeSrv = require("./accounttype.js");
 
 const userSrv = {};
 

@@ -82,6 +82,7 @@ class AccountExpand extends React.Component {
   render() {
     const action = this._renderActionList(this.props.account);
     const graph = this.props.graphs[this.props.account.accountType.type];
+    const account = this.props.account;
     return <div className="column">
       <div className="content box account-scrollblock expand-account">
         <div className="max-height">
@@ -95,29 +96,31 @@ class AccountExpand extends React.Component {
           </div>
           <div>
             {/* eslint-disable-next-line max-len */}
-            <Title size={4} className="mb-2">{this.props.account.name}</Title>
+            <Title size={4} className="mb-2">{account.name}</Title>
             <div className="mb-2">
-              {this._renderTag(this.props.account)}
+              {this._renderTag()}
             </div>
           </div>
           <Columns>
             <Column size={Column.Sizes.half}>
               <p>
-                <b>Solde : {this.props.account.balance} {CurrenciesFull[this.props.account.currency].sign}</b>
+                <b>Solde : {account.balance} {CurrenciesFull[account.currency].sign}</b>
                 <br />
               </p>
               <p>
-                <b>Dernière utilisation : {df(this.props.account.modificationDate, "paddedShortDate")}</b>
+                <b>Dernière utilisation : {df(account.modificationDate, "paddedShortDate")}</b>
                 <br />
               </p>
             </Column>
             <Column size={Column.Sizes.half}>
               <p>
-                <b>Solde Initial: {this.props.account.initialBalance} {CurrenciesFull[this.props.account.currency].sign}</b>
+                <b>Solde Initial:
+                  {account.initialBalance} {CurrenciesFull[account.currency].sign}
+                </b>
                 <br />
               </p>
               <p>
-                <b>Date de création: {df(this.props.account.creationDate, "paddedShortDate")}</b>
+                <b>Date de création: {df(account.creationDate, "paddedShortDate")}</b>
                 <br />
               </p>
             </Column>
@@ -167,7 +170,8 @@ class AccountExpand extends React.Component {
     </div>;
   }
 
-  _renderTag(account) {
+  // eslint-disable-next-line class-methods-use-this
+  _renderTag() {
     /* if (account.transferedToSocietyId === this.props.society.id) {
       return <span
         className="tag is-link is-medium is-rounded"
@@ -206,13 +210,12 @@ class AccountExpand extends React.Component {
 
   _renderActionList(account) {
     return <div className="column is-flex is-justify-content-flex-end is-align-items-flex-end">
-      {/* TODO: View details */}
       <Button
         className="ml-2 has-text-weight-bold"
         type="info"
         icon={<Icon size="small" icon="rotate" />}
         label="Effectuer un virement"
-        onClick={this.props.openTransferModal}
+        onClick={this.props.handleOpenTransferModal}
       />
       <Button
         className="ml-2 has-text-weight-bold"
@@ -245,7 +248,7 @@ AccountExpand.propTypes = {
   onClick: PropTypes.func.isRequired,
   account: PropTypes.object.isRequired,
   graphs: PropTypes.object.isRequired,
-  openTransferModal: PropTypes.func.isRequired,
+  handleOpenTransferModal: PropTypes.func.isRequired,
   onDeleteClick: PropTypes.func.isRequired,
 };
 AccountExpand.defaultProps = {onClose: undefined};

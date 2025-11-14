@@ -1,15 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const {
-  sequelize,
-  Sequelize,
-  SubCategory,
-  Op,
-} = require("../models/index.js");
+const {SubCategory} = require("../models/index.js");
 
 const SubCategoriesFull = require("../constants/subcategoriesfull.js");
 const {IMAGES, ICON} = require("../utils/paths.js");
-const categorySrv = require("./category.js");
 const {logger} = require("./logger.js");
 
 fs.existsSync(IMAGES) || fs.mkdirSync(IMAGES);
@@ -27,7 +21,7 @@ const getDir = user => `${user.id}-${user.lastName}/subcategories`;
  * @param {object} user - The id of the user
  * @param {object} categories - The categories of the user
  */
-subCategorySrv.createForNewUser = async (user, categories) => {
+subCategorySrv.createForNewUser = (user, categories) => {
   logger.debug("Create all subcategories for new user=[%s]", user.id);
   const dir = `${user.id}-${user.lastName}/subcategories`;
   for (const [key, value] of Object.entries(SubCategoriesFull)) {
@@ -79,7 +73,7 @@ subCategorySrv.getById = id => {
   return SubCategory.findOne({where: {id}});
 };
 
-subCategorySrv.edit = async (subCategory, user, data, file) => {
+subCategorySrv.edit = (subCategory, user, data, file) => {
   logger.debug("Edit subCategory=[%s] with data=[%s]", subCategory.id, data);
   const dir = getDir(user);
 

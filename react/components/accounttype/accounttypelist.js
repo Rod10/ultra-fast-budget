@@ -4,11 +4,9 @@ const PropTypes = require("prop-types");
 const {getElFromDataset} = require("../../utils/html.js");
 const Button = require("../bulma/button.js");
 const Icon = require("../bulma/icon.js");
-const Title = require("../bulma/title.js");
 const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
 
-const utils = require("../utils.js");
 const DeletionModal = require("../deletionmodal.js");
 const AccountBlock = require("./accounttypeblock.js");
 const AccountTypeModal = require("./accounttypemodal.js");

@@ -1,7 +1,6 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
-const AccountsTypeFull = require("../../express/constants/accountstypefull.js");
 const CurrenciesFull = require("../../express/constants/currenciesfull.js");
 
 class AccountBlock extends React.Component {
@@ -16,9 +15,14 @@ class AccountBlock extends React.Component {
       <div className="columns is-flex">
         <div className="column">
           <div>
-            <a style={{color: this.props.account.accountType.color}}>{this.props.account.name}</a> •&nbsp;
+            <a style={{color: this.props.account.accountType.color}}>
+              {this.props.account.name}</a>
+            •&nbsp;
             <b>Solde: </b>&nbsp;
-            <b>{this.props.account.balance} {CurrenciesFull[this.props.account.currency].sign}</b>&nbsp;
+            <b>
+              {this.props.account.balance} {CurrenciesFull[this.props.account.currency].sign}
+            </b>
+            &nbsp;
           </div>
         </div>
         <div className="column has-text-right">
@@ -28,6 +32,7 @@ class AccountBlock extends React.Component {
     </div>;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   _renderTag(account) {
     return <span
       className={`tag ${account.accountType.tag} is-medium is-rounded`}

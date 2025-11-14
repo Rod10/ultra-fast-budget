@@ -1,7 +1,5 @@
 const assert = require("assert");
 const {
-  sequelize,
-  Sequelize,
   Account,
   PlannedTransfer,
   Op,
@@ -52,7 +50,7 @@ plannedTransferSrv.getAllByUser = (userId, query) => {
   });
 };
 
-plannedTransferSrv.create = async (userId, transferData) => {
+plannedTransferSrv.create = (userId, transferData) => {
   logger.debug("Create transaction for user=[%s] with data=[%s]", userId, transferData);
 
   return PlannedTransfer.create({
@@ -68,7 +66,7 @@ plannedTransferSrv.create = async (userId, transferData) => {
   });
 };
 
-plannedTransferSrv.update = async (id, data) => {
+plannedTransferSrv.update = (id, data) => {
   logger.debug("Edit transaction=[%s] with data=[%s]", id, data);
 
   return PlannedTransfer.update({
