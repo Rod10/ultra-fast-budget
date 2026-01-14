@@ -5,7 +5,6 @@ const df = require("dateformat");
 
 const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
-const Title = require("../bulma/title.js");
 
 class BudetBlock extends React.Component {
   constructor(props) {

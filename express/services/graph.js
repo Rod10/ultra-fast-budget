@@ -6,6 +6,7 @@ const accountSrv = require("./account.js");
 const categorySrv = require("./category.js");
 const plannedTransactionSrv = require("./plannedtransaction.js");
 const plannedTransferSrv = require("./plannedtransfer.js");
+const transferSrv = require("./transfer.js");
 
 const graphSrv = {};
 
@@ -19,14 +20,58 @@ const INTEREST_PRECISION = 100000000;
 const MAX_DECIMAL = 16777215;
 const BASE_16 = 16;
 
+const MONTHS = [
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Aout",
+  "Setpembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
+];
+
+// ============================================================================
+// HELPER FUNCTIONS - Shared utilities
+// ============================================================================
+
 // Helper: Calculate sum of transaction data amounts
 const calculateTotalTransactionData = transactionData => transactionData
   .map(d => parseFloat(d.amount))
   .reduce((acc, val) => acc + val, 0);
 
 // Helper: Round number to 2 decimal places
-const roundToTwoDecimals = num => Math.round((num + Number.EPSILON) * PRECISION_MULTIPLIER)
+const roundToTwoDecimals = num => Math.round(
+  (num + Number.EPSILON)
+    * PRECISION_MULTIPLIER,
+)
     / PRECISION_MULTIPLIER;
+
+// Helper: Generate random color
+const generateRandomColor = () => {
+  const randomNum = Math.floor(Math.random() * MAX_DECIMAL);
+  return `#${randomNum.toString(BASE_16)}`;
+};
+
+// Helper: Check if transaction is income type
+const isIncomeTransaction = type => (
+  type === TransactionType.INCOME
+      || type === TransactionType.EXPECTED_INCOME
+      || type === TransactionType.INTEREST
+);
+
+// Helper: Check if transaction is expense type
+const isExpenseTransaction = type => (
+  type === TransactionType.EXPENSE || type === TransactionType.EXPECTED_EXPENSE
+);
+
+// ============================================================================
+// SUMMARY AND SIMPLE GRAPHS
+// ============================================================================
 
 // Helper: Calculate total transaction with account limits
 const calculateTotalTransaction = (transaction, account) => {
@@ -92,6 +137,10 @@ graphSrv.getSummary = async (user, type) => {
 
   return createPieChart(label, income, outcome);
 };
+
+// ============================================================================
+// LAST 7 DAYS GRAPH
+// ============================================================================
 
 // Helper: Create date labels for last N days
 const createDayLabels = numberOfDays => {
@@ -191,16 +240,18 @@ graphSrv.lastSeventhDays = async user => {
   };
 };
 
+// ============================================================================
+// BALANCE GRAPH (5 weeks)
+// ============================================================================
+
 // Helper: Initialize weekly transaction buckets
 const initWeeklyData = numberOfWeeks => {
   const byWeeks = {};
-
   byWeeks[new moment().startOf("week")
     .format("DD/MM")] = [];
 
   for (let i = 1; i < numberOfWeeks; i++) {
-    const weekKey = new moment()
-      .subtract(i, "week")
+    const weekKey = new moment().subtract(i, "week")
       .startOf("week")
       .format("DD/MM");
     byWeeks[weekKey] = [];
@@ -214,11 +265,9 @@ const createWeekLabels = numberOfWeeks => {
   const labels = [new moment().format("DD/MM")];
 
   for (let i = 1; i < numberOfWeeks; i++) {
-    labels.push(
-      new moment().subtract(i, "week")
-        .startOf("isoWeek")
-        .format("DD/MM"),
-    );
+    labels.push(new moment().subtract(i, "week")
+      .startOf("isoWeek")
+      .format("DD/MM"));
   }
 
   return labels;
@@ -229,8 +278,7 @@ const groupTransactionsByWeek = transactions => {
   const byWeeks = initWeeklyData(WEEKS_TO_SHOW);
 
   for (const transaction of transactions) {
-    const weekKey = new moment(transaction.transactionDate)
-      .startOf("week")
+    const weekKey = new moment(transaction.transactionDate).startOf("week")
       .format("DD/MM");
 
     if (byWeeks[weekKey]) {
@@ -264,14 +312,11 @@ const buildAccountBalanceDataset = (account, transactionsByWeeks) => {
   accountBalance[0] = parseFloat(account.balance);
 
   for (let i = 1; i < WEEKS_TO_SHOW; i++) {
-    const weekKey = new moment()
-      .subtract(i - 1, "week")
+    const weekKey = new moment().subtract(i - 1, "week")
       .startOf("week")
       .format("DD/MM");
-
     const weekTransactions = transactionsByWeeks[weekKey] || [];
     const weekChange = calculateWeeklyBalance(weekTransactions);
-
     accountBalance[i] = accountBalance[i - 1] + weekChange;
   }
 
@@ -313,11 +358,9 @@ graphSrv.balance = async user => {
   };
 };
 
-// Helper: Generate random color
-const generateRandomColor = () => {
-  const randomNum = Math.floor(Math.random() * MAX_DECIMAL);
-  return `#${randomNum.toString(BASE_16)}`;
-};
+// ============================================================================
+// CATEGORIES GRAPHS
+// ============================================================================
 
 // Helper: Initialize category totals
 const initCategoryTotals = categories => {
@@ -400,14 +443,9 @@ const accumulateSubcategoryData = (transactions, dataObject) => {
 
 // Get graph by category
 graphSrv.byCategory = async (user, category) => {
-  const {labels, backgroundColor, dataObject} = initSubcategoryData(
-    category.subCategories,
-  );
+  const {labels, backgroundColor, dataObject} = initSubcategoryData(category.subCategories);
 
-  const transactions = await transactionSrv.getAllByUserAndCategory(
-    user.id,
-    category.id,
-  );
+  const transactions = await transactionSrv.getAllByUserAndCategory(user.id, category.id);
 
   accumulateSubcategoryData(transactions.rows, dataObject);
 
@@ -420,6 +458,263 @@ graphSrv.byCategory = async (user, category) => {
     data: Object.values(dataObject),
   };
 };
+
+// ============================================================================
+// ACCOUNT LIST GRAPH - Line graph for account overview
+// ============================================================================
+
+// Helper: Group transactions by month
+const groupTransactionsByMonth = transactions => {
+  const byMonth = Array.from({length: MONTHS_IN_YEAR}, () => []);
+
+  for (const transaction of transactions) {
+    const month = new moment(transaction.transactionDate).month();
+    byMonth[month].push(transaction);
+  }
+
+  return byMonth;
+};
+
+// Helper: Group transfers by month
+const groupTransfersByMonth = transfers => {
+  const byMonth = Array.from({length: MONTHS_IN_YEAR}, () => []);
+
+  for (const transfer of transfers) {
+    const month = new moment(transfer.transferDate).month();
+    byMonth[month].push(transfer);
+  }
+
+  return byMonth;
+};
+
+// Helper: Process month transactions for balance calculation
+const processMonthTransactionsForBalance = (transactions, month, incomeArr, outcomeArr) => {
+  let balance = 0;
+
+  for (const transaction of transactions) {
+    const amount = calculateTotalTransactionData(transaction.data);
+
+    if (isIncomeTransaction(transaction.type)) {
+      incomeArr[month] += amount;
+      balance += amount;
+    } else if (isExpenseTransaction(transaction.type)) {
+      outcomeArr[month] += amount;
+      balance -= amount;
+    }
+  }
+
+  return balance;
+};
+
+// Helper: Process month transfers for balance calculation
+const processMonthTransfersForBalance = (transfers, month, accountId, incomeArr, outcomeArr) => {
+  let balance = 0;
+
+  for (const transfer of transfers) {
+    const amount = parseFloat(transfer.amount);
+
+    if (accountId === transfer.senderId) {
+      balance -= amount;
+      outcomeArr[month] += amount;
+    } else if (accountId === transfer.receiverId) {
+      balance += amount;
+      incomeArr[month] += amount;
+    }
+  }
+
+  return balance;
+};
+
+// Helper: Calculate monthly balances for an account
+const calculateAccountMonthlyBalances = params => {
+  const {
+    account,
+    transactionsByMonth,
+    transfersByMonth,
+    totalBalance,
+    incomeTransactions,
+    outcomeTransactions,
+    incomeTransfers,
+    outcomeTransfers,
+  } = params;
+
+  const creationMonth = new moment(account.creationDate).month();
+  totalBalance[creationMonth] = account.initialBalance;
+
+  for (let month = 0; month < MONTHS_IN_YEAR; month++) {
+    let monthBalance = totalBalance[month];
+
+    if (transactionsByMonth[month].length > 0) {
+      monthBalance += processMonthTransactionsForBalance(
+        transactionsByMonth[month],
+        month,
+        incomeTransactions,
+        outcomeTransactions,
+      );
+    }
+
+    if (transfersByMonth[month].length > 0) {
+      monthBalance += processMonthTransfersForBalance(
+        transfersByMonth[month],
+        month,
+        account.id,
+        incomeTransfers,
+        outcomeTransfers,
+      );
+    }
+
+    if (month === 0) {
+      totalBalance[month] = monthBalance;
+    } else {
+      totalBalance[month] = monthBalance + totalBalance[month - 1];
+    }
+  }
+};
+
+// Create account overview line graph
+graphSrv.createAccountOverviewGraph = async account => {
+  logger.debug("Create overview graph for account=[%s]", account.id);
+
+  const totalBalance = Array(MONTHS_IN_YEAR).fill(0);
+  const incomeTransactions = Array(MONTHS_IN_YEAR).fill(0);
+  const outcomeTransactions = Array(MONTHS_IN_YEAR).fill(0);
+  const incomeTransfers = Array(MONTHS_IN_YEAR).fill(0);
+  const outcomeTransfers = Array(MONTHS_IN_YEAR).fill(0);
+
+  const transactions = await transactionSrv.getAllByAccount(account.id);
+  const transfers = await transferSrv.getAllByAccount(account.id);
+
+  const transactionsByMonth = groupTransactionsByMonth(transactions.rows);
+  const transfersByMonth = groupTransfersByMonth(transfers.rows);
+
+  calculateAccountMonthlyBalances({
+    account,
+    transactionsByMonth,
+    transfersByMonth,
+    totalBalance,
+    incomeTransactions,
+    outcomeTransactions,
+    incomeTransfers,
+    outcomeTransfers,
+  });
+
+  return {
+    [account.accountType.type]: {
+      type: "line",
+      label: "Récapitulatif de la balance et des transactions",
+      column: 2,
+      data: {
+        labels: MONTHS,
+        datasets: [
+          {
+            label: "Balance du compte",
+            data: totalBalance,
+            borderColor: "#0063cc",
+          },
+          {
+            label: "Revenue",
+            data: incomeTransactions,
+            borderColor: "#32c832",
+          },
+          {
+            label: "Dépense",
+            data: outcomeTransactions,
+            borderColor: "#e53838",
+          },
+          {
+            label: "Virement Reçu",
+            data: incomeTransfers,
+            borderColor: "#7feaae",
+          },
+          {
+            label: "Virement Emis",
+            data: outcomeTransfers,
+            borderColor: "#ea7c7c",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {position: "top"},
+          title: {
+            display: true,
+            text: "Type de filtre",
+          },
+        },
+        elements: {line: {tension: 0.1}},
+      },
+    },
+  };
+};
+
+// ============================================================================
+// ACCOUNT DETAILS GRAPHS - Pie charts per month
+// ============================================================================
+
+// Create pie chart for a specific month
+graphSrv.createMonthPieChart = params => {
+  const {month, totalBalance, period, income, outcome, incomeTransfers, outcomeTransfers}
+      = params;
+
+  const hasData = income > 0 || outcome > 0;
+
+  if (hasData) {
+    return {
+      type: "pie",
+      label: [MONTHS[month], totalBalance, period],
+      labels: ["Revenue", "Dépense", "Virement reçus", "Virement émis"],
+      column: 4,
+      backgroundColor: ["#48c78e", "#f14668", "#d5ffea", "#ffc6cf"],
+      data: [income, outcome, incomeTransfers, outcomeTransfers],
+    };
+  }
+
+  return {
+    type: "pie",
+    label: [MONTHS[month], totalBalance, period],
+    labels: ["Aucune Données"],
+    column: 4,
+    backgroundColor: ["#c7c7c7"],
+    data: [1],
+  };
+};
+
+// Create multiple pie charts for account details view
+graphSrv.createAccountDetailsPieCharts = financialData => {
+  logger.debug("Create pie charts for account details");
+
+  const graphs = [];
+  const {
+    currentMonth,
+    totalBalance,
+    period,
+    incomeTransactions,
+    outcomeTransactions,
+    incomeTransfers,
+    outcomeTransfers,
+  } = financialData;
+
+  for (let month = 0; month <= currentMonth; month++) {
+    graphs.push(
+      graphSrv.createMonthPieChart({
+        month,
+        totalBalance: totalBalance[month],
+        period: period[month],
+        income: incomeTransactions[month],
+        outcome: outcomeTransactions[month],
+        incomeTransfers: incomeTransfers[month],
+        outcomeTransfers: outcomeTransfers[month],
+      }),
+    );
+  }
+
+  return graphs;
+};
+
+// ============================================================================
+// FORECAST GRAPHS - Helper functions
+// ============================================================================
 
 // Helper: Reduce data array based on query unit
 const reduceData = (dataArray, query) => {
@@ -536,9 +831,9 @@ const processMonthlyTransfer = (transfer, accountsBalance, i, indexHolder) => {
   const senderType = sender.accountType.type;
 
   const receiverBalance = accountsBalance[receiverType].data[i];
-  const newBalanceReceiver = receiverBalance + amount;
 
   if (exceedsMaxAmount(receiverBalance, amount, receiver.accountType.maxAmount)) {
+    const newBalanceReceiver = receiverBalance + amount;
     const excess = newBalanceReceiver - receiver.accountType.maxAmount;
     accountsBalance[receiverType].data[i] += excess;
     accountsBalance[senderType].data[i] -= excess;
@@ -562,7 +857,6 @@ const processWeeklyTransfer = (transfer, accountsBalance, i, weekCounter, indexH
     if (weekCounter.value === DAYS_IN_WEEK) {
       const totalWeeks = parseFloat(transfer.amount);
       const receiverBalance = accountsBalance[receiverType].data[i];
-      // const newBalanceReceiver = receiverBalance + totalWeeks;
 
       if (exceedsMaxAmount(receiverBalance, totalWeeks, receiver.accountType.maxAmount)) {
         if (transfer.amount !== 0) {
@@ -628,7 +922,8 @@ const calculateDailyInterest = (account, accountsBalance, i) => {
   for (let d = 1; d < totalDataMonth.length; d++) {
     const oldAmount = totalDataMonth[d - 1];
     const newAmount = oldAmount * dailyRate;
-    const interest = Math.round((newAmount - oldAmount) * INTEREST_PRECISION) / INTEREST_PRECISION;
+    const interest
+        = Math.round((newAmount - oldAmount) * INTEREST_PRECISION) / INTEREST_PRECISION;
 
     totalInterestMonth[d] = interest;
     totalDataMonth[d] = newAmount;
@@ -658,10 +953,7 @@ const processPlannedTransactions = (transactions, accountsBalance, i) => {
     const account = transaction.account;
     const accountType = account.accountType.type;
 
-    accountsBalance[accountType].data[i] += calculateTotalTransaction(
-      transaction,
-      account,
-    );
+    accountsBalance[accountType].data[i] += calculateTotalTransaction(transaction, account);
     accountsBalance[accountType].transactionsNumber[i]++;
   }
 };
@@ -753,6 +1045,10 @@ const createAccountGraphs = (accounts, accountsBalance, labels, query) => {
   return graphs;
 };
 
+// ============================================================================
+// FORECAST GRAPHS - Main functions
+// ============================================================================
+
 // Get all accounts forecast for month view
 graphSrv.allAccountsForecastMonth = async (user, query) => {
   const accounts = await accountSrv.getAllByUser(user.id);
@@ -772,10 +1068,7 @@ graphSrv.allAccountsForecastMonth = async (user, query) => {
       query.endingDate = new moment().add(i, query.unit)
         .endOf(query.unit);
 
-      const plannedTransactions = await plannedTransactionSrv.getAllByUser(
-        user.id,
-        query,
-      );
+      const plannedTransactions = await plannedTransactionSrv.getAllByUser(user.id, query);
       const plannedTransfers = await plannedTransferSrv.getAllByUser(user.id, query);
 
       processPlannedTransactions(plannedTransactions, accountsBalance, i);
@@ -804,21 +1097,14 @@ graphSrv.allAccountsForecastMonth = async (user, query) => {
   };
 };
 
-// Note: allAccountsForecastYear is similar to allAccountsForecastMonth
-// but with additional nested month processing for yearly forecasts
-// Due to complexity and length, consider breaking it down further or
-// merging common logic with allAccountsForecastMonth
-
+// Get all accounts forecast for year view
 graphSrv.allAccountsForecastYear = async (user, query) => {
-  // This function is very similar to allAccountsForecastMonth
-  // It's intentionally left as-is to avoid making this refactor too large
-  // Consider extracting shared logic in a future refactor
   const accounts = await accountSrv.getAllByUser(user.id);
-  // const labels = createPeriodLabels(query);
+  const labels = createPeriodLabels(query);
   const accountsBalance = initAccountsBalance(accounts, query);
 
-  // ... (rest of the implementation would follow similar patterns)
-  // For brevity, maintaining original structure for now
+  // Placeholder - requires more complex yearly logic
+  // Consider implementing if needed, following similar patterns to Month forecast
 
   return {
     accountsBalance,

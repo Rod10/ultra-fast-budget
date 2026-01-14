@@ -20,12 +20,13 @@ class BudgetExpand extends React.Component {
     return this.props.onClick();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   _renderSubTransaction(budget) {
     return budget.data.map((tr, index) => <div className="box" key={index}>
       <div className="columns is-flex">
         <div className="column is-2">
           <div className="icon-category" style={{width: "100px"}}>
-            <img src={`/icon/${tr.subCategory.imagePath}`} />
+            <img src={`/icon/${tr.subCategory.imagePath}`} alt={tr.subCategory.name} />
           </div>
         </div>
         <Column>
@@ -125,7 +126,6 @@ BudgetExpand.propTypes = {
   base: PropTypes.string.isRequired,
   onClose: PropTypes.func,
   onClick: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
   budget: PropTypes.object.isRequired,
 };
 BudgetExpand.defaultProps = {onClose: undefined};

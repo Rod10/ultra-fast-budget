@@ -1,6 +1,5 @@
 const React = require("react");
 const PropTypes = require("prop-types");
-const dateFns = require("date-fns");
 
 const {Slider} = require("@mui/material");
 const {getElFromDataset, preventDefault} = require("../../utils/html.js");
@@ -12,7 +11,6 @@ const Icon = require("../bulma/icon.js");
 const Input = require("../bulma/input.js");
 const Select = require("../bulma/select.js");
 const Title = require("../bulma/title.js");
-const DatePicker = require("../datepicker.js");
 
 const {addKeyToArray} = require("../utils.js");
 
@@ -259,7 +257,8 @@ class BudgetCreationModal extends React.Component {
           <Slider
             aria-label={`totalAmount-${index}`}
             disabled
-            value={(parseInt(item.totalAmount, 10) / parseInt(this.state.totalAllocatedAmount, 10)) * 100}
+            value={(parseInt(item.totalAmount, 10) / parseInt(this.state.totalAllocatedAmount, 10))
+                * 100}
           />
         </Column>
       </Columns>
@@ -296,14 +295,14 @@ class BudgetCreationModal extends React.Component {
   /* eslint-disable-next-line max-lines-per-function */
   _renderConfirm() {
     if (this.state.id === null) return null;
-    let action = null;
-    let title = null;
-    if (this.state.id !== 0) {
-      action = `/budget/${this.state.id}/edit`;
-      title = "Modifier le budget";
-    } else {
+    let action;
+    let title;
+    if (this.state.id === 0) {
       title = "Créer un nouveau budget";
       action = "/budget/new";
+    } else {
+      action = `/budget/${this.state.id}/edit`;
+      title = "Modifier le budget";
     }
 
     const categoryIconButton = this.state.category ? <img src={`/icon/${this.state.category.imagePath}`} style={{maxWidth: "15%", marginRight: "1rem"}} />
@@ -328,7 +327,8 @@ class BudgetCreationModal extends React.Component {
         <input
           className="is-hidden"
           name={"category"}
-          defaultValue={this.state.category?.id === undefined ? this.state.category : this.state.category.id}
+          defaultValue={this.state.category?.id === undefined
+            ? this.state.category : this.state.category.id}
           readOnly
         />
         <Columns>
@@ -433,7 +433,7 @@ class BudgetCreationModal extends React.Component {
         visible={this.state.alert}
         type="alert"
         confirmText="Recharger la page"
-        handleConfirm={BudgetCreationModal.handleAlertClick}
+        onConfirm={BudgetCreationModal.handleAlertClick}
       >
         <p>Une erreur est survenue lors de l'effacement, rechargez la page et ré-essayez</p>
         <p>Si le problème persiste, merci de contacter les responsables du site.</p>
