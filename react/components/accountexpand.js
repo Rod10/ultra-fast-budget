@@ -79,9 +79,80 @@ class AccountExpand extends React.Component {
     return this.props.onClick();
   }
 
+  _renderAccountDetails() {
+    const account = this.props.account;
+    return <Columns>
+      <Column size={Column.Sizes.half}>
+        <p>
+          <b>Solde : {account.balance} {CurrenciesFull[account.currency].sign}</b>
+          <br />
+        </p>
+        <p>
+          <b>Dernière utilisation : {df(account.modificationDate, "paddedShortDate")}</b>
+          <br />
+        </p>
+      </Column>
+      <Column size={Column.Sizes.half}>
+        <p>
+          <b>Solde Initial:
+            {account.initialBalance} {CurrenciesFull[account.currency].sign}
+          </b>
+          <br />
+        </p>
+        <p>
+          <b>Date de création: {df(account.creationDate, "paddedShortDate")}</b>
+          <br />
+        </p>
+      </Column>
+    </Columns>;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  _renderFilterButtons() {
+    return <div className="has-text-centered">
+      <Button
+        className="ml-2 has-text-weight-bold"
+        type="themed"
+        label="Mois"
+      />
+      <Button
+        className="ml-2 has-text-weight-bold"
+        type="themed"
+        label="Semaine"
+      />
+      <Button
+        className="ml-2 has-text-weight-bold"
+        type="themed"
+        label="Jours"
+      />
+    </div>;
+  }
+
+  _renderGraph() {
+    const graph = this.props.graphs[this.props.account.accountType.type];
+    return <Columns>
+      <Column>
+        <div className="is-flex graph-container">
+          {this.props.graphs && <div
+            key={graph}
+            className={`is-${graph.column} is-flex-grow-${graph.column}`}
+          >
+            <div className="pr-2 pb-2">
+              <div className={"graph-box"}>
+                <Title size={5}>{graph.label}</Title>
+                <div className="is-relative">
+                  <canvas id="chart" ref={this.charts[graph.label]} />
+                </div>
+              </div>
+            </div>
+          </div>}
+        </div>
+      </Column>
+    </Columns>;
+  }
+
   render() {
     const action = this._renderActionList(this.props.account);
-    const graph = this.props.graphs[this.props.account.accountType.type];
     const account = this.props.account;
     return <div className="column">
       <div className="content box account-scrollblock expand-account">
@@ -101,67 +172,10 @@ class AccountExpand extends React.Component {
               {this._renderTag()}
             </div>
           </div>
-          <Columns>
-            <Column size={Column.Sizes.half}>
-              <p>
-                <b>Solde : {account.balance} {CurrenciesFull[account.currency].sign}</b>
-                <br />
-              </p>
-              <p>
-                <b>Dernière utilisation : {df(account.modificationDate, "paddedShortDate")}</b>
-                <br />
-              </p>
-            </Column>
-            <Column size={Column.Sizes.half}>
-              <p>
-                <b>Solde Initial:
-                  {account.initialBalance} {CurrenciesFull[account.currency].sign}
-                </b>
-                <br />
-              </p>
-              <p>
-                <b>Date de création: {df(account.creationDate, "paddedShortDate")}</b>
-                <br />
-              </p>
-            </Column>
-          </Columns>
-          <div className="has-text-centered">
-            <Button
-              className="ml-2 has-text-weight-bold"
-              type="themed"
-              label="Mois"
-            />
-            <Button
-              className="ml-2 has-text-weight-bold"
-              type="themed"
-              label="Semaine"
-            />
-            <Button
-              className="ml-2 has-text-weight-bold"
-              type="themed"
-              label="Jours"
-            />
-          </div>
+          {this._renderAccountDetails()}
+          {this._renderFilterButtons()}
           <br />
-          <Columns>
-            <Column>
-              <div className="is-flex graph-container">
-                {this.props.graphs && <div
-                  key={graph}
-                  className={`is-${graph.column} is-flex-grow-${graph.column}`}
-                >
-                  <div className="pr-2 pb-2">
-                    <div className={"graph-box"}>
-                      <Title size={5}>{graph.label}</Title>
-                      <div className="is-relative">
-                        <canvas id="chart" ref={this.charts[graph.label]} />
-                      </div>
-                    </div>
-                  </div>
-                </div>}
-              </div>
-            </Column>
-          </Columns>
+          {this._renderGraph()}
           <div className="has-text-right">
             {action}
           </div>
@@ -215,7 +229,7 @@ class AccountExpand extends React.Component {
         type="info"
         icon={<Icon size="small" icon="rotate" />}
         label="Effectuer un virement"
-        onClick={this.props.handleOpenTransferModal}
+        onClick={this.props.onOpenTransferModal}
       />
       <Button
         className="ml-2 has-text-weight-bold"
@@ -248,7 +262,7 @@ AccountExpand.propTypes = {
   onClick: PropTypes.func.isRequired,
   account: PropTypes.object.isRequired,
   graphs: PropTypes.object.isRequired,
-  handleOpenTransferModal: PropTypes.func.isRequired,
+  onOpenTransferModal: PropTypes.func.isRequired,
   onDeleteClick: PropTypes.func.isRequired,
 };
 AccountExpand.defaultProps = {onClose: undefined};

@@ -13,6 +13,8 @@ const {logger} = require("./logger.js");
 
 const transactionSrv = {};
 
+const SEVEN_LASTDAY = 6;
+
 transactionSrv.get = id => {
   logger.info("Get transaction by id=[%s]", id);
   return Transaction.findOne({where: {id}});
@@ -179,7 +181,7 @@ transactionSrv.getAllByUserAndRange = (userId, query) => {
     } else if (query.range === "seventh") {
       condition.transactionDate = {
         [Op.and]: {
-          [Op.gte]: new moment().subtract(6, query.unit)
+          [Op.gte]: new moment().subtract(SEVEN_LASTDAY, query.unit)
             .startOf(query.unit),
           [Op.lt]: new moment().endOf(query.unit),
         },
@@ -216,6 +218,7 @@ transactionSrv.getAllByUserAndRange = (userId, query) => {
   });
 };
 
+// eslint-disable-next-line max-lines-per-function
 transactionSrv.search = async (user, query) => {
   logger.debug(
     "Search transaction for user=[%s] and query=[%j]",

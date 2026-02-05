@@ -29,6 +29,8 @@ class AccountList extends React.Component {
     this.handleCloseDetails = this.handleCloseDetails.bind(this);
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
+    this.handleOpenAccountModal = this.handleOpenAccountModal.bind(this);
+    this.handleOpenTransferModal = this.handleOpenTransferModal.bind(this);
     this.updateData = this.updateData.bind(this);
   }
 
@@ -61,6 +63,23 @@ class AccountList extends React.Component {
     this.setState({rows, currentAccount: null});
   }
 
+  handleOpenAccountModal(evt) {
+    const el = getElFromDataset(evt, "create");
+    const create = el.dataset.create;
+    if (create) {
+      return this.openAccountModal(null, this.props.accountsType);
+    }
+    return this.openAccountModal(this.state.currentAccount, this.props.accountsType);
+  }
+
+  handleOpenTransferModal() {
+    return this.openTransferModal({
+      currentAccount: this.state.currentAccount,
+      accounts: this.state.rows,
+      transfer: null,
+    });
+  }
+
   generateList() {
     return this.state.rows.map(account => <div
       className="mb-2"
@@ -83,12 +102,8 @@ class AccountList extends React.Component {
           key={this.state.currentAccount.id}
           account={this.state.currentAccount}
           onClose={this.handleCloseDetails}
-          onClick={() => this.openAccountModal(this.state.currentAccount, this.props.accountsType)}
-          handleOpenTransferModal={() => this.openTransferModal({
-            currentAccount: this.state.currentAccount,
-            accounts: this.state.rows,
-            transfer: null,
-          }, this.props.accountsType)}
+          onClick={this.handleOpenAccountModal}
+          onOpenTransferModal={this.handleOpenTransferModal}
           onDeleteClick={this.handleDeleteClick}
           graphs={this.props.graphs}
           rows={this.state.rows}
@@ -137,7 +152,8 @@ class AccountList extends React.Component {
               type="themed"
               icon={<Icon size="small" icon="plus" />}
               label="Ajouter un compte"
-              onClick={() => this.openAccountModal(null, this.props.accountsType)}
+              data-create
+              onClick={this.handleOpenAccountModal}
             />
             <Button
               className="has-text-weight-bold mr-3"

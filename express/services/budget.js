@@ -163,6 +163,7 @@ budgetSrv.recalculate = async user => {
   }
 };
 
+// eslint-disable-next-line max-lines-per-function
 budgetSrv.search = (user, query) => {
   logger.debug("Search budget for user=[%s] with query=[%s]", user.id, query);
   const where = {[Op.and]: [{userId: user.id}]};

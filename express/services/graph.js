@@ -571,15 +571,20 @@ const calculateAccountMonthlyBalances = params => {
   }
 };
 
+const createDataArray = () => ({
+  totalBalance: Array(MONTHS_IN_YEAR).fill(0),
+  incomeTransactions: Array(MONTHS_IN_YEAR).fill(0),
+  outcomeTransactions: Array(MONTHS_IN_YEAR).fill(0),
+  incomeTransfers: Array(MONTHS_IN_YEAR).fill(0),
+  outcomeTransfers: Array(MONTHS_IN_YEAR).fill(0),
+});
+
 // Create account overview line graph
 graphSrv.createAccountOverviewGraph = async account => {
   logger.debug("Create overview graph for account=[%s]", account.id);
 
-  const totalBalance = Array(MONTHS_IN_YEAR).fill(0);
-  const incomeTransactions = Array(MONTHS_IN_YEAR).fill(0);
-  const outcomeTransactions = Array(MONTHS_IN_YEAR).fill(0);
-  const incomeTransfers = Array(MONTHS_IN_YEAR).fill(0);
-  const outcomeTransfers = Array(MONTHS_IN_YEAR).fill(0);
+  const {totalBalance, incomeTransactions, outcomeTransactions, incomeTransfers, outcomeTransfers}
+    = createDataArray();
 
   const transactions = await transactionSrv.getAllByAccount(account.id);
   const transfers = await transferSrv.getAllByAccount(account.id);
@@ -1100,7 +1105,7 @@ graphSrv.allAccountsForecastMonth = async (user, query) => {
 // Get all accounts forecast for year view
 graphSrv.allAccountsForecastYear = async (user, query) => {
   const accounts = await accountSrv.getAllByUser(user.id);
-  const labels = createPeriodLabels(query);
+  // const labels = createPeriodLabels(query);
   const accountsBalance = initAccountsBalance(accounts, query);
 
   // Placeholder - requires more complex yearly logic

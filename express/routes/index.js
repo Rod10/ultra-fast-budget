@@ -78,19 +78,14 @@ router.post("/login", loggerMid(["email"]), async (req, res) => {
 });
 
 router.use(authMid.strict);
-/* GET home page. */
-router.get("/", async (req, res) => {
-  const accounts = await accountSrv.getAllByUser(req.user.id);
-  const transactions = await transactionSrv.getAllByUserAndRange(req.user.id, {unit: "month"});
-  const budgets = await budgetSrv.getAllByUser(req.user.id);
-  const graphs = {};
-  graphs["summary"] = {};
-  graphs["summary"]["thisMonth"] = await graphSrv.getSummary(req.user, "this");
-  graphs["summary"]["lastMonth"] = await graphSrv.getSummary(req.user, "last");
-  graphs["details"] = {};
-  graphs["details"]["seventhDays"] = await graphSrv.lastSeventhDays(req.user);
-  graphs["details"]["balance"] = await graphSrv.balance(req.user);
 
+const roundingFunctionEpsilon = (input, rounding) => Math.round((input + Number.EPSILON) * rounding)
+    / rounding;
+
+const roundingFunction = (input, rounding) => Math.round(input * rounding)
+    / rounding;
+
+const setLiquidityData = transactions => {
   const liquidity = {
     totalIncome: 0,
     totalOutcome: 0,
@@ -124,31 +119,39 @@ router.get("/", async (req, res) => {
     }
   }
 
+  /* eslint-disable max-len */
   const daysInMonth = new moment().daysInMonth();
-  liquidity.totalIncome = Math.round((liquidity.totalIncome + Number.EPSILON) * ONE_HUNDRED)
-      / ONE_HUNDRED;
-  liquidity.totalOutcome = Math.round((liquidity.totalOutcome + Number.EPSILON) * ONE_HUNDRED)
-      / ONE_HUNDRED;
-  liquidity.average.daily.income = Math.round(liquidity.totalIncome / daysInMonth * ONE_HUNDRED)
-      / ONE_HUNDRED;
-  liquidity.average.daily.outcome = Math.round(liquidity.totalOutcome / daysInMonth * ONE_HUNDRED)
-      / ONE_HUNDRED;
-  liquidity.average.transactions.income = Math.round(
-    (liquidity.totalIncome / liquidity.incomeTransactionsNumber)
-          * ONE_HUNDRED,
-  ) / ONE_HUNDRED;
-  liquidity.average.transactions.outcome = Math.round(
-    (liquidity.totalOutcome / liquidity.outcomeTransactionsNumber)
-          * ONE_HUNDRED,
-  ) / ONE_HUNDRED;
+  liquidity.totalIncome = roundingFunctionEpsilon(liquidity.totalIncome, ONE_HUNDRED);
+  liquidity.totalOutcome = roundingFunctionEpsilon(liquidity.totalOutcome, ONE_HUNDRED);
+  liquidity.average.daily.income = roundingFunction(liquidity.totalIncome / daysInMonth, ONE_HUNDRED);
+  liquidity.average.daily.outcome = roundingFunction(liquidity.totalOutcome / daysInMonth, ONE_HUNDRED);
+  liquidity.average.transactions.income = roundingFunction(liquidity.totalIncome / liquidity.incomeTransactionsNumber, ONE_HUNDRED) / ONE_HUNDRED;
+  liquidity.average.transactions.outcome = roundingFunction(liquidity.totalOutcome / liquidity.outcomeTransactionsNumber, ONE_HUNDRED) / ONE_HUNDRED;
+  /* eslint-enable max-len */
+  return liquidity;
+};
+
+/* GET home page. */
+router.get("/", async (req, res) => {
+  const accounts = await accountSrv.getAllByUser(req.user.id);
+  const transactions = await transactionSrv.getAllByUserAndRange(req.user.id, {unit: "month"});
+  const budgets = await budgetSrv.getAllByUser(req.user.id);
+  const graphs = {};
+  graphs["summary"] = {};
+  graphs["summary"]["thisMonth"] = await graphSrv.getSummary(req.user, "this");
+  graphs["summary"]["lastMonth"] = await graphSrv.getSummary(req.user, "last");
+  graphs["details"] = {};
+  graphs["details"]["seventhDays"] = await graphSrv.lastSeventhDays(req.user);
+  graphs["details"]["balance"] = await graphSrv.balance(req.user);
 
   const data = {
     graphs,
     accounts,
     transactions,
     budgets,
-    liquidity,
+    liquidity: setLiquidityData(transactions),
   };
+
   const navbar = renderSrv.navbar(res.locals);
   const content = renderSrv.homepage(data);
   res.render("generic", {navbar, data, content, components: ["homepage"]});

@@ -16,6 +16,8 @@ const {addKeyToArray} = require("../utils.js");
 
 const CategoryModal = require("../transaction/categorymodal.js");
 
+const ONE_HUNDRED = 100;
+
 class BudgetCreationModal extends React.Component {
   static handleAlertClick() {
     /* eslint-disable-next-line no-self-assign */
@@ -258,7 +260,7 @@ class BudgetCreationModal extends React.Component {
             aria-label={`totalAmount-${index}`}
             disabled
             value={(parseInt(item.totalAmount, 10) / parseInt(this.state.totalAllocatedAmount, 10))
-                * 100}
+                * ONE_HUNDRED}
           />
         </Column>
       </Columns>

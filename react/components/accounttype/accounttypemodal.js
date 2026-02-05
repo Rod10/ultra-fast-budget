@@ -103,13 +103,19 @@ const UnitsOptions = [
   },
 ];
 
+const R = 16;
+const G = 8;
+const RGB = 0xFF;
+
+/* eslint-disable no-mixed-operators */
 const hexToRGB = hexValue => {
   const numericValue = parseInt(hexValue.slice(1), 16);
-  const r = numericValue >> 16 & 0xFF;
-  const g = numericValue >> 8 & 0xFF;
-  const b = numericValue & 0xFF;
+  const r = numericValue >> R & RGB;
+  const g = numericValue >> G & RGB;
+  const b = numericValue & RGB;
   return {r, g, b};
 };
+/* eslint-enable no-mixed-operators */
 
 class AccountTypeModal extends React.Component {
   static handleAlertClick() {
@@ -245,8 +251,7 @@ class AccountTypeModal extends React.Component {
   _renderConfirm() {
     // if (!this.state.confirm) return null;
     const account = this.state.account;
-    let action = null;
-    let title = null;
+    let action, title;
     if (account) {
       action = `/settings/preferences/account-type/${account.id}/edit`;
       title = "Modifier le type de compte";
