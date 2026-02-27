@@ -11,8 +11,6 @@ const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
 const DatePicker = require("../datepicker.js");
 
-// const AccountModal = require("../budgetmodal.js");
-const utils = require("../utils.js");
 const AsyncFilteredList = require("../asyncfilteredlist.js");
 const TransactionModalList = require("../transactionmodallist.js");
 const BudgetExpanded = require("./budgetexpand.js");
@@ -50,6 +48,7 @@ class BudgetList extends AsyncFilteredList {
     this.handleRegisterModal = this.handleRegisterModal.bind(this);
     this.handleOpenTransactionsModal = this.handleOpenTransactionsModal.bind(this);
     this.handleCloseClick = this.handleCloseClick.bind(this);
+    this.handleOpenBudgetCreationModal = this.handleOpenBudgetCreationModal.bind(this);
   }
 
   handleRegisterModal(modal, fn) {
@@ -69,7 +68,7 @@ class BudgetList extends AsyncFilteredList {
     this.setState({currentBudget: budget});
   }
 
-  handleOpenTransactionsModal(evt) {
+  handleOpenTransactionsModal() {
     this.setState(prevState => ({modal: prevState.modal === "details" ? null : "details"}));
   }
 
@@ -77,15 +76,22 @@ class BudgetList extends AsyncFilteredList {
     this.setState({modal: null});
   }
 
+  handleOpenBudgetCreationModal(evt) {
+    const el = getElFromDataset(evt, "budget");
+    const budget = el.dataset.budget;
+    this.openBudgetCreationModal({budget, categories: this.props.categories});
+  }
+
   // eslint-disable-next-line max-lines-per-function
   _renderFilters() {
-    const totalAmount = this.state.rows.reduce((acc, row) => acc + row.totalAmount, 0);
-    const totalAllocatedAmount = this.state.rows.reduce((acc, row) => acc + row.totalAllocatedAmount, 0);
+    const rows = this.state.rows;
+    const totalAmount = rows.reduce((acc, row) => acc + row.totalAmount, 0);
+    const totalAllocatedAmount = rows.reduce((acc, row) => acc + row.totalAllocatedAmount, 0);
     let totalOutOfBudget = 0;
     for (const data of this.state.dataPerMonth) {
       if (data.length > 0) {
-        for (const transactionData of data) {
-          totalOutOfBudget += transactionData.data.reduce((acc, row) => acc + parseFloat(row.amount), 0);
+        for (const tData of data) { // tData = transactionData
+          totalOutOfBudget += tData.data.reduce((acc, row) => acc + parseFloat(row.amount), 0);
         }
       }
     }
@@ -171,8 +177,8 @@ class BudgetList extends AsyncFilteredList {
     </form>;
   }
 
-  render() {
-    const list = this.state.rows.map(budget => <div
+  _renderList() {
+    return this.state.rows.map(budget => <div
       className="mb-2"
       data-budgetid={budget.id}
       onClick={this.handleOpenDetails}
@@ -186,16 +192,25 @@ class BudgetList extends AsyncFilteredList {
         expanded={this.state.currentBudget !== null}
       />
     </div>);
+  }
 
-    const expanded = this.state.currentBudget !== null
-     && <BudgetExpanded
-       base={this.base}
-       key={this.state.currentBudget.id}
-       budget={this.state.currentBudget}
-       onClose={this.handleCloseDetails}
-       user={this.props.user}
-       onClick={() => this.openBudgetCreationModal({budget: this.state.currentBudget, categories: this.props.categories})}
-     />;
+  renderExpand() {
+    return this.state.currentBudget !== null
+      && <BudgetExpanded
+        base={this.base}
+        key={this.state.currentBudget.id}
+        budget={this.state.currentBudget}
+        onClose={this.handleCloseDetails}
+        user={this.props.user}
+        data-budget={this.state.currentBudget}
+        onClick={this.handleOpenBudgetCreationModal}
+      />;
+  }
+
+  render() {
+    const list = this._renderList();
+
+    const expanded = this.renderExpand;
 
     return <div className="body-content">
       <Columns>
@@ -209,7 +224,8 @@ class BudgetList extends AsyncFilteredList {
               type="info"
               icon={<Icon size="small" icon="calculator" />}
               label="Créer un nouveau budget"
-              onClick={() => this.openBudgetCreationModal({budget: null, categories: this.props.categories})}
+              data-budget={null}
+              onClick={this.handleOpenBudgetCreationModal}
             />
             <Button
               className="has-text-weight-bold mr-3"

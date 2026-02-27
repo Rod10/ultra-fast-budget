@@ -205,62 +205,66 @@ class BudgetCreationModal extends React.Component {
     this.setState({date: result.target.value});
   }
 
-  _renderSubTransactionsRow(item, index) {
-    const iconButton = item.subCategory ? <img src={`/icon/${item.subCategory.imagePath}`} style={{maxWidth: "15%", marginRight: "1rem"}} />
+  _renderRow(item, index) {
+    const iconButton = item.subCategory ? <img src={`/icon/${item.subCategory.imagePath}`} alt={item.subCategory.name} style={{maxWidth: "15%", marginRight: "1rem"}} />
       : <Icon size="small" icon="magnifying-glass" />;
     const labelButton = item.subCategory ? item.subCategory.name : "Choisir une catégorie";
-    return <div key={item.key}>
-      <Columns className="row-category">
-        <input
-          className="is-hidden"
-          name={`data[${index}][subCategory]`}
-          defaultValue={item.subCategory?.id === undefined ? item.subCategory : item.subCategory.id}
-          readOnly
+    return <Columns className="row-category">
+      <input
+        className="is-hidden"
+        name={`data[${index}][subCategory]`}
+        defaultValue={item.subCategory?.id === undefined ? item.subCategory : item.subCategory.id}
+        readOnly
+      />
+      <Column>
+        <Input
+          className="input"
+          placeholder="Montant"
+          type="text"
+          name={`data[${index}][totalAmount]`}
+          value={item.totalAmount}
+          data-list="data"
+          data-propname="totalAmount"
+          data-key={item.key}
+          onChange={this.handleListChange}
+          horizontal
         />
-        <Column>
-          <Input
-            className="input"
-            placeholder="Montant"
-            type="text"
-            name={`data[${index}][totalAmount]`}
-            value={item.totalAmount}
-            data-list="data"
-            data-propname="totalAmount"
-            data-key={item.key}
-            onChange={this.handleListChange}
-            horizontal
-          />
-        </Column>
-        <Column>
-          <Button
-            label={labelButton}
-            icon={iconButton}
-            data-key={item.key}
-            data-list="data"
-            onClick={this.handleOpenCategoryModal}
-          />
-        </Column>
-        <Column>
-          <Button
-            label={""}
-            icon={<Icon
-              icon="times"
-              faSize="lg"
-              size="big"
-            />}
-            data-key={item.key}
-            data-btn="remove"
-            onClick={this.handleRemoveFromList}
-          />
-        </Column>
-      </Columns>
+      </Column>
+      <Column>
+        <Button
+          label={labelButton}
+          icon={iconButton}
+          data-key={item.key}
+          data-list="data"
+          onClick={this.handleOpenCategoryModal}
+        />
+      </Column>
+      <Column>
+        <Button
+          label={""}
+          icon={<Icon
+            icon="times"
+            faSize="lg"
+            size="big"
+          />}
+          data-key={item.key}
+          data-btn="remove"
+          onClick={this.handleRemoveFromList}
+        />
+      </Column>
+    </Columns>;
+  }
+
+  _renderSubTransactionsRow(item, index) {
+    return <div key={item.key}>
+      {this._renderRow(item, index)}
       <Columns className="is-centered">
         <Column size={Column.Sizes.fourFifths}>
           <Slider
             aria-label={`totalAmount-${index}`}
             disabled
             value={(parseInt(item.totalAmount, 10) / parseInt(this.state.totalAllocatedAmount, 10))
-                * ONE_HUNDRED}
+              * ONE_HUNDRED}
           />
         </Column>
       </Columns>
@@ -307,7 +311,7 @@ class BudgetCreationModal extends React.Component {
       title = "Modifier le budget";
     }
 
-    const categoryIconButton = this.state.category ? <img src={`/icon/${this.state.category.imagePath}`} style={{maxWidth: "15%", marginRight: "1rem"}} />
+    const categoryIconButton = this.state.category ? <img src={`/icon/${this.state.category.imagePath}`} alt={this.state.category.name} style={{maxWidth: "15%", marginRight: "1rem"}} />
       : <Icon size="small" icon="magnifying-glass" />;
     const categoryLabelButton = this.state.category ? this.state.category.name : "Choisir une catégorie";
 

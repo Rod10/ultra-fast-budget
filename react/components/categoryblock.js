@@ -1,11 +1,11 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 
+const {getElFromDataset} = require("../utils/html.js");
 const Columns = require("./bulma/columns.js");
 const Column = require("./bulma/column.js");
 const Button = require("./bulma/button.js");
 const Icon = require("./bulma/icon.js");
-const {getElFromDataset} = require("../utils/html.js");
 
 class CategoryBlock extends React.Component {
   constructor(props) {
@@ -16,9 +16,10 @@ class CategoryBlock extends React.Component {
 
   handleEditSubCategory(evt) {
     evt.stopPropagation();
+    const subCategories = this.props.category.subCategories;
     const el = getElFromDataset(evt, "subcategoryid");
     const subCategoryId = parseInt(el.dataset.subcategoryid, 10);
-    const subCategory = this.props.category.subCategories.find(subCat => subCat.id === subCategoryId);
+    const subCategory = subCategories.find(subCat => subCat.id === subCategoryId);
     return this.props.onEditSubCategory(this.props.category, subCategory);
   }
 
@@ -32,7 +33,7 @@ class CategoryBlock extends React.Component {
         <Columns className="is-flex">
           <Column className="is-narrow">
             <div className="icon-category" style={{width: "200px"}}>
-              <img src={`/icon/${subCategory.imagePath}`}/>
+              <img src={`/icon/${subCategory.imagePath}`} />
             </div>
           </Column>
           <Column>
@@ -43,14 +44,14 @@ class CategoryBlock extends React.Component {
               <Button
                 className="ml-2 has-text-weight-bold"
                 type="danger"
-                icon={<Icon size="small" icon="trash"/>}
+                icon={<Icon size="small" icon="trash" />}
                 // label="Éditer"
                 href={`${this.props.base}/sub-category/${subCategory.id}/delete`}
               />
               <Button
                 className="ml-2 has-text-weight-bold"
                 type="themed"
-                icon={<Icon size="small" icon="pen"/>}
+                icon={<Icon size="small" icon="pen" />}
                 // label="Éditer"
                 onClick={this.handleEditSubCategory}
               />
@@ -63,7 +64,7 @@ class CategoryBlock extends React.Component {
       <Columns className="is-flex">
         <Column className="is-narrow">
           <div className="icon-category" style={{width: "200px"}}>
-            <img src={`/icon/${this.props.category.imagePath}`}/>
+            <img src={`/icon/${this.props.category.imagePath}`} />
           </div>
         </Column>
         <Column>
@@ -75,14 +76,14 @@ class CategoryBlock extends React.Component {
             <Button
               className="ml-2 has-text-weight-bold"
               type="danger"
-              icon={<Icon size="small" icon="trash"/>}
+              icon={<Icon size="small" icon="trash" />}
               // label="Éditer"
               href={`${this.props.base}${this.props.category.id}/delete`}
             />
             <Button
               className="ml-2 has-text-weight-bold"
               type="themed"
-              icon={<Icon size="small" icon="pen"/>}
+              icon={<Icon size="small" icon="pen" />}
               // label="Éditer"
               onClick={this.props.onEditCategory}
             />
@@ -93,7 +94,7 @@ class CategoryBlock extends React.Component {
         <Button
           className="ml-2 has-text-weight-bold"
           // type="themed"
-          icon={<Icon size="small" icon="plus"/>}
+          icon={<Icon size="small" icon="plus" />}
           // label="Éditer"
           onClick={this.props.onAddCategory}
         />

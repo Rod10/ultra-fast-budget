@@ -17,8 +17,38 @@ class UserRegister extends React.Component {
     };
   }
 
-  _renderName() {
+  _renderPassword() {
     return <>
+      <Input
+        label="Mot de passe"
+        type="password"
+        name="password"
+        placeholder="Mot de passe"
+        defaultValue={this.state.password || ""}
+        required
+      />
+      <Input
+        label="Confirmer le mot de passe"
+        type="password"
+        name="confirmation"
+        placeholder="Confirmer le mot de passe"
+        defaultValue={this.state.confirmation || ""}
+        required
+      />
+    </>;
+  }
+
+  _renderUserInfo() {
+    return <>
+      <Select
+        className="is-fullwidth"
+        label="Civilité"
+        name="civility"
+        value={this.state.civility}
+        options={Object.entries(Civilities)
+          .map(([value, entry]) => ({value, label: entry.long}))}
+        required
+      />
       <Input
         label="Prénom"
         type="text"
@@ -35,6 +65,16 @@ class UserRegister extends React.Component {
         defaultValue={this.state.lastName || ""}
         autoFocus
       />
+      <Input
+        label="Email"
+        type="email"
+        name="email"
+        placeholder="Email"
+        defaultValue={this.state.email || ""}
+        required
+        autoFocus
+      />
+      {this._renderPassword()}
     </>;
   }
 
@@ -47,41 +87,7 @@ class UserRegister extends React.Component {
             method="POST"
             action={"/register"}
           >
-            <Select
-              className="is-fullwidth"
-              label="Civilité"
-              name="civility"
-              value={this.state.civility}
-              options={Object.entries(Civilities)
-                .map(([value, entry]) => ({value, label: entry.long}))}
-              required
-            />
-            {this._renderName()}
-            <Input
-              label="Email"
-              type="email"
-              name="email"
-              placeholder="Email"
-              defaultValue={this.state.email || ""}
-              required
-              autoFocus
-            />
-            <Input
-              label="Mot de passe"
-              type="password"
-              name="password"
-              placeholder="Mot de passe"
-              defaultValue={this.state.password || ""}
-              required
-            />
-            <Input
-              label="Confirmer le mot de passe"
-              type="password"
-              name="confirmation"
-              placeholder="Confirmer le mot de passe"
-              defaultValue={this.state.confirmation || ""}
-              required
-            />
+            {this._renderUserInfo()}
             <br />
             <div className="has-text-centered">
               <div>

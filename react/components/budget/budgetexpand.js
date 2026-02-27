@@ -22,6 +22,7 @@ class BudgetExpand extends React.Component {
 
   // eslint-disable-next-line class-methods-use-this
   _renderSubTransaction(budget) {
+    // eslint-disable-next-line react/no-array-index-key
     return budget.data.map((tr, index) => <div className="box" key={index}>
       <div className="columns is-flex">
         <div className="column is-2">
@@ -47,12 +48,37 @@ class BudgetExpand extends React.Component {
     </div>);
   }
 
+  _renderBudgetData() {
+    const {budget} = this.props;
+    const totalBudget = parseFloat(budget.totalAmount) / parseFloat(budget.totalAllocatedAmount);
+    const date = new Date(budget.creationDate);
+    return <Column>
+      <Columns>
+        <Column className="has-text-left">
+          <p>{df(new Date(date.getFullYear(), date.getMonth(), 1), "dd/mm/yyyy")}</p>
+        </Column>
+        <Column className="has-text-right">
+          <p>{df(new Date(date.getFullYear(), date.getMonth() + 1, 0), "dd/mm/yyyy")}</p>
+        </Column>
+      </Columns>
+      <progress value={totalBudget} style={{width: "100%"}} />
+      <Columns>
+        <Column className="has-text-left">
+          <p>0 €</p>
+        </Column>
+        <Column className="has-text-centered">
+          <p>{budget.totalAmount} €</p>
+        </Column>
+        <Column className="has-text-right">
+          <p>{budget.totalAllocatedAmount} €</p>
+        </Column>
+      </Columns>
+    </Column>;
+  }
+
   render() {
     const {budget} = this.props;
     const action = this._renderActionList(budget);
-    const date = new Date();
-
-    const totalBudget = parseFloat(budget.totalAmount) / parseFloat(budget.totalAllocatedAmount);
 
     return <div className="column">
       <div className="content box account-scrollblock expand-account">
@@ -71,28 +97,7 @@ class BudgetExpand extends React.Component {
               <Title size={4} className="mb-2">{budget.name}</Title>
             </Column>
           </Columns>
-          <Column>
-            <Columns>
-              <Column className="has-text-left">
-                <p>{df(new Date(date.getFullYear(), date.getMonth(), 1), "dd/mm/yyyy")}</p>
-              </Column>
-              <Column className="has-text-right">
-                <p>{df(new Date(date.getFullYear(), date.getMonth() + 1, 0), "dd/mm/yyyy")}</p>
-              </Column>
-            </Columns>
-            <progress value={totalBudget} style={{width: "100%"}} />
-            <Columns>
-              <Column className="has-text-left">
-                <p>0 €</p>
-              </Column>
-              <Column className="has-text-centered">
-                <p>{budget.totalAmount} €</p>
-              </Column>
-              <Column className="has-text-right">
-                <p>{budget.totalAllocatedAmount} €</p>
-              </Column>
-            </Columns>
-          </Column>
+          {this._renderBudgetData()}
           {this._renderSubTransaction(budget)}
           <div className="has-text-right">
             {action}
