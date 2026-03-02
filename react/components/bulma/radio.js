@@ -4,10 +4,6 @@ const PropTypes = require("prop-types");
 const Field = require("../bulma/field.js");
 
 class Radio extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const {label, subLabel, fieldClassName, text, noLabel, ...props} = this.props;
     return <Field

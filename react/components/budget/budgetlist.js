@@ -78,7 +78,8 @@ class BudgetList extends AsyncFilteredList {
 
   handleOpenBudgetCreationModal(evt) {
     const el = getElFromDataset(evt, "budget");
-    const budget = el.dataset.budget;
+    let budget = null;
+    if (el) budget = el.dataset.budget;
     this.openBudgetCreationModal({budget, categories: this.props.categories});
   }
 

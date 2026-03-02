@@ -1,3 +1,4 @@
+const Decimal = require("decimal.js");
 const express = require("express");
 const moment = require("moment");
 const authMid = require("../middlewares/user.js");
@@ -447,10 +448,14 @@ router.get(
 const processTransferBalance = async (user, transfer) => {
   const accountReceiver = await accountSrv.get(user.id, transfer.receiverId);
   const accountSender = await accountSrv.get(user.id, transfer.senderId);
-  const amount = parseFloat(transfer.amount);
 
-  accountReceiver.balance += amount;
-  accountSender.balance -= amount;
+  const amount = new Decimal(transfer.amount);
+
+  const receiverBalance = new Decimal(accountReceiver.balance).plus(amount);
+  const senderBalance = new Decimal(accountSender.balance).minus(amount);
+
+  accountReceiver.balance = receiverBalance.toFixed(2);
+  accountSender.balance = senderBalance.toFixed(2);
 
   await accountSrv.update(user.id, accountReceiver.id, accountReceiver);
   await accountSrv.update(user.id, accountSender.id, accountSender);

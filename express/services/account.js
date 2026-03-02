@@ -1,5 +1,5 @@
 const assert = require("assert");
-
+const Decimal = require("decimal.js");
 const {
   Account,
   Op,
@@ -95,40 +95,32 @@ accountSrv.update = (userId, accountId, data) => {
 accountSrv.rebalance = async (userId, accountId, transactions, transfers) => {
   logger.debug("Rebalance account=[%s]", accountId);
   const account = await accountSrv.get(userId, accountId);
-  let newAccountBalance = account.initialBalance;
+  let newAccountBalance = new Decimal(account.initialBalance);
+
   for (const transaction of transactions.rows) {
-    if (transaction.type === TransactionTypes.INCOME
-        || transaction.type === TransactionTypes.EXPECTED_INCOME) {
-      newAccountBalance += transaction.data.map(row => parseFloat(row.amount)).reduce(
-        (accumulator, currentValue) => accumulator + currentValue,
-        0,
+    const total = transaction.data
+      .map(row => new Decimal(row.amount))
+      .reduce(
+        (acc, val) => acc.plus(val),
+        new Decimal(0),
       );
-    } else if (transaction.type === TransactionTypes.EXPECTED_EXPENSE
-        || transaction.type === TransactionTypes.EXPENSE) {
-      newAccountBalance -= transaction.data.map(row => parseFloat(row.amount)).reduce(
-        (accumulator, currentValue) => accumulator + currentValue,
-        0,
-      );
-    } else if (transaction.type === TransactionTypes.INTEREST) {
-      newAccountBalance += transaction.data.map(row => parseFloat(row.amount)).reduce(
-        (accumulator, currentValue) => accumulator + currentValue,
-        0,
-      );
+
+    if (
+      transaction.type === TransactionTypes.INCOME ||
+      transaction.type === TransactionTypes.EXPECTED_INCOME ||
+      transaction.type === TransactionTypes.INTEREST
+    ) {
+      newAccountBalance = newAccountBalance.plus(total);
+    } else if (
+      transaction.type === TransactionTypes.EXPECTED_EXPENSE ||
+      transaction.type === TransactionTypes.EXPENSE
+    ) {
+      newAccountBalance = newAccountBalance.minus(total);
     }
   }
 
-  if (transfers) {
-    for (const transfer of transfers) {
-      if (account.id === transfer.receiverId) {
-        newAccountBalance += parseFloat(transfer.amount);
-      } else if (account.id === transfer.senderId) {
-        newAccountBalance -= parseFloat(transfer.amount);
-      }
-    }
-  }
-
-  account.balance = newAccountBalance;
-  account.save();
+  account.balance = newAccountBalance.toFixed(2); // 👈 important
+  await account.save();
 };
 
 accountSrv.rebalanceTransfer = async (userId, senderId, receiverId, transfers) => {
