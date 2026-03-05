@@ -21,11 +21,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     totalAmount: {
       allowNull: true,
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 2),
     },
     totalAllocatedAmount: {
       allowNull: false,
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 2),
     },
     duration: {
       type: DataTypes.INTEGER(20),

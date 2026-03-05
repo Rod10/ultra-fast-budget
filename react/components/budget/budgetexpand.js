@@ -1,3 +1,4 @@
+const Decimal = require("decimal.js");
 const React = require("react");
 const PropTypes = require("prop-types");
 
@@ -31,16 +32,16 @@ class BudgetExpand extends React.Component {
           </div>
         </div>
         <Column>
-          <progress value={parseFloat(tr.amount) / parseFloat(tr.totalAmount)} style={{width: "100%"}} />
+          <progress value={new Decimal(tr.amount) / new Decimal(tr.totalAmount)} style={{width: "100%"}} />
           <Columns>
             <Column className="has-text-left">
               <p>0 €</p>
             </Column>
             <Column className="has-text-centered">
-              <p>{tr.amount} €</p>
+              <p>{new Decimal(tr.amount).toFixed(2)} €</p>
             </Column>
             <Column className="has-text-right">
-              <p>{tr.totalAmount} €</p>
+              <p>{new Decimal(tr.totalAmount).toFixed(2)} €</p>
             </Column>
           </Columns>
         </Column>
@@ -50,7 +51,7 @@ class BudgetExpand extends React.Component {
 
   _renderBudgetData() {
     const {budget} = this.props;
-    const totalBudget = parseFloat(budget.totalAmount) / parseFloat(budget.totalAllocatedAmount);
+    const totalBudget = new Decimal(new Decimal(budget.totalAmount) / new Decimal(budget.totalAllocatedAmount)).toFixed(2);
     const date = new Date(budget.creationDate);
     return <Column>
       <Columns>
@@ -67,10 +68,10 @@ class BudgetExpand extends React.Component {
           <p>0 €</p>
         </Column>
         <Column className="has-text-centered">
-          <p>{budget.totalAmount} €</p>
+          <p>{new Decimal(budget.totalAmount)} €</p>
         </Column>
         <Column className="has-text-right">
-          <p>{budget.totalAllocatedAmount} €</p>
+          <p>{new Decimal(budget.totalAllocatedAmount)} €</p>
         </Column>
       </Columns>
     </Column>;

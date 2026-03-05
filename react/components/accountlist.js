@@ -1,5 +1,6 @@
-const React = require("react");
+const Decimal = require("decimal.js");
 const PropTypes = require("prop-types");
+const React = require("react");
 
 const {getElFromDataset} = require("../utils/html.js");
 const Button = require("./bulma/button.js");
@@ -123,8 +124,8 @@ class AccountList extends React.Component {
   }
 
   render() {
-    const totalAmount = this.state.rows.map(account => account.balance).reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
+    const totalAmount = this.state.rows.map(account => new Decimal(account.balance)).reduce(
+      (accumulator, currentValue) => new Decimal(accumulator).plus(new Decimal((currentValue).toString())),
       0,
     );
 
@@ -136,7 +137,7 @@ class AccountList extends React.Component {
       <Columns>
         <Column size={Column.Sizes.oneThird}>
           <Title size={4} className="mb-2">Mes Comptes</Title>
-          <Title size={6} className="mb-2">Total: {totalAmount}€</Title>
+          <Title size={6} className="mb-2">Total: {new Decimal(totalAmount).toFixed(2)}€</Title>
         </Column>
         <Column>
           <div className="has-text-right">

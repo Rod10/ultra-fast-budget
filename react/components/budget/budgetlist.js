@@ -1,3 +1,4 @@
+const Decimal = require("decimal.js");
 const React = require("react");
 const PropTypes = require("prop-types");
 
@@ -86,13 +87,22 @@ class BudgetList extends AsyncFilteredList {
   // eslint-disable-next-line max-lines-per-function
   _renderFilters() {
     const rows = this.state.rows;
-    const totalAmount = rows.reduce((acc, row) => acc + row.totalAmount, 0);
-    const totalAllocatedAmount = rows.reduce((acc, row) => acc + row.totalAllocatedAmount, 0);
+    const totalAmount = rows.reduce(
+      (acc, val) => acc.plus(val.totalAmount),
+      new Decimal(0),
+    );
+    const totalAllocatedAmount = rows.reduce(
+      (acc, val) => acc.plus(val.totalAllocatedAmount),
+      new Decimal(0),
+    );
     let totalOutOfBudget = 0;
     for (const data of this.state.dataPerMonth) {
       if (data.length > 0) {
         for (const tData of data) { // tData = transactionData
-          totalOutOfBudget += tData.data.reduce((acc, row) => acc + parseFloat(row.amount), 0);
+          totalOutOfBudget += tData.data.reduce(
+            (acc, val) => acc.plus(val.amount),
+            new Decimal(0),
+          );
         }
       }
     }
@@ -154,22 +164,22 @@ class BudgetList extends AsyncFilteredList {
       )}
       {this.state.period === "now" && <div className="field">
         <label className="label">Total dépensé/Total alloué:</label>
-        <b><span className={`has-text-${totalAmount >= totalAllocatedAmount
+        <b><span className={`has-text-${new Decimal(totalAmount).toFixed(2) >= new Decimal(totalAllocatedAmount).toFixed(2)
           ? "danger"
           : "success"}`}
-        >{totalAmount}</span>/<span className="has-text-danger">{totalAllocatedAmount} €</span>
+        >{new Decimal(totalAmount).toFixed(2)}</span>/<span className="has-text-danger">{new Decimal(totalAllocatedAmount).toFixed(2)} €</span>
         </b>
       </div>}
       {this.state.period === "now" && <div className="field">
         <label className="label">Budget total restant:</label>
-        <b><span className={`has-text-${totalAllocatedAmount - totalAmount - totalOutOfBudget <= 0
+        <b><span className={`has-text-${totalAllocatedAmount - new Decimal(totalAmount).toFixed(2) - new Decimal(totalOutOfBudget).toFixed(2) <= 0
           ? "danger"
           : "success"}`}
-        >{totalAllocatedAmount - totalAmount - totalOutOfBudget} €</span>
+        >{new Decimal(totalAllocatedAmount).toFixed(2) - new Decimal(totalAmount).toFixed(2) - new Decimal(totalOutOfBudget).toFixed(2)} €</span>
         </b>
       </div>}
       <div className="field">
-        <label className="label">Dépense hors budget: {totalOutOfBudget} €</label>
+        <label className="label">Dépense hors budget: {new Decimal(totalOutOfBudget).toFixed(2)} €</label>
         <span><a
           className="button has-text-weight-bold mr-3 is-link is-themed"
           onClick={this.handleOpenTransactionsModal}
@@ -211,7 +221,7 @@ class BudgetList extends AsyncFilteredList {
   render() {
     const list = this._renderList();
 
-    const expanded = this.renderExpand;
+    const expanded = this.renderExpand();
 
     return <div className="body-content">
       <Columns>

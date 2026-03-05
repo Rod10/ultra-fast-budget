@@ -1,3 +1,4 @@
+const Decimal = require("decimal.js");
 const React = require("react");
 const PropTypes = require("prop-types");
 
@@ -188,7 +189,7 @@ class Homepage extends React.Component {
               <hr className="hr-homepage" />
               <Columns className="is-centered">
                 <Title size={5}>
-                  {Math.round(((this.props.graphs[type][subType].data[0] - this.props.graphs[type][subType].data[1]) + Number.EPSILON) * 100) / 100} €
+                  {new Decimal(this.props.graphs[type][subType].data[0] - this.props.graphs[type][subType].data[1]).toFixed(2)} €
                 </Title>
               </Columns>
             </Column>
