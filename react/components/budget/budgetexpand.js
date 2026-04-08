@@ -68,10 +68,10 @@ class BudgetExpand extends React.Component {
           <p>0 €</p>
         </Column>
         <Column className="has-text-centered">
-          <p>{new Decimal(budget.totalAmount)} €</p>
+          <p>{new Decimal(budget.totalAmount).toFixed(2)} €</p>
         </Column>
         <Column className="has-text-right">
-          <p>{new Decimal(budget.totalAllocatedAmount)} €</p>
+          <p>{new Decimal(budget.totalAllocatedAmount).toFixed(2)} €</p>
         </Column>
       </Columns>
     </Column>;
