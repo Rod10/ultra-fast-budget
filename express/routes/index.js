@@ -15,8 +15,7 @@ const {SEE_OTHER} = require("../utils/error.js");
 const {logger} = require("../services/logger.js");
 const budgetSrv = require("../services/budget.js");
 const TransactionType = require("../constants/transactiontype.js");
-
-const ONE_HUNDRED = 100;
+const Constants = require("../constants/constants.js");
 
 const router = express.Router();
 
@@ -121,12 +120,12 @@ const setLiquidityData = transactions => {
 
   /* eslint-disable max-len */
   const daysInMonth = new moment().daysInMonth();
-  liquidity.totalIncome = roundingFunctionEpsilon(liquidity.totalIncome, ONE_HUNDRED);
-  liquidity.totalOutcome = roundingFunctionEpsilon(liquidity.totalOutcome, ONE_HUNDRED);
-  liquidity.average.daily.income = roundingFunction(liquidity.totalIncome / daysInMonth, ONE_HUNDRED);
-  liquidity.average.daily.outcome = roundingFunction(liquidity.totalOutcome / daysInMonth, ONE_HUNDRED);
-  liquidity.average.transactions.income = roundingFunction(liquidity.totalIncome / liquidity.incomeTransactionsNumber, ONE_HUNDRED) / ONE_HUNDRED;
-  liquidity.average.transactions.outcome = roundingFunction(liquidity.totalOutcome / liquidity.outcomeTransactionsNumber, ONE_HUNDRED) / ONE_HUNDRED;
+  liquidity.totalIncome = roundingFunctionEpsilon(liquidity.totalIncome, Constants.ONEHUNDRED);
+  liquidity.totalOutcome = roundingFunctionEpsilon(liquidity.totalOutcome, Constants.ONEHUNDRED);
+  liquidity.average.daily.income = roundingFunction(liquidity.totalIncome / daysInMonth, Constants.ONEHUNDRED);
+  liquidity.average.daily.outcome = roundingFunction(liquidity.totalOutcome / daysInMonth, Constants.ONEHUNDRED);
+  liquidity.average.transactions.income = roundingFunction(liquidity.totalIncome / liquidity.incomeTransactionsNumber, Constants.ONEHUNDRED) / Constants.ONEHUNDRED;
+  liquidity.average.transactions.outcome = roundingFunction(liquidity.totalOutcome / liquidity.outcomeTransactionsNumber, Constants.ONEHUNDRED) / Constants.ONEHUNDRED;
   /* eslint-enable max-len */
   return liquidity;
 };

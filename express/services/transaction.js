@@ -4,6 +4,7 @@ const {
   Transaction,
   Op,
 } = require("../models/index.js");
+const Constants = require("../constants/constants.js");
 const OrderDirection = require("../constants/orderdirection.js");
 const TransactionType = require("../constants/transactiontype.js");
 const TransactionTypes = require("../constants/transactiontype.js");
@@ -12,8 +13,6 @@ const accountSrv = require("./account.js");
 const {logger} = require("./logger.js");
 
 const transactionSrv = {};
-
-const SEVEN_LASTDAY = 6;
 
 transactionSrv.get = id => {
   logger.info("Get transaction by id=[%s]", id);
@@ -181,7 +180,7 @@ transactionSrv.getAllByUserAndRange = (userId, query) => {
     } else if (query.range === "seventh") {
       condition.transactionDate = {
         [Op.and]: {
-          [Op.gte]: new moment().subtract(SEVEN_LASTDAY, query.unit)
+          [Op.gte]: new moment().subtract(Constants.SEVENLASTDAY, query.unit)
             .startOf(query.unit),
           [Op.lt]: new moment().endOf(query.unit),
         },

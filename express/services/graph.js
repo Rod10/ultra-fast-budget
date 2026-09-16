@@ -1,5 +1,6 @@
 const moment = require("moment");
 const {logger} = require("./logger.js");
+const Constants = require("./../constants/constants.js");
 const TransactionType = require("./../constants/transactiontype.js");
 const transactionSrv = require("./transaction.js");
 const accountSrv = require("./account.js");
@@ -9,16 +10,6 @@ const plannedTransferSrv = require("./plannedtransfer.js");
 const transferSrv = require("./transfer.js");
 
 const graphSrv = {};
-
-// Constants
-const DAYS_IN_WEEK = 7;
-const WEEKS_TO_SHOW = 5;
-const DAYS_IN_YEAR = 365.25;
-const MONTHS_IN_YEAR = 12;
-const PRECISION_MULTIPLIER = 100;
-const INTEREST_PRECISION = 100000000;
-const MAX_DECIMAL = 16777215;
-const BASE_16 = 16;
 
 const MONTHS = [
   "Janvier",
@@ -47,14 +38,14 @@ const calculateTotalTransactionData = transactionData => transactionData
 // Helper: Round number to 2 decimal places
 const roundToTwoDecimals = num => Math.round(
   (num + Number.EPSILON)
-    * PRECISION_MULTIPLIER,
+    * Constants.ONEHUNDRED,
 )
-    / PRECISION_MULTIPLIER;
+    / Constants.ONEHUNDRED;
 
 // Helper: Generate random color
 const generateRandomColor = () => {
-  const randomNum = Math.floor(Math.random() * MAX_DECIMAL);
-  return `#${randomNum.toString(BASE_16)}`;
+  const randomNum = Math.floor(Math.random() * Constants.MAXDECIMAL);
+  return `#${randomNum.toString(Constants.BASE16)}`;
 };
 
 // Helper: Check if transaction is income type
@@ -203,8 +194,8 @@ const calculateDailyAmounts = (transactionsByDays, numberOfDays) => {
 
 // Helper: Create bar chart dataset
 const createBarDataset = (label, data, backgroundColor, borderColor) => {
-  const colors = new Array(DAYS_IN_WEEK).fill(backgroundColor);
-  const borders = new Array(DAYS_IN_WEEK).fill(borderColor);
+  const colors = new Array(Constants.DAYSINWEEK).fill(backgroundColor);
+  const borders = new Array(Constants.DAYSINWEEK).fill(borderColor);
 
   return {
     label,
@@ -224,9 +215,9 @@ graphSrv.lastSeventhDays = async user => {
     range: "seventh",
   });
 
-  const labels = createDayLabels(DAYS_IN_WEEK);
-  const transactionsByDays = groupTransactionsByDay(transactions.rows, DAYS_IN_WEEK);
-  const {income, outcome} = calculateDailyAmounts(transactionsByDays, DAYS_IN_WEEK);
+  const labels = createDayLabels(Constants.DAYSINWEEK);
+  const transactionsByDays = groupTransactionsByDay(transactions.rows, Constants.DAYSINWEEK);
+  const {income, outcome} = calculateDailyAmounts(transactionsByDays, Constants.DAYSINWEEK);
 
   return {
     type: "bar",
@@ -275,7 +266,7 @@ const createWeekLabels = numberOfWeeks => {
 
 // Helper: Group transactions by week
 const groupTransactionsByWeek = transactions => {
-  const byWeeks = initWeeklyData(WEEKS_TO_SHOW);
+  const byWeeks = initWeeklyData(Constants.WEEKSTOSHOW);
 
   for (const transaction of transactions) {
     const weekKey = new moment(transaction.transactionDate).startOf("week")
@@ -308,10 +299,10 @@ const calculateWeeklyBalance = weekTransactions => {
 
 // Helper: Build account balance dataset
 const buildAccountBalanceDataset = (account, transactionsByWeeks) => {
-  const accountBalance = new Array(WEEKS_TO_SHOW).fill(0);
+  const accountBalance = new Array(Constants.WEEKSTOSHOW).fill(0);
   accountBalance[0] = parseFloat(account.balance);
 
-  for (let i = 1; i < WEEKS_TO_SHOW; i++) {
+  for (let i = 1; i < Constants.WEEKSTOSHOW; i++) {
     const weekKey = new moment().subtract(i - 1, "week")
       .startOf("week")
       .format("DD/MM");
@@ -334,13 +325,13 @@ graphSrv.balance = async user => {
   logger.debug("Get balance graph for all accounts");
 
   const accounts = await accountSrv.getAllByUser(user.id);
-  const labels = createWeekLabels(WEEKS_TO_SHOW);
+  const labels = createWeekLabels(Constants.WEEKSTOSHOW);
   const datasets = [];
 
   for (const account of accounts.rows) {
     const transactions = await transactionSrv.getAllByAccountAndRange(account.id, {
       unit: "week",
-      number: WEEKS_TO_SHOW,
+      number: Constants.WEEKSTOSHOW,
     });
 
     const transactionsByWeeks = groupTransactionsByWeek(transactions.rows);
@@ -465,7 +456,7 @@ graphSrv.byCategory = async (user, category) => {
 
 // Helper: Group transactions by month
 const groupTransactionsByMonth = transactions => {
-  const byMonth = Array.from({length: MONTHS_IN_YEAR}, () => []);
+  const byMonth = Array.from({length: Constants.MONTHINYEAR}, () => []);
 
   for (const transaction of transactions) {
     const month = new moment(transaction.transactionDate).month();
@@ -477,7 +468,7 @@ const groupTransactionsByMonth = transactions => {
 
 // Helper: Group transfers by month
 const groupTransfersByMonth = transfers => {
-  const byMonth = Array.from({length: MONTHS_IN_YEAR}, () => []);
+  const byMonth = Array.from({length: Constants.MONTHINYEAR}, () => []);
 
   for (const transfer of transfers) {
     const month = new moment(transfer.transferDate).month();
@@ -541,7 +532,7 @@ const calculateAccountMonthlyBalances = params => {
   const creationMonth = new moment(account.creationDate).month();
   totalBalance[creationMonth] = account.initialBalance;
 
-  for (let month = 0; month < MONTHS_IN_YEAR; month++) {
+  for (let month = 0; month < Constants.MONTHINYEAR; month++) {
     let monthBalance = totalBalance[month];
 
     if (transactionsByMonth[month].length > 0) {
@@ -572,11 +563,11 @@ const calculateAccountMonthlyBalances = params => {
 };
 
 const createDataArray = () => ({
-  totalBalance: Array(MONTHS_IN_YEAR).fill(0),
-  incomeTransactions: Array(MONTHS_IN_YEAR).fill(0),
-  outcomeTransactions: Array(MONTHS_IN_YEAR).fill(0),
-  incomeTransfers: Array(MONTHS_IN_YEAR).fill(0),
-  outcomeTransfers: Array(MONTHS_IN_YEAR).fill(0),
+  totalBalance: Array(Constants.MONTHINYEAR).fill(0),
+  incomeTransactions: Array(Constants.MONTHINYEAR).fill(0),
+  outcomeTransactions: Array(Constants.MONTHINYEAR).fill(0),
+  incomeTransfers: Array(Constants.MONTHINYEAR).fill(0),
+  outcomeTransfers: Array(Constants.MONTHINYEAR).fill(0),
 });
 
 // Create account overview line graph
@@ -783,9 +774,9 @@ const initAccountBalance = query => {
   const createArray = i => {
     if (query.unit === "year") {
       if (i === 0) {
-        return Array.from({length: MONTHS_IN_YEAR - new moment().month()}, () => 0);
+        return Array.from({length: Constants.MONTHINYEAR - new moment().month()}, () => 0);
       }
-      return Array.from({length: MONTHS_IN_YEAR}, () => 0);
+      return Array.from({length: Constants.MONTHINYEAR}, () => 0);
     }
     return 0;
   };
@@ -859,7 +850,7 @@ const processWeeklyTransfer = (transfer, accountsBalance, i, weekCounter, indexH
     .daysInMonth();
 
   for (let d = 1; d <= numberOfDays; d++) {
-    if (weekCounter.value === DAYS_IN_WEEK) {
+    if (weekCounter.value === Constants.DAYSINWEEK) {
       const totalWeeks = parseFloat(transfer.amount);
       const receiverBalance = accountsBalance[receiverType].data[i];
 
@@ -904,7 +895,7 @@ const processPlannedTransfers = (transfers, accountsBalance, i, weekCounter) => 
 const calculateYearlyInterest = (account, accountsBalance, i) => {
   const accountType = account.accountType.type;
   const oldAmount = accountsBalance[accountType].data[i];
-  const interestRate = account.accountType.interest / PRECISION_MULTIPLIER;
+  const interestRate = account.accountType.interest / Constants.ONEHUNDRED;
   const newAmount = oldAmount * (1 + interestRate);
   const interest = newAmount - oldAmount;
 
@@ -921,16 +912,15 @@ const calculateDailyInterest = (account, accountsBalance, i) => {
 
   totalDataMonth[0] = accountsBalance[account.accountType.type].data[i];
 
-  const interestRate = account.accountType.interest / PRECISION_MULTIPLIER;
-  const dailyRate = (1 + interestRate) ** (1 / DAYS_IN_YEAR);
+  const interestRate = account.accountType.interest / Constants.ONEHUNDRED;
+  const dailyRate = (1 + interestRate) ** (1 / Constants.DAYSINYEAR);
 
   for (let d = 1; d < totalDataMonth.length; d++) {
     const oldAmount = totalDataMonth[d - 1];
     const newAmount = oldAmount * dailyRate;
-    const interest
-        = Math.round((newAmount - oldAmount) * INTEREST_PRECISION) / INTEREST_PRECISION;
-
-    totalInterestMonth[d] = interest;
+    totalInterestMonth[d] = Math.round((newAmount - oldAmount)
+      * Constants.INTERESTPRECISION)
+      / Constants.INTERESTPRECISION;
     totalDataMonth[d] = newAmount;
   }
 

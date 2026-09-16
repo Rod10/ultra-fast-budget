@@ -1,6 +1,7 @@
 const Decimal = require("decimal.js");
 const express = require("express");
 const moment = require("moment");
+const Constants = require("../constants/constants.js");
 const authMid = require("../middlewares/user.js");
 
 const accountSrv = require("../services/account.js");
@@ -16,8 +17,6 @@ const searchMid = require("../middlewares/search.js");
 
 const router = express.Router();
 
-const MONTHS_IN_YEAR = 12;
-
 router.use(authMid.strict);
 
 // ============================================================================
@@ -29,7 +28,7 @@ const calculateAmount = data => data.map(row => parseFloat(row.amount))
   .reduce((acc, val) => acc + val, 0);
 
 // Helper function to initialize monthly arrays
-const createMonthlyArray = (initialValue = 0) => Array(MONTHS_IN_YEAR).fill(initialValue);
+const createMonthlyArray = (initialValue = 0) => Array(Constants.MONTHINYEAR).fill(initialValue);
 
 // Helper function to check if transaction is income type
 const isIncomeTransaction = type => (
@@ -65,7 +64,7 @@ const groupByDaysTransfert = (month, data) => groupByDays(month, data, "transfer
 
 // Group transactions by month
 const groupTransactionsByMonth = transactions => {
-  const byMonth = Array.from({length: MONTHS_IN_YEAR}, () => []);
+  const byMonth = Array.from({length: Constants.MONTHINYEAR}, () => []);
 
   for (const transaction of transactions) {
     const month = new moment(transaction.transactionDate).month();
@@ -77,7 +76,7 @@ const groupTransactionsByMonth = transactions => {
 
 // Group transfers by month
 const groupTransfersByMonth = transfers => {
-  const byMonth = Array.from({length: MONTHS_IN_YEAR}, () => []);
+  const byMonth = Array.from({length: Constants.MONTHINYEAR}, () => []);
 
   for (const transfer of transfers) {
     const month = new moment(transfer.transferDate).month();
@@ -454,8 +453,8 @@ const processTransferBalance = async (user, transfer) => {
   const receiverBalance = new Decimal(accountReceiver.balance).plus(amount);
   const senderBalance = new Decimal(accountSender.balance).minus(amount);
 
-  accountReceiver.balance = receiverBalance.toFixed(2);
-  accountSender.balance = senderBalance.toFixed(2);
+  accountReceiver.balance = receiverBalance.toFixed(Constants.DECIMAl);
+  accountSender.balance = senderBalance.toFixed(Constants.DECIMAl);
 
   await accountSrv.update(user.id, accountReceiver.id, accountReceiver);
   await accountSrv.update(user.id, accountSender.id, accountSender);
@@ -517,7 +516,9 @@ router.get(
     try {
       const currentYear = new moment(req.query.year).year();
       const currentMonth
-            = new moment().year() === currentYear ? new moment().month() : MONTHS_IN_YEAR - 1;
+            = new moment().year() === currentYear
+              ? new moment().month()
+              : Constants.MONTHINYEAR - 1;
 
       const account = await accountSrv.get(req.user.id, req.params.id);
       const transactions = await transactionSrv.search(req.user, {

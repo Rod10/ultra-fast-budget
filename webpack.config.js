@@ -29,6 +29,8 @@ const config = {
 
     "categories": `${VIEWS}/categories.js`,
     "forecast": `${VIEWS}/forecast.js`,
+
+    "dashboard": `${VIEWS}/dashboard.js`,
   },
   output: {
     path: path.resolve(__dirname, "dist", "public", "js"),

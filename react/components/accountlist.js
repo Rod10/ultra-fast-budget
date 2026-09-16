@@ -124,10 +124,12 @@ class AccountList extends React.Component {
   }
 
   render() {
-    const totalAmount = this.state.rows.map(account => new Decimal(account.balance)).reduce(
-      (accumulator, currentValue) => new Decimal(accumulator).plus(new Decimal((currentValue).toString())),
-      0,
-    );
+    const totalAmount = this.state.rows
+      .map(row => new Decimal(row.balance))
+      .reduce(
+        (acc, val) => acc.plus(val),
+        new Decimal(0),
+      );
 
     const list = this.generateList();
 

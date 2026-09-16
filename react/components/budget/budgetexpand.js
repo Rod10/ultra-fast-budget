@@ -4,6 +4,8 @@ const PropTypes = require("prop-types");
 
 const df = require("dateformat");
 
+const Constants = require("../../../express/constants/constants.js");
+
 const Button = require("../bulma/button.js");
 const Icon = require("../bulma/icon.js");
 const Title = require("../bulma/title.js");
@@ -38,10 +40,10 @@ class BudgetExpand extends React.Component {
               <p>0 €</p>
             </Column>
             <Column className="has-text-centered">
-              <p>{new Decimal(tr.amount).toFixed(2)} €</p>
+              <p>{new Decimal(tr.amount).toFixed(Constants.DECIMAL)} €</p>
             </Column>
             <Column className="has-text-right">
-              <p>{new Decimal(tr.totalAmount).toFixed(2)} €</p>
+              <p>{new Decimal(tr.totalAmount).toFixed(Constants.DECIMAL)} €</p>
             </Column>
           </Columns>
         </Column>
@@ -51,7 +53,8 @@ class BudgetExpand extends React.Component {
 
   _renderBudgetData() {
     const {budget} = this.props;
-    const totalBudget = new Decimal(new Decimal(budget.totalAmount) / new Decimal(budget.totalAllocatedAmount)).toFixed(2);
+    const totalBudget = new Decimal(new Decimal(budget.totalAmount)
+      / new Decimal(budget.totalAllocatedAmount)).toFixed(Constants.DECIMAL);
     const date = new Date(budget.creationDate);
     return <Column>
       <Columns>
@@ -68,10 +71,10 @@ class BudgetExpand extends React.Component {
           <p>0 €</p>
         </Column>
         <Column className="has-text-centered">
-          <p>{new Decimal(budget.totalAmount).toFixed(2)} €</p>
+          <p>{new Decimal(budget.totalAmount).toFixed(Constants.DECIMAL)} €</p>
         </Column>
         <Column className="has-text-right">
-          <p>{new Decimal(budget.totalAllocatedAmount).toFixed(2)} €</p>
+          <p>{new Decimal(budget.totalAllocatedAmount).toFixed(Constants.DECIMAL)} €</p>
         </Column>
       </Columns>
     </Column>;

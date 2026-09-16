@@ -1,0 +1,26 @@
+const Constants = Object.freeze({
+  BASE16: 16,
+  DAYSINWEEK: 7,
+  DAYSINYEAR: 365.25,
+  DECIMAl: 2,
+  INTERESTPRECISION: 100000000,
+  MAXDECIMAL: 16777215,
+  MONTHINYEAR: 12,
+  ONEHUNDRED: 100,
+  SEVENLASTDAY: 6,
+  WEEKSTOSHOW: 5,
+});
+
+/*
+// Constants
+const DAYS_IN_WEEK = 7;
+const WEEKS_TO_SHOW = 5;
+const DAYS_IN_YEAR = 365.25;
+const MONTHS_IN_YEAR = 12;
+const PRECISION_MULTIPLIER = 100;
+const INTEREST_PRECISION = 100000000;
+const MAX_DECIMAL = 16777215;
+const BASE_16 = 16;
+ */
+
+module.exports = Constants;

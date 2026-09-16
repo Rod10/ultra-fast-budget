@@ -4,6 +4,7 @@ const {
   Account,
   Op,
 } = require("../models/index.js");
+const Constants = require("../constants/constants.js");
 const TransactionTypes = require("./../constants/transactiontype.js");
 const {logger} = require("./logger.js");
 
@@ -28,8 +29,8 @@ accountSrv.create = (userId, data, accountType) => {
     name: data.name,
     currency: data.currency,
     accountTypeId: accountType.id,
-    initialBalance: new Decimal(data.initialBalance).toFixed(2),
-    balance: new Decimal(data.initialBalance).toFixed(2),
+    initialBalance: new Decimal(data.initialBalance).toFixed(Constants.DECIMAl),
+    balance: new Decimal(data.initialBalance).toFixed(Constants.DECIMAl),
   });
 };
 
@@ -73,7 +74,7 @@ accountSrv.updateData = (userId, accountId, data, accountTypeId) => {
       name: data.name,
       accountTypeId,
       currency: data.currency,
-      initialBalance: new Decimal(data.initialBalance).toFixed(2),
+      initialBalance: new Decimal(data.initialBalance).toFixed(Constants.DECIMAl),
     },
     {where: {id: accountId, userId}},
   );
@@ -129,7 +130,7 @@ accountSrv.rebalance = async (userId, accountId, transactions, transfers) => {
     }
   }
 
-  account.balance = newAccountBalance.toFixed(2); // 👈 important
+  account.balance = newAccountBalance.toFixed(Constants.DECIMAl); // 👈 important
   await account.save();
 };
 
@@ -140,7 +141,7 @@ accountSrv.rebalanceTransfer = async (userId, senderId, receiverId, transfers) =
   for (const transfer of transfers.rows) {
     newSenderAccountBalance -= new Decimal(transfer.amount);
   }
-  sender.balance = newSenderAccountBalance.toFixed(2);
+  sender.balance = newSenderAccountBalance.toFixed(Constants.DECIMAl);
   sender.save();
 
   const receiver = await accountSrv.get(userId, receiverId);
@@ -148,7 +149,7 @@ accountSrv.rebalanceTransfer = async (userId, senderId, receiverId, transfers) =
   for (const transfer of transfers.rows) {
     newReceiverAccountBalance += new Decimal(transfer.amount);
   }
-  receiver.balance = newReceiverAccountBalance.toFixed(2);
+  receiver.balance = newReceiverAccountBalance.toFixed(Constants.DECIMAl);
   receiver.save();
 };
 

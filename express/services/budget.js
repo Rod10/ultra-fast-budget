@@ -5,6 +5,7 @@ const {
   Budget,
   Op,
 } = require("../models/index.js");
+const Constants = require("../constants/constants.js");
 const OrderDirection = require("../constants/orderdirection.js");
 const TransactionType = require("../constants/transactiontype.js");
 const {logger} = require("./logger.js");
@@ -90,8 +91,8 @@ budgetSrv.create = async (user, budgetData) => {
     userId: user.id,
     categoryId: budgetData.category,
     name: budgetData.name,
-    totalAllocatedAmount: new Decimal(budgetData.totalAllocatedAmount).toFixed(2),
-    totalAmount: new Decimal(budgetData.totalAmount).toFixed(2),
+    totalAllocatedAmount: new Decimal(budgetData.totalAllocatedAmount).toFixed(Constants.DECIMAl),
+    totalAmount: new Decimal(budgetData.totalAmount).toFixed(Constants.DECIMAl),
     duration: budgetData.duration,
     unit: budgetData.unit,
     data: budgetData.data,
@@ -111,7 +112,7 @@ budgetSrv.update = (oldBudget, newBudget) => {
   return Budget.update({
     name: newBudget.name,
     categoryId: newBudget.category,
-    totalAllocatedAmount: new Decimal(newBudget.totalAllocatedAmount).toFixed(2),
+    totalAllocatedAmount: new Decimal(newBudget.totalAllocatedAmount).toFixed(Constants.DECIMAl),
     duration: newBudget.duration,
     unit: newBudget.unit,
     data: newData,
@@ -132,7 +133,7 @@ budgetSrv.updateAmount = async (user, transaction) => {
       const index = budget.data.findIndex(data => data.subCategory.id === row.subCategory.id);
       newData[index].amount += new Decimal(row.amount);
       budget.data = newData;
-      budget.totalAmount += new Decimal(row.amount).toFixed(2);
+      budget.totalAmount += new Decimal(row.amount).toFixed(Constants.DECIMAl);
       budget.save();
     }
   }
