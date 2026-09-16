@@ -57,6 +57,25 @@ const chart = {
   ],
 };
 
+const stock = {
+  label: "Actions",
+  logo: "",
+  routes: [
+    {
+      label: "Dashboard",
+      href: "/stocks/dashboard",
+    },
+    {
+      label: "Achat Actions",
+      href: "/stocks/buying",
+    },
+    {
+      label: "Historique",
+      href: "/stocks/history",
+    },
+  ],
+};
+
 module.exports = {
   homepage,
   transactions,
@@ -65,4 +84,5 @@ module.exports = {
   budget,
   debt,
   chart,
+  stock,
 };

@@ -181,5 +181,6 @@ router.use("/planned-transfer", require("./planned-transfer.js"));
 router.use("/settings", require("./settings/index.js"));
 router.use("/api", require("./api.js"));
 router.use("/graphics", require("./graphics.js"));
+router.use("/stocks", require("./stocks/stocks.js"));
 
 module.exports = router;
