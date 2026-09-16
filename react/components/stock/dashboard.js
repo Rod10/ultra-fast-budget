@@ -1202,6 +1202,8 @@ const tickerList = [
 const React = require("react");
 const PropTypes = require("prop-types");
 const Head = require("../helpers/head.js");
+const Columns = require("../bulma/columns.js");
+const Column = require("../bulma/column.js");
 
 const portfolio = {
   id: 0,
@@ -1220,6 +1222,7 @@ for (const ticker of tickerList) {
     average: 0,
     amount: 0,
     investedAmount: 0,
+    gain: 0,
     dividendsReceived: 0,
     oneTime: stock.currentPrice >= 100,
   });
@@ -1235,13 +1238,60 @@ class Dashboard extends React.Component {
     };
   }
 
+  _renderTable() {
+    return (
+      <table className="table is-bordered is-fullwidth is-hoverable has-pointer-cursor">
+        <thead>
+          <tr>
+            <th className="has-text-centered">ISIN</th>
+            <th className="has-text-centered">Nom</th>
+            <th className="has-text-centered">Cours</th>
+            <th className="has-text-centered">Quantité</th>
+            <th className="has-text-centered">Montant total</th>
+            <th className="has-text-centered">PRU</th>
+            <th className="has-text-centered">Gains</th>
+            <th className="has-text-centered">Dividendes</th>
+            <th className="has-text-centered">Rendement Dividendes</th>
+          </tr>
+        </thead>
+      </table>
+    );
+  }
+
   render() {
-    const month = new Date().getMonth();
-    const year = new Date().getFullYear();
+    const totalInvestments = this.state.stocks.reduce((acc, val) => acc + val.investedAmount, 0);
+    const totalGains = this.state.stocks.reduce((acc, val) => acc + val.gain, 0);
+    const totalDividends = this.state.stocks.reduce((acc, val) => acc + val.dividendsReceived, 0);
     return <div className="body-content">
-      <Head>
-        {month} - {year}
+      <Head className="has-text-centered">
+        Janvier 2027
       </Head>
+      <hr />
+      <Columns>
+        <Column>
+          <p>Liquiditées disponible: {this.state.portfolio.cash}€</p>
+          <p>Versement Mensuel: {this.state.portfolio.monthlyContrib}€</p>
+        </Column>
+        <Column>
+          <p>Investissement Total: {totalInvestments}€</p>
+          <p>Gain Total: {totalGains}€</p>
+        </Column>
+        <Column>
+          <p>Total Dividendes: {totalDividends}€</p>
+          <p>Rendement annuel Dividendes: 0€</p></Column>
+      </Columns>
+      <hr />
+      <Columns>
+        <p>Simulation</p>
+      </Columns>
+      <hr />
+      <Columns>
+        <p>Actions pouvant être prises</p>
+      </Columns>
+      <hr />
+      <div>
+        {this._renderTable()}
+      </div>
     </div>;
   }
 }
