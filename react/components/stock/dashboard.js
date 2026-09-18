@@ -130,13 +130,20 @@ class Dashboard extends React.Component {
           <p>Rendement annuel Dividendes: 0€</p></Column>
       </Columns>
       <hr />
-      <Columns>
-        <p>Simulation</p>
-      </Columns>
+      <div>
+        <p>Actions prioritaire</p>
+        <p>L'action prioritaire est: {this.props.priority.name} avec un prix unité de: {this.props.priority.currentPrice} €</p>
+      </div>
       <hr />
-      <Columns>
-        <p>Actions pouvant être prises</p>
-      </Columns>
+      <div>
+        <p>Simulation</p>
+        <br />
+        <ul>
+          {this.props.secondaryCandidates.map(action => <li key={action.ticker}>
+            {action.risk} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth} € le mois prochain
+          </li>)}
+        </ul>
+      </div>
       <hr />
       <div>
         {this._renderTable()}

@@ -1251,6 +1251,24 @@ const getPriorityStocks = state => state.stocks
     && !stock.boughtThisYear)
   .sort((a, b) => b.currentPrice - a.currentPrice);
 
+const getRisk = ({
+  remainingCashNextMonth,
+  priorityPrice,
+}) => {
+  const margin = remainingCashNextMonth - priorityPrice;
+  const marginPercent = margin / priorityPrice;
+
+  if (marginPercent < 0.05) {
+    return "High";
+  }
+
+  if (marginPercent < 0.10) {
+    return "Medium";
+  }
+
+  return "Low";
+};
+
 const getSecondaryCandidates = ({
   stocks,
   budget,
@@ -1258,16 +1276,32 @@ const getSecondaryCandidates = ({
   monthlyContrib,
 }) => stocks
   .filter(stock => stock.ticker !== priority.ticker)
-  .filter(stock => stock.currentPrice <= budget)
-  .filter(stock => {
-    const cashAfterPurchase
-      = budget - stock.currentPrice;
-
-    return (
-      cashAfterPurchase + monthlyContrib
-      >= priority.currentPrice
+  .map(stock => {
+    const quantity = Math.floor(
+      (budget + monthlyContrib - priority.currentPrice)
+      / stock.currentPrice,
     );
+
+    const remainingCashNextMonth
+      = budget
+      - (quantity * stock.currentPrice)
+      + monthlyContrib;
+
+    const risk = getRisk({
+      remainingCashNextMonth,
+      priorityPrice: priority.currentPrice,
+    });
+
+    return {
+      ticker: stock.ticker,
+      name: stock.name,
+      currentPrice: stock.currentPrice,
+      quantity,
+      remainingCashNextMonth,
+      risk,
+    };
   })
+  .filter(stock => stock.quantity > 0)
   .sort((a, b) => a.currentPrice - b.currentPrice);
 
 const decidePriorityMode = state => {
@@ -1318,21 +1352,10 @@ const decidePriorityMode = state => {
       monthlyContrib: state.portfolio.monthlyContrib,
     });
   if (secondaryCandidates.length > 0) {
-    const candidates = [];
-    for (const candidate of secondaryCandidates) {
-      candidates.push({
-        type: "BUY_SECONDARY",
-        ticker: candidate.ticker,
-        name: candidate.name,
-        quantity: 1,
-      });
-    }
-    return candidates;
-    /* return {
-      type: "BUY_SECONDARY",
-      ticker: secondaryCandidates[0].ticker,
-      quantity: 1,
-    }; */
+    return {
+      priorities,
+      secondaryCandidates,
+    };
   }
 
   // ------------------------------------------------
@@ -1348,7 +1371,6 @@ const decidePriorityMode = state => {
 
 const decide = state => {
   const priorityStocks = getPriorityStocks(state);
-
   if (priorityStocks.length > 0) {
     return decidePriorityMode(state, priorityStocks);
   }
@@ -1357,17 +1379,19 @@ const decide = state => {
 };
 
 stockSrv.getData = () => {
-  const test = decide({
+  const actions = decide({
     portfolio,
     stocks,
     transactions,
     date: `${Months[currentMonth]} - ${Years}`,
   });
-  console.log(test);
+  console.log(actions.priorities[0]);
   return {
     portfolio,
     stocks,
     transactions,
+    priority: actions.priorities[0],
+    secondaryCandidates: actions.secondaryCandidates,
     date: `${Months[currentMonth]} - ${Years}`,
   };
 };
