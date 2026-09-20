@@ -26,6 +26,7 @@ accountTypeSrv.create = (userId, data) => {
     interest: data.interest,
     maxAmount: data.maxAmount,
     unit: data.unit,
+    isPortfolio: data.isPortfolio,
   });
 };
 
@@ -71,6 +72,7 @@ accountTypeSrv.update = (userId, accountTypeId, accountType) => {
       interest: accountType.interest,
       maxAmount: accountType.maxAmount,
       unit: accountType.unit,
+      isPortfolio: accountType.isPortfolio,
     },
     {where: {id: accountTypeId, userId}},
   );

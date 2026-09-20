@@ -13,12 +13,15 @@ const Account = require("./account.js");
 const AccountType = require("./accounttype.js");
 const Budget = require("./budget.js");
 const Category = require("./category.js");
+const Order = require("./order.js");
+const PlannedTransaction = require("./plannedtransaction.js");
+const PlannedTransfer = require("./plannedtransfer.js");
+const Portfolio = require("./portfolio.js");
+const Stock = require("./stock.js");
 const SubCategory = require("./subcategory.js");
 const Transaction = require("./transaction.js");
 const TransactionModel = require("./transactionmodel.js");
 const Transfer = require("./transfer.js");
-const PlannedTransaction = require("./plannedtransaction.js");
-const PlannedTransfer = require("./plannedtransfer.js");
 const User = require("./user.js");
 
 if (config.logging) {
@@ -42,8 +45,11 @@ const db = {};
   AccountType,
   Budget,
   Category,
+  Order,
   PlannedTransaction,
   PlannedTransfer,
+  Portfolio,
+  Stock,
   SubCategory,
   Transaction,
   TransactionModel,

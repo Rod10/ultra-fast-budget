@@ -54,7 +54,6 @@ class TransferModal extends React.Component {
   }
 
   openModal(items) {
-    console.log(items);
     this.setState(() => {
       const id = items.transfer ? items.transfer.id : 0;
       const amount = items.transfer ? items.transfer.amount : 0;

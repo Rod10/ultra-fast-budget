@@ -1251,7 +1251,7 @@ const getPriorityStocks = state => state.stocks
     && !stock.boughtThisYear)
   .sort((a, b) => b.currentPrice - a.currentPrice);
 
-const getRisk = ({
+const getMaring = ({
   remainingCashNextMonth,
   priorityPrice,
 }) => {
@@ -1259,14 +1259,14 @@ const getRisk = ({
   const marginPercent = margin / priorityPrice;
 
   if (marginPercent < 0.05) {
-    return "High";
+    return "low";
   }
 
   if (marginPercent < 0.10) {
-    return "Medium";
+    return "medium";
   }
 
-  return "Low";
+  return "high";
 };
 
 const getSecondaryCandidates = ({
@@ -1287,7 +1287,7 @@ const getSecondaryCandidates = ({
       - (quantity * stock.currentPrice)
       + monthlyContrib;
 
-    const risk = getRisk({
+    const margin = getMaring({
       remainingCashNextMonth,
       priorityPrice: priority.currentPrice,
     });
@@ -1298,7 +1298,7 @@ const getSecondaryCandidates = ({
       currentPrice: stock.currentPrice,
       quantity,
       remainingCashNextMonth,
-      risk,
+      margin,
     };
   })
   .filter(stock => stock.quantity > 0)
@@ -1385,7 +1385,6 @@ stockSrv.getData = () => {
     transactions,
     date: `${Months[currentMonth]} - ${Years}`,
   });
-  console.log(actions.priorities[0]);
   return {
     portfolio,
     stocks,
@@ -1422,7 +1421,7 @@ stockSrv.reset = () => {
       investedAmount: 0,
       gain: 0,
       dividendsReceived: 0,
-      oneTime: stock.currentPrice >= 100,
+      boughtThisYear: false,
       currentPrice: stock.currentPrice,
     });
   }

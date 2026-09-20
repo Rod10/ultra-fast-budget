@@ -28,17 +28,22 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     interest: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
     },
     maxAmount: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: true,
     },
     unit: {
       type: DataTypes.ENUM,
       values: ["YEAR", "MONTH", "WEEK", "DAY"],
       allowNull: true,
+    },
+    isPortfolio: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
     creationDate: {
       type: DataTypes.DATE,

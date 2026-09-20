@@ -20,7 +20,7 @@ module.exports = {
       allowNull: false,
       onDelete: "CASCADE",
       references: {
-        model: "ACCOUNT",
+        model: "ACCOUNT_TYPE",
         key: "ID",
       },
       type: Sequelize.INTEGER(20),
@@ -36,11 +36,11 @@ module.exports = {
     },
     INITIAL_BALANCE: {
       allowNull: false,
-      type: Sequelize.FLOAT,
+      type: Sequelize.DECIMAL(15, 2),
     },
     BALANCE: {
       allowNull: false,
-      type: Sequelize.FLOAT,
+      type: Sequelize.DECIMAL(15, 2),
     },
     CREATION_DATE: {
       allowNull: false,

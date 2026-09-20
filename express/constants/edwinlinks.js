@@ -66,7 +66,7 @@ const stock = {
       href: "/stocks/dashboard",
     },
     {
-      label: "Achat Actions",
+      label: "Ajouter un ordre",
       href: "/stocks/buying",
     },
     {

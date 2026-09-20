@@ -34,7 +34,7 @@ module.exports = {
     },
     INTEREST: {
       allowNull: false,
-      type: Sequelize.FLOAT,
+      type: Sequelize.DECIMAL(15, 2),
     },
     UNIT: {
       allowNull: true,
@@ -43,7 +43,7 @@ module.exports = {
     },
     MAX_AMOUNT: {
       allowNull: false,
-      type: Sequelize.FLOAT,
+      type: Sequelize.DECIMAL(15, 2),
     },
     CREATION_DATE: {
       allowNull: false,

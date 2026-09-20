@@ -7,6 +7,7 @@ const {
 const Constants = require("../constants/constants.js");
 const TransactionTypes = require("./../constants/transactiontype.js");
 const {logger} = require("./logger.js");
+const portfolioSrv = require("./portfolio.js");
 
 const accountSrv = {};
 
@@ -31,6 +32,8 @@ accountSrv.create = (userId, data, accountType) => {
     accountTypeId: accountType.id,
     initialBalance: new Decimal(data.initialBalance).toFixed(Constants.DECIMAl),
     balance: new Decimal(data.initialBalance).toFixed(Constants.DECIMAl),
+  }).then(async account => {
+    if (accountType.isPortfolio) await portfolioSrv.create(account);
   });
 };
 
@@ -159,6 +162,20 @@ accountSrv.delete = (userId, id) => {
     {deletedOn: new Date()},
     {where: {id, userId}},
   );
+};
+
+accountSrv.getPortfolio = userId => {
+  logger.debug("Getting portfolio for user=[%s]", userId);
+  return Account.findAndCountAll({
+    where: {userId},
+    include: [{
+      association: Account.AccountType,
+      where: {
+        isPortfolio: true,
+        deletedOn: {[Op.eq]: null},
+      },
+    }],
+  });
 };
 
 module.exports = accountSrv;

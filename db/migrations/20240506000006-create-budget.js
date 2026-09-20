@@ -22,11 +22,11 @@ module.exports = {
     },
     TOTAL_AMOUNT: {
       allowNull: false,
-      type: Sequelize.FLOAT,
+      type: Sequelize.DECIMAL(15, 2),
     },
     TOTAL_ALLOCATED_AMOUNT: {
       allowNull: false,
-      type: Sequelize.FLOAT,
+      type: Sequelize.DECIMAL(15, 2),
     },
     DURATION: {
       allowNull: false,

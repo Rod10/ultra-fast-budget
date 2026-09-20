@@ -57,10 +57,10 @@ class Dashboard extends React.Component {
       <td className="has-text-centered">{stock.name}</td>
       <td className="has-text-centered">{stock.currentPrice} €</td>
       <td className="has-text-centered">{stock.amount}</td>
-      <td className="has-text-centered">{stock.investedAmount}</td>
-      <td className="has-text-centered">{stock.average}</td>
-      <td className="has-text-centered">{stock.gain}</td>
-      <td className="has-text-centered">{stock.dividendsReceived}</td>
+      <td className="has-text-centered">{stock.investedAmount} €</td>
+      <td className="has-text-centered">{stock.average} €</td>
+      <td className="has-text-centered">{stock.gain} €</td>
+      <td className="has-text-centered">{stock.dividendsReceived} €</td>
       <td className="has-text-centered">%</td>
     </tr>;
   }
@@ -140,7 +140,7 @@ class Dashboard extends React.Component {
         <br />
         <ul>
           {this.props.secondaryCandidates.map(action => <li key={action.ticker}>
-            {action.risk} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth} € le mois prochain
+            {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth} € le mois prochain
           </li>)}
         </ul>
       </div>

@@ -103,6 +103,17 @@ const UnitsOptions = [
   },
 ];
 
+const isPortfolioOptions = [
+  {
+    value: true,
+    label: "Oui",
+  },
+  {
+    value: false,
+    label: "Non",
+  },
+];
+
 const R = 16;
 const G = 8;
 const RGB = 0xFF;
@@ -156,6 +167,7 @@ class AccountTypeModal extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleConfirmClick = this.handleConfirmClick.bind(this);
     this.handleTagChange = this.handleTagChange.bind(this);
+    this.handleIsPortfolioChange = this.handleIsPortfolioChange.bind(this);
     this.handleUnitChange = this.handleUnitChange.bind(this);
     this.handleOpenColorPicker = this.handleOpenColorPicker.bind(this);
     this.handleCloseColorPicker = this.handleCloseColorPicker.bind(this);
@@ -177,6 +189,9 @@ class AccountTypeModal extends React.Component {
         : 0;
       const unitIndex = account
         ? UnitsOptions.findIndex(unit => unit.value.toUpperCase() === account.unit)
+        : 0;
+      const isPortfolioIndex = account
+        ? isPortfolioOptions.findIndex(unit => unit.value === account.isPortfolio)
         : 0;
       const accountColor = hexToRGB(account ? account.color : "#333");
       return {
@@ -203,6 +218,7 @@ class AccountTypeModal extends React.Component {
         interest: account ? account.interest : "",
         maxAmount: account ? account.maxAmount : "",
         unit: UnitsOptions[unitIndex],
+        isPortfolio: isPortfolioOptions[isPortfolioIndex],
       };
     });
   }
@@ -237,6 +253,10 @@ class AccountTypeModal extends React.Component {
 
   handleUnitChange(value) {
     this.setState({unit: value});
+  }
+
+  handleIsPortfolioChange(value) {
+    this.setState({isPortfolio: value});
   }
 
   handleOpenColorPicker() {
@@ -399,6 +419,21 @@ class AccountTypeModal extends React.Component {
             />
           </Column>
         </Columns>
+        <Columns>
+          <Column>
+            <div className="field">
+              <label className="label"><span>Portofilo <a className="anchor-isPortfolio">?</a></span></label>
+              <div className="control">
+                <Select
+                  name="isPortfolio"
+                  value={this.state.isPortfolio}
+                  onChange={this.handleIsPortfolioChange}
+                  options={isPortfolioOptions}
+                />
+              </div>
+            </div>
+          </Column>
+        </Columns>
         {this.state.interest > 0 && <Columns>
           <Column>
             <div className="field">
@@ -409,7 +444,6 @@ class AccountTypeModal extends React.Component {
                   value={this.state.unit}
                   onChange={this.handleUnitChange}
                   options={UnitsOptions}
-                  isClearable
                 />
               </div>
             </div>
@@ -422,6 +456,9 @@ class AccountTypeModal extends React.Component {
       </Tooltip>
       <Tooltip anchorSelect=".anchor-amount" place="top">
         0 pour illimité
+      </Tooltip>
+      <Tooltip anchorSelect=".anchor-isPortfolio" place="top">
+        Est-ce que ce compte est un compte de bourse
       </Tooltip>
       <Tooltip anchorSelect=".anchor-interest" place="top">
         A laquelle les interêts sont verser sur le compte
