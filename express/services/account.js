@@ -164,8 +164,8 @@ accountSrv.delete = (userId, id) => {
   );
 };
 
-accountSrv.getPortfolio = userId => {
-  logger.debug("Getting portfolio for user=[%s]", userId);
+accountSrv.getAccountPortfolio = userId => {
+  logger.debug("Getting account portfolio for user=[%s]", userId);
   return Account.findAndCountAll({
     where: {userId},
     include: [{

@@ -1,6 +1,7 @@
 /* global axios */
 const React = require("react");
 const PropTypes = require("prop-types");
+const Decimal = require("decimal.js");
 const Head = require("../helpers/head.js");
 const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
@@ -8,15 +9,30 @@ const Icon = require("../bulma/icon.js");
 const Button = require("../bulma/button.js");
 const Media = require("../bulma/media.js");
 const {OK} = require("../../../express/utils/error.js");
+const AsyncFilteredList = require("../asyncfilteredlist.js");
+const Constants = require("../../../express/constants/constants.js");
 
-class Dashboard extends React.Component {
+class Dashboard extends AsyncFilteredList {
   constructor(props) {
     super(props);
+
+    // define properties to search
+    this.s = [
+      {key: "portfolio"},
+      {key: "orderBy"},
+      {key: "orderDirection"},
+    ];
+    this.searchUri = "search";
+
+    this.base = "/stocks/dashboard";
+
     this.state = {
-      portfolio: this.props.portfolio,
-      stocks: this.props.stocks,
+      ...this.defaultState(),
+      ...props.query,
+      portfolios: this.props.portfolios.rows,
+      stocks: this.props.stocks.rows,
       transactions: this.props.transactions,
-      date: this.props.date,
+      date: "Janvier 2027",
     };
 
     this.handleAdvance = this.handleAdvance.bind(this);
@@ -28,7 +44,6 @@ class Dashboard extends React.Component {
       .then(response => {
         if (response.status === OK) {
           this.setState({
-            portfolio: response.data.portfolio,
             stocks: response.data.stocks,
             transactions: response.data.transactions,
             date: response.data.date,
@@ -51,15 +66,26 @@ class Dashboard extends React.Component {
       });
   }
 
+  _renderFilters() {
+    return <form className="filters">
+      {this._renderFilterSelect(
+        "portfolio",
+        "Portfolio:",
+        this.props.portfolios.rows
+          .map(e => ({value: e.id, label: e.account.name})),
+      )}
+    </form>;
+  }
+
   _renderRow(stock) {
     return <tr key={stock.isin}>
       <td className="has-text-centered">{stock.isin}</td>
       <td className="has-text-centered">{stock.name}</td>
       <td className="has-text-centered">{stock.currentPrice} €</td>
-      <td className="has-text-centered">{stock.amount}</td>
+      <td className="has-text-centered">{stock.quantity}</td>
       <td className="has-text-centered">{stock.investedAmount} €</td>
       <td className="has-text-centered">{stock.average} €</td>
-      <td className="has-text-centered">{stock.gain} €</td>
+      <td className="has-text-centered">{((stock.quantity * stock.currentPrice) - stock.investedAmount).toFixed(Constants.DECIMAl)} €</td>
       <td className="has-text-centered">{stock.dividendsReceived} €</td>
       <td className="has-text-centered">%</td>
     </tr>;
@@ -89,13 +115,29 @@ class Dashboard extends React.Component {
   }
 
   render() {
-    const totalInvestments = this.state.stocks.reduce((acc, val) => acc + val.investedAmount, 0);
-    const totalGains = this.state.stocks.reduce((acc, val) => acc + val.gain, 0);
-    const totalDividends = this.state.stocks.reduce((acc, val) => acc + val.dividendsReceived, 0);
+    const totalInvestments = this.state.stocks.reduce(
+      (acc, val) => acc.plus(val.investedAmount),
+      new Decimal(0),
+    ).toFixed(Constants.DECIMAl);
+    const totalGains = this.state.stocks.map(stock => new Decimal((stock.quantity * stock.currentPrice) - stock.investedAmount).toFixed(Constants.DECIMAl))
+      .reduce(
+        (acc, val) => acc.plus(val),
+        new Decimal(0),
+      )
+      .toFixed(Constants.DECIMAl);
+    const totalDividends = this.state.stocks.reduce(
+      (acc, val) => acc.plus(val.dividendsReceived),
+      new Decimal(0),
+    ).toFixed(Constants.DECIMAl);
+    const liquidities = this.state.portfolios.reduce(
+      (acc, val) => acc.plus(val.account.balance),
+      new Decimal(0),
+    ).toFixed(Constants.DECIMAl);
+
     return <div className="body-content">
       <Media
         left={<Head className="has-text-centered">
-          {this.state.date}
+          {this.state.decide?.date}
         </Head>}
         content={<Button
           className="has-text-weight-bold"
@@ -114,36 +156,38 @@ class Dashboard extends React.Component {
           onClick={this.handleReset}
         />}
       />
-
+      {this._renderFilters()}
       <hr />
       <Columns>
         <Column>
-          <p>Liquiditées disponible: {this.state.portfolio.cash}€</p>
-          <p>Versement Mensuel: {this.state.portfolio.monthlyContrib}€</p>
+          <p>Liquiditées disponible: {liquidities} €</p>
+          {this.state.portfolios.length <= 1 && <p>Versement Mensuel: {this.state.portfolios.monthlyContribution}€</p>}
         </Column>
         <Column>
-          <p>Investissement Total: {totalInvestments}€</p>
+          <p>Investissement Total: {totalInvestments} €</p>
           <p>Gain Total: {totalGains}€</p>
         </Column>
         <Column>
-          <p>Total Dividendes: {totalDividends}€</p>
+          <p>Total Dividendes: {totalDividends} €</p>
           <p>Rendement annuel Dividendes: 0€</p></Column>
       </Columns>
       <hr />
-      <div>
-        <p>Actions prioritaire</p>
-        <p>L'action prioritaire est: {this.props.priority.name} avec un prix unité de: {this.props.priority.currentPrice} €</p>
-      </div>
-      <hr />
-      <div>
-        <p>Simulation</p>
-        <br />
-        <ul>
-          {this.props.secondaryCandidates.map(action => <li key={action.ticker}>
-            {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth} € le mois prochain
-          </li>)}
-        </ul>
-      </div>
+      {this.state.decide && <>
+        <div>
+          <p>Actions prioritaire</p>
+          <p>L'action prioritaire est: {this.state.decide.priority.name} avec un prix unité de: {this.state.decide.priority.currentPrice} €</p>
+        </div>
+        <hr />
+        <div>
+          <p>Simulation</p>
+          <br />
+          <ul>
+            {this.state.decide.secondaryCandidates.map(action => <li key={action.ticker}>
+              {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth.toFixed(Constants.DECIMAl)} € le mois prochain
+            </li>)}
+          </ul>
+        </div>
+      </>}
       <hr />
       <div>
         {this._renderTable()}
@@ -155,8 +199,8 @@ Dashboard.displayName = "Dashboard";
 Dashboard.propTypes = {
   date: PropTypes.string,
   portfolio: PropTypes.object,
-  stocks: PropTypes.array,
-  transactions: PropTypes.array,
+  stocks: PropTypes.object,
+  transactions: PropTypes.object,
 };
 Dashboard.defaultProps = {};
 

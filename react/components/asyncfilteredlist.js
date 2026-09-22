@@ -38,8 +38,11 @@ class AsyncFilteredList extends React.Component {
       .then(response => {
         if (response.status === OK) {
           this.setState({
-            count: response.data.count,
-            rows: response.data.rows,
+            count: response.data?.count,
+            rows: response.data?.rows,
+            portfolios: response.data?.portfolios.rows,
+            stocks: response.data?.stocks.rows,
+            decide: response.data?.decide
           });
         }
       });

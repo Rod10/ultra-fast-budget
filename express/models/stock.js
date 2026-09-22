@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),
     },
+    average: {
+      allowNull: false,
+      type: DataTypes.DECIMAL(15, 2),
+    },
     quantity: {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),
@@ -35,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),
     },
-    dividendReceived: {
+    dividendsReceived: {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),
     },

@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   Portfolio.associate = models => {
     Portfolio.Account = Portfolio.belongsTo(models.Account, {
-      as: "portfolio",
+      as: "account",
       foreignKey: {
         name: "accountId",
         allowNull: false,

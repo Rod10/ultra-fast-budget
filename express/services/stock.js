@@ -1,5 +1,13 @@
-// Data
+const config = require("../utils/config.js");
+const {
+  Portfolio,
+  Stock,
+  Op,
+} = require("../models/index.js");
+const {logger} = require("./logger.js");
+const axios = require("axios");
 
+// Data
 const instruments = [
   {
     "instrument": {
@@ -1385,10 +1393,8 @@ stockSrv.getData = () => {
     transactions,
     date: `${Months[currentMonth]} - ${Years}`,
   });
+  console.log(actions);
   return {
-    portfolio,
-    stocks,
-    transactions,
     priority: actions.priorities[0],
     secondaryCandidates: actions.secondaryCandidates,
     date: `${Months[currentMonth]} - ${Years}`,
@@ -1427,6 +1433,89 @@ stockSrv.reset = () => {
   }
   transactions.splice(0, transactions.length);
   return stockSrv.getData();
+};
+
+stockSrv.get = (userId, portfolioId) => {
+  logger.debug("Get stocks for portfolio=[%s] for user=[%s]", portfolioId, userId);
+  const where = {};
+  if (portfolioId) where.portfolioId = portfolioId;
+
+  return Stock.findAndCountAll({
+    where,
+    include: [{
+      association: Stock.Portfolio,
+      include: [{
+        association: Portfolio.Account,
+        where: {userId},
+      }],
+    }],
+  });
+};
+
+/*
+  {
+    "instrument": {
+      "ticker": "VIEp_EQ",
+      "name": "Veolia Environnement",
+      "isin": "FR0000124141",
+      "currency": "EUR",
+    },
+    "createdAt": "2026-09-16T15:32:52.612+03:00",
+    "quantity": 0.03730407,
+    "quantityAvailableForTrading": 0,
+    "quantityInPies": 0.03730407,
+    "currentPrice": 31.9,
+    "averagePricePaid": 31.90000448,
+    "walletImpact": {
+      "currency": "EUR",
+      "totalCost": 1.19,
+      "currentValue": 1.19,
+      "unrealizedProfitLoss": 0,
+      "fxImpact": null,
+    },
+  },
+ */
+
+const getImplicitFxRate = (
+  quantity,
+  price,
+  valueInPortfolioCurrency,
+) => valueInPortfolioCurrency / (quantity * price);
+
+stockSrv.importTrading212 = async () => {
+  logger.debug("Import data from Trading 212");
+  console.log(config.api.trading212);
+  const tradingInstruments = await axios.get(
+    "https://live.trading212.com/api/v0/equity/positions",
+    {
+      timeout: 15000, // Timeout in milliseconds
+      headers: {Authorization: `Basic ${Buffer.from(`${config.api.trading212.username}:${config.api.trading212.password}`).toString("base64")}`},
+    },
+  );
+  for (const data of tradingInstruments.data) {
+    const stockData = {
+      ticker: data.instrument.ticker,
+      isin: data.instrument.isin,
+      name: data.instrument.name,
+      currentPrice: 0,
+      average: 0,
+      quantity: 0,
+      investedAmount: 0.00,
+      dividendsReceived: 0.00,
+      boughtThisYear: false,
+    };
+    if (tickerList.includes(data.instrument.ticker)) {
+      stockData.portfolioId = 1;
+    } else {
+      stockData.portfolioId = 2;
+      stockData.quantity = data.quantity;
+      stockData.investedAmount = data.walletImpact.totalCost;
+      stockData.average = data.walletImpact.totalCost / data.quantity;
+    }
+    if (data.instrument.currency !== "EUR") stockData.currentPrice = data.currentPrice * getImplicitFxRate(data.quantity, data.currentPrice, data.walletImpact.currentValue);
+    else stockData.currentPrice = data.currentPrice;
+    Stock.create(stockData);
+  }
 };
 
 module.exports = stockSrv;
