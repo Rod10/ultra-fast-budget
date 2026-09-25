@@ -25,6 +25,10 @@ module.exports = {
       allowNull: false,
       type: Sequelize.DECIMAL(15, 2),
     },
+    ISIN: {
+      allowNull: false,
+      type: Sequelize.STRING(45),
+    },
     CURRENT_PRICE: {
       allowNull: false,
       type: Sequelize.DECIMAL(15, 2),

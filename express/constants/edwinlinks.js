@@ -67,7 +67,7 @@ const stock = {
     },
     {
       label: "Ajouter un ordre",
-      href: "/stocks/buying",
+      href: "/stocks/order",
     },
     {
       label: "Historique",

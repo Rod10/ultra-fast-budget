@@ -48,6 +48,10 @@ module.exports = {
       allowNull: false,
       type: Sequelize.DECIMAL(15, 2),
     },
+    TARGET_WEIGHT: {
+      allowNull: true,
+      type: Sequelize.DECIMAL(15, 2),
+    },
     BOUGHT_THIS_YEAR: {
       allowNull: true,
       type: Sequelize.BOOLEAN,

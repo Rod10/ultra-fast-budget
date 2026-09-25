@@ -39,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),
     },
+    targetWeight: {
+      allowNull: true,
+      type: DataTypes.DECIMAL(15, 2),
+    },
     dividendsReceived: {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),

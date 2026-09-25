@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),
     },
+    isin: {
+      allowNull: false,
+      type: DataTypes.STRING(45),
+    },
     currentPrice: {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),

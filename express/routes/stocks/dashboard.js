@@ -30,7 +30,13 @@ router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res
   const data = {};
   if (req.parsedQuery.portfolio) {
     portfolios = await portfolioSrv.getById(req.user.id, req.parsedQuery.portfolio);
-    if (portfolios.rows[0].needDecide) data.decide = await stockSrv.getData();
+    if (portfolios.rows[0].needDecide) {
+      const stocks = await stockSrv.get(req.user.id, portfolios.rows[0].id);
+      data.decide = await stockSrv.getData(
+        portfolios.rows[0],
+        stocks.rows,
+      );
+    }
   } else {
     portfolios = await portfolioSrv.getAll(req.user.id);
   }

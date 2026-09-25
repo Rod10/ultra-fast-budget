@@ -690,3 +690,12 @@ table {
 .hr-homepage {
     border: 1px solid black
 }
+
+.hr-vertical {
+    background-color: hsl(0, 0%, 96%);
+    border: none;
+    display: block;
+    width: 2px;
+    margin: 1.5rem 0;
+    height: auto;
+}

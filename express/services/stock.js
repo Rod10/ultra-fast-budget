@@ -6,6 +6,7 @@ const {
 } = require("../models/index.js");
 const {logger} = require("./logger.js");
 const axios = require("axios");
+const Decimal = require("decimal.js");
 
 // Data
 const instruments = [
@@ -1228,10 +1229,10 @@ let Years = 2027;
 
 let currentMonth = 0;
 
-const portfolio = {
+/*const portfolio = {
   id: 0,
   cash: 100,
-  monthlyContrib: 100,
+  monthlyContribution: 100,
 };
 
 const stocks = [];
@@ -1250,12 +1251,12 @@ for (const ticker of tickerList) {
     currentPrice: stock.currentPrice,
     boughtThisYear: false,
   });
-}
+}*/
 
 const transactions = [];
 
 const getPriorityStocks = state => state.stocks
-  .filter(stock => stock.currentPrice >= state.portfolio.monthlyContrib
+  .filter(stock => new Decimal(stock.currentPrice).gte(state.portfolio.monthlyContribution)
     && !stock.boughtThisYear)
   .sort((a, b) => b.currentPrice - a.currentPrice);
 
@@ -1281,19 +1282,21 @@ const getSecondaryCandidates = ({
   stocks,
   budget,
   priority,
-  monthlyContrib,
+  monthlyContribution,
 }) => stocks
   .filter(stock => stock.ticker !== priority.ticker)
   .map(stock => {
     const quantity = Math.floor(
-      (budget + monthlyContrib - priority.currentPrice)
-      / stock.currentPrice,
+      new Decimal(budget)
+        .add(new Decimal(monthlyContribution))
+        .sub(new Decimal(priority.currentPrice))
+        .div(new Decimal(stock.currentPrice)),
     );
 
     const remainingCashNextMonth
-      = budget
-      - (quantity * stock.currentPrice)
-      + monthlyContrib;
+      = new Decimal(budget)
+        .sub(quantity * stock.currentPrice)
+        .add(monthlyContribution);
 
     const margin = getMaring({
       remainingCashNextMonth,
@@ -1331,7 +1334,7 @@ const decidePriorityMode = state => {
       = state.portfolio.cash - currentPriority.currentPrice;
 
     const nextMonthCash
-      = cashAfter + state.portfolio.monthlyContrib;
+      = cashAfter + state.portfolio.monthlyContribution;
 
     // On l'achète seulement si cela ne casse
     // la possibilité d'acheter la priorité suivante
@@ -1355,9 +1358,9 @@ const decidePriorityMode = state => {
   const secondaryCandidates
     = getSecondaryCandidates({
       stocks: state.stocks,
-      budget: state.portfolio.cash,
+      budget: state.portfolio.account.balance,
       priority: currentPriority,
-      monthlyContrib: state.portfolio.monthlyContrib,
+      monthlyContribution: state.portfolio.monthlyContribution,
     });
   if (secondaryCandidates.length > 0) {
     return {
@@ -1386,14 +1389,13 @@ const decide = state => {
   // return decideTargetMode(state);
 };
 
-stockSrv.getData = () => {
+stockSrv.getData = (portfolio, stocks) => {
   const actions = decide({
     portfolio,
     stocks,
     transactions,
     date: `${Months[currentMonth]} - ${Years}`,
   });
-  console.log(actions);
   return {
     priority: actions.priorities[0],
     secondaryCandidates: actions.secondaryCandidates,
@@ -1401,13 +1403,13 @@ stockSrv.getData = () => {
   };
 };
 
-stockSrv.advance = () => {
+/* stockSrv.advance = () => {
   currentMonth++;
   if (currentMonth === 12) {
     currentMonth = 0;
     Years++;
   }
-  portfolio.cash += portfolio.monthlyContrib;
+  portfolio.cash += portfolio.monthlyContribution;
   return stockSrv.getData();
 };
 
@@ -1433,7 +1435,7 @@ stockSrv.reset = () => {
   }
   transactions.splice(0, transactions.length);
   return stockSrv.getData();
-};
+}; */
 
 stockSrv.get = (userId, portfolioId) => {
   logger.debug("Get stocks for portfolio=[%s] for user=[%s]", portfolioId, userId);
@@ -1484,7 +1486,6 @@ const getImplicitFxRate = (
 
 stockSrv.importTrading212 = async () => {
   logger.debug("Import data from Trading 212");
-  console.log(config.api.trading212);
   const tradingInstruments = await axios.get(
     "https://live.trading212.com/api/v0/equity/positions",
     {

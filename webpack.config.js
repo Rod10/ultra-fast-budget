@@ -31,6 +31,7 @@ const config = {
     "forecast": `${VIEWS}/forecast.js`,
 
     "dashboard": `${VIEWS}/dashboard.js`,
+    "order": `${VIEWS}/order.js`,
   },
   output: {
     path: path.resolve(__dirname, "dist", "public", "js"),

@@ -22,7 +22,7 @@ class Dashboard extends AsyncFilteredList {
       {key: "orderBy"},
       {key: "orderDirection"},
     ];
-    this.searchUri = "search";
+    this.searchUri = "/stocks/dashboard/search";
 
     this.base = "/stocks/dashboard";
 
@@ -183,7 +183,7 @@ class Dashboard extends AsyncFilteredList {
           <br />
           <ul>
             {this.state.decide.secondaryCandidates.map(action => <li key={action.ticker}>
-              {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth.toFixed(Constants.DECIMAl)} € le mois prochain
+              {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth} € le mois prochain
             </li>)}
           </ul>
         </div>
@@ -199,8 +199,7 @@ Dashboard.displayName = "Dashboard";
 Dashboard.propTypes = {
   date: PropTypes.string,
   portfolio: PropTypes.object,
-  stocks: PropTypes.object,
-  transactions: PropTypes.object,
+  decide: PropTypes.object,
 };
 Dashboard.defaultProps = {};
 
