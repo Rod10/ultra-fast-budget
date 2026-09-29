@@ -21,17 +21,20 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/get-portfolio-data", async (req, res, next) => {
+  const stocksToBought = req.query.stocksToBought;
   const portfolio = await portfolioSrv.getById(req.user.id, req.query.id);
   const stocks = await stockSrv.get(req.user.id, portfolio.rows[0].id);
   const decide = portfolio.rows[0].needDecide ? await stockSrv.getData(portfolio.rows[0], stocks.rows) : {};
-  console.log("decide", decide);
   res.json({decide});
 });
 
 router.get("/get-simulation", async (req, res, next) => {
   const portfolio = await portfolioSrv.getById(req.user.id, req.query.portfolioId);
+  const stocks = await stockSrv.get(req.user.id, portfolio.rows[0].id);
   const stocksToBought = req.query.stocksToBought;
-  res.json({simulation: {}});
+  console.log(req.query);
+  const simulation = await stockSrv.simulate(portfolio.rows[0], stocks.rows, stocksToBought);
+  res.json({simulation});
 });
 
 module.exports = router;

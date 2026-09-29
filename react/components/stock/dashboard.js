@@ -85,7 +85,7 @@ class Dashboard extends AsyncFilteredList {
       <td className="has-text-centered">{stock.quantity}</td>
       <td className="has-text-centered">{stock.investedAmount} €</td>
       <td className="has-text-centered">{stock.average} €</td>
-      <td className="has-text-centered">{((stock.quantity * stock.currentPrice) - stock.investedAmount).toFixed(Constants.DECIMAl)} €</td>
+      <td className="has-text-centered">{((stock.quantity * stock.currentPrice) - stock.investedAmount).toFixed(Constants.DECIMAL)} €</td>
       <td className="has-text-centered">{stock.dividendsReceived} €</td>
       <td className="has-text-centered">%</td>
     </tr>;
@@ -118,21 +118,21 @@ class Dashboard extends AsyncFilteredList {
     const totalInvestments = this.state.stocks.reduce(
       (acc, val) => acc.plus(val.investedAmount),
       new Decimal(0),
-    ).toFixed(Constants.DECIMAl);
-    const totalGains = this.state.stocks.map(stock => new Decimal((stock.quantity * stock.currentPrice) - stock.investedAmount).toFixed(Constants.DECIMAl))
+    ).toFixed(Constants.DECIMAL);
+    const totalGains = this.state.stocks.map(stock => new Decimal((stock.quantity * stock.currentPrice) - stock.investedAmount).toFixed(Constants.DECIMAL))
       .reduce(
         (acc, val) => acc.plus(val),
         new Decimal(0),
       )
-      .toFixed(Constants.DECIMAl);
+      .toFixed(Constants.DECIMAL);
     const totalDividends = this.state.stocks.reduce(
       (acc, val) => acc.plus(val.dividendsReceived),
       new Decimal(0),
-    ).toFixed(Constants.DECIMAl);
+    ).toFixed(Constants.DECIMAL);
     const liquidities = this.state.portfolios.reduce(
       (acc, val) => acc.plus(val.account.balance),
       new Decimal(0),
-    ).toFixed(Constants.DECIMAl);
+    ).toFixed(Constants.DECIMAL);
 
     return <div className="body-content">
       <Media

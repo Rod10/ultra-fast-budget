@@ -35,7 +35,10 @@ class Order extends React.Component {
       selectedPortfolio: {},
       stocks: this.props.stocks.rows,
       stocksToBought,
-      simulation: {},
+      simulation: {
+        recommendations: [],
+        secondaryCandidates: [],
+      },
     };
 
     this.handleSelectChange = this.handleSelectChange.bind(this);
@@ -86,22 +89,33 @@ class Order extends React.Component {
             isin: stock.isin,
             name: stock.name,
             quantity: 0,
-            price: new Decimal(stock.currentPrice).toFixed(Constants.DECIMAl),
+            price: new Decimal(stock.currentPrice).toFixed(Constants.DECIMAL),
+            key,
           };
         }
         return {...entry};
       }),
-    }));
+    }), () => {
+      axios
+        .get("/stocks/order/get-simulation", {params: {stocksToBought: this.state.stocksToBought, portfolioId: this.state.selectedPortfolio.id}})
+        .then(response => {
+          if (response.status === OK) {
+            this.setState({simulation: response.data.simulation});
+          }
+        })
+        .catch(err => console.log(err));
+    });
   }
 
   handleQuantityChange(evt) {
+    preventDefault(evt);
     const el = getElFromDataset(evt, "key");
     const key = parseInt(el.dataset.key, 10);
     const quantity = evt.target.value;
 
     this.setState(prevState => {
       const newStocksToBought = prevState.stocksToBought.map(entry => {
-        if (entry.isin === key) {
+        if (entry.key === key) {
           return {
             ...entry,
             quantity,
@@ -125,13 +139,26 @@ class Order extends React.Component {
   }
 
   handleRemoveFromList(evt) {
-    console.log("test");
+    this.setState(prevState => {
+      preventDefault(evt);
+      const el = getElFromDataset(evt, "key");
+      const key = parseInt(el.dataset.key, 10);
+      const entries = prevState.stocksToBought.filter(e => e.key !== key);
+      if (entries.length) {
+        return {stocksToBought: entries};
+      }
+      return {
+        stocksToBought: [Order.newRow()],
+        stocksToBoughtLastKey: 0,
+      };
+    });
   }
 
   handleAddToList(evt) {
     this.setState(prevState => ({
       lastKeystocksToBought: prevState.lastKeystocksToBought + 1,
-      stocksToBought: prevState.stocksToBought.concat(Order.newRow(prevState.lastKeystocksToBought + 1)),
+      stocksToBought: prevState.stocksToBought
+        .concat(Order.newRow(prevState.lastKeystocksToBought + 1)),
     }));
   }
 
@@ -174,6 +201,41 @@ class Order extends React.Component {
     );
   }
 
+  _renderBeforeRow(stock) {
+    return <tr key={stock.isin}>
+      <td className="has-text-centered">{stock.name}</td>
+      <td className="has-text-centered">{stock.quantity}</td>
+      <td className="has-text-centered">{stock.investedAmount} €</td>
+      <td className="has-text-centered">{stock.average} €</td>
+      <td className="has-text-centered">{stock.weight} %</td>
+      <td className="has-text-centered">{stock.targetWeight} %</td>
+    </tr>;
+  }
+
+  // <td className="has-text-centered">"this.state.simulation.recommandations.find(recommandation => recommandation.isin === stock.isin).newAverage €</td>
+
+  _renderBeforeTable() {
+    return (
+      <table className="table is-bordered is-fullwidth is-hoverable has-pointer-cursor">
+        <thead>
+          <tr>
+            <th className="has-text-centered">Nom</th>
+            <th className="has-text-centered">Quantité</th>
+            <th className="has-text-centered">Montant total</th>
+            <th className="has-text-centered">PRU</th>
+            <th className="has-text-centered">Pondération réel</th>
+            <th className="has-text-centered">Pondération cible</th>
+          </tr>
+        </thead>
+        <tbody>
+          {this.state.stocks
+            .filter(s => s.portfolioId === this.state.selectedPortfolio.id)
+            .map(stock => this._renderBeforeRow(stock))}
+        </tbody>
+      </table>
+    );
+  }
+
   render() {
     return <div className="body-content">
       <Head>
@@ -194,11 +256,13 @@ class Order extends React.Component {
                 <p>Fonds disponible: {this.state.selectedPortfolio.account.balance} €</p>
               </Column>
               <Column>
-                <p>Fonds restant: {new Decimal(this.state.selectedPortfolio.account.balance).sub(this.state.stocksToBought.reduce(
-                  (acc, val) => acc.plus(val.price * val.quantity),
-                  new Decimal(0),
-                ))
-                  .toFixed(Constants.DECIMAl)} €</p>
+                <p>Fonds restant: {new Decimal(this.state.selectedPortfolio.account.balance)
+                  .sub(this.state.stocksToBought
+                    .reduce(
+                      (acc, val) => acc.plus(val.price * val.quantity),
+                      new Decimal(0),
+                    ))
+                  .toFixed(Constants.DECIMAL)} €</p>
               </Column>
             </Columns>
             <Columns>
@@ -221,8 +285,8 @@ class Order extends React.Component {
               <Column key={stock.isin}>
                 <Select
                   name="name"
-                  value={stock.name}
-                  options={this.state.stocks
+                  defaultValue={stock.isin}
+                  options={[{value: null, label: "Choississez une action"}, ...this.state.stocks
                     .filter(s => s.portfolioId === this.state.selectedPortfolio.id
                     && new Decimal(s.currentPrice).lte(
                       this.state.selectedPortfolio.account.balance,
@@ -230,9 +294,10 @@ class Order extends React.Component {
                     .map(s => ({
                       value: s.isin,
                       label: s.name,
-                    }))}
+                    }))]}
                   data-key={stock.key}
                   onChange={this.handleStockChange}
+                  noLabel
                 />
               </Column>
               {this.state.stocksToBought[index].isin !== "" && <>
@@ -243,11 +308,17 @@ class Order extends React.Component {
                     type="number"
                     name="quantity"
                     value={stock.quantity}
-                    data-key={stock.isin}
+                    data-key={stock.key}
                     onChange={this.handleQuantityChange}
                     min={0}
                     max={Math.floor(this.state.selectedPortfolio.account.balance / stock.price)}
-                    helper={`Max: ${Math.floor(this.state.selectedPortfolio.account.balance / stock.price)}`}
+                    helper={`Max: ${Math.floor(
+                      this.state.selectedPortfolio.account.balance / stock.price,
+                    )} Recommander: ${
+                      this.state.simulation?.recommendations
+                        ?.find(recommandation => recommandation.isin === stock.isin)
+                        ?.recommended ?? ""
+                    }`}
                     noLabel
                   />
                 </Column>
@@ -299,7 +370,7 @@ class Order extends React.Component {
                 <p>Total: {new Decimal(this.state.stocksToBought.reduce(
                   (acc, val) => acc.plus(val.price * val.quantity),
                   new Decimal(0),
-                )).toFixed(Constants.DECIMAl)} €</p>
+                )).toFixed(Constants.DECIMAL)} €</p>
               </Column>
               <Column
               // offset={Column.Offsets.oneFifth}
@@ -332,7 +403,20 @@ class Order extends React.Component {
                 new Decimal(0),
               ))
                 .add(this.state.selectedPortfolio.monthlyContribution)
-                .toFixed(Constants.DECIMAl)} €</p>
+                .toFixed(Constants.DECIMAL)} €</p>
+            </div>
+            <div>
+              <p>Vous pourriez acheter:</p>
+              <ul>
+                {this.state.simulation.secondaryCandidates.map(stock => <li key={stock.ticker}>
+                  {stock.name}: {stock.quantity} à {stock.currentPrice} € et il vous restera: {stock.remainingCashNextMonth} €
+                </li>)}
+              </ul>
+            </div>
+            <hr className="hr-vertical" />
+            <div>
+              <p>Avant</p>
+              {this._renderBeforeTable()}
             </div>
           </Column>}
         </Columns>

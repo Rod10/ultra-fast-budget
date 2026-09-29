@@ -453,8 +453,8 @@ const processTransferBalance = async (user, transfer) => {
   const receiverBalance = new Decimal(accountReceiver.balance).plus(amount);
   const senderBalance = new Decimal(accountSender.balance).minus(amount);
 
-  accountReceiver.balance = receiverBalance.toFixed(Constants.DECIMAl);
-  accountSender.balance = senderBalance.toFixed(Constants.DECIMAl);
+  accountReceiver.balance = receiverBalance.toFixed(Constants.DECIMAL);
+  accountSender.balance = senderBalance.toFixed(Constants.DECIMAL);
 
   await accountSrv.update(user.id, accountReceiver.id, accountReceiver);
   await accountSrv.update(user.id, accountSender.id, accountSender);

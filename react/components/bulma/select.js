@@ -42,7 +42,7 @@ class Select extends React.Component {
   }
 
   render() {
-    const {label, subLabel, fieldClassName, className, options, error, helper, raw, ...props}
+    const {label, subLabel, fieldClassName, className, options, error, helper, raw, noLabel, ...props}
       = this.props;
     const selectEl = this._renderRaw(className, options, error, props);
     if (raw) return selectEl;
@@ -53,6 +53,7 @@ class Select extends React.Component {
       required={props.required}
       error={error}
       helper={helper}
+      noLabel={noLabel}
     >
       {selectEl}
     </Field>;

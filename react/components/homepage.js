@@ -1,6 +1,7 @@
 const Decimal = require("decimal.js");
 const React = require("react");
 const PropTypes = require("prop-types");
+const Constants = require("../../express/constants/constants.js");
 
 const {
   Chart, CategoryScale,
@@ -189,7 +190,7 @@ class Homepage extends React.Component {
               <hr className="hr-homepage" />
               <Columns className="is-centered">
                 <Title size={5}>
-                  {new Decimal(this.props.graphs[type][subType].data[0] - this.props.graphs[type][subType].data[1]).toFixed(2)} €
+                  {new Decimal(this.props.graphs[type][subType].data[0] - this.props.graphs[type][subType].data[1]).toFixed(Constants.DECIMAL)} €
                 </Title>
               </Columns>
             </Column>

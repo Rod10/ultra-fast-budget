@@ -164,22 +164,22 @@ class BudgetList extends AsyncFilteredList {
       )}
       {this.state.period === "now" && <div className="field">
         <label className="label">Total dépensé/Total alloué:</label>
-        <b><span className={`has-text-${new Decimal(totalAmount).toFixed(2) >= new Decimal(totalAllocatedAmount).toFixed(2)
+        <b><span className={`has-text-${new Decimal(totalAmount).toFixed(Constants.DECIMAL) >= new Decimal(totalAllocatedAmount).toFixed(Constants.DECIMAL)
           ? "danger"
           : "success"}`}
-        >{new Decimal(totalAmount).toFixed(2)}</span>/<span className="has-text-danger">{new Decimal(totalAllocatedAmount).toFixed(2)} €</span>
+        >{new Decimal(totalAmount).toFixed(Constants.DECIMAL)}</span>/<span className="has-text-danger">{new Decimal(totalAllocatedAmount).toFixed(Constants.DECIMAL)} €</span>
         </b>
       </div>}
       {this.state.period === "now" && <div className="field">
         <label className="label">Budget total restant:</label>
-        <b><span className={`has-text-${totalAllocatedAmount - new Decimal(totalAmount).toFixed(2) - new Decimal(totalOutOfBudget).toFixed(2) <= 0
+        <b><span className={`has-text-${totalAllocatedAmount - new Decimal(totalAmount).toFixed(Constants.DECIMAL) - new Decimal(totalOutOfBudget).toFixed(Constants.DECIMAL) <= 0
           ? "danger"
           : "success"}`}
-        >{new Decimal(totalAllocatedAmount).toFixed(2) - new Decimal(totalAmount).toFixed(2) - new Decimal(totalOutOfBudget).toFixed(2)} €</span>
+        >{new Decimal(totalAllocatedAmount).toFixed(Constants.DECIMAL) - new Decimal(totalAmount).toFixed(Constants.DECIMAL) - new Decimal(totalOutOfBudget).toFixed(Constants.DECIMAL)} €</span>
         </b>
       </div>}
       <div className="field">
-        <label className="label">Dépense hors budget: {new Decimal(totalOutOfBudget).toFixed(2)} €</label>
+        <label className="label">Dépense hors budget: {new Decimal(totalOutOfBudget).toFixed(Constants.DECIMAL)} €</label>
         <span><a
           className="button has-text-weight-bold mr-3 is-link is-themed"
           onClick={this.handleOpenTransactionsModal}

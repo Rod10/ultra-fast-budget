@@ -139,7 +139,7 @@ class AccountList extends React.Component {
       <Columns>
         <Column size={Column.Sizes.oneThird}>
           <Title size={4} className="mb-2">Mes Comptes</Title>
-          <Title size={6} className="mb-2">Total: {new Decimal(totalAmount).toFixed(2)}€</Title>
+          <Title size={6} className="mb-2">Total: {new Decimal(totalAmount).toFixed(Constants.DECIMAL)}€</Title>
         </Column>
         <Column>
           <div className="has-text-right">
