@@ -21,10 +21,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL(15, 2),
     },
     isin: {
-      allowNull: false,
+      allowNull: true,
       type: DataTypes.STRING(45),
     },
-    currentPrice: {
+    price: {
       allowNull: false,
       type: DataTypes.DECIMAL(15, 2),
     },

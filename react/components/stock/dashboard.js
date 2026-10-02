@@ -37,15 +37,18 @@ class Dashboard extends AsyncFilteredList {
 
     this.handleAdvance = this.handleAdvance.bind(this);
     this.handleReset = this.handleReset.bind(this);
+    this.handleRefreshPrice = this.handleRefreshPrice.bind(this);
   }
 
   handleAdvance() {
-    axios.get("/stocks/advance")
+    axios.get("/stocks/dashboard/advance", {params: {portfolio: this.state.portfolio}})
       .then(response => {
         if (response.status === OK) {
           this.setState({
-            stocks: response.data.stocks,
+            stocks: response.data.stocks.rows,
+            portfolios: response.data.portfolios.rows,
             transactions: response.data.transactions,
+            decide: response.data?.decide,
             date: response.data.date,
           });
         }
@@ -53,17 +56,29 @@ class Dashboard extends AsyncFilteredList {
   }
 
   handleReset() {
-    axios.get("/stocks/reset")
+    axios.get("/stocks/dashboard/reset", {params: {portfolio: this.state.portfolio}})
       .then(response => {
         if (response.status === OK) {
           this.setState({
-            portfolio: response.data.portfolio,
-            stocks: response.data.stocks,
+            stocks: response.data.stocks.rows,
+            portfolios: response.data.portfolios.rows,
             transactions: response.data.transactions,
+            decide: response.data?.decide,
             date: response.data.date,
           });
         }
       });
+  }
+
+  handleRefreshPrice() {
+    axios
+      .get("/stocks/order/refresh-price")
+      .then(response => {
+        if (response.status === OK) {
+          this.setState({stocks: response.data.stocks.rows});
+        }
+      })
+      .catch(err => console.log(err));
   }
 
   _renderFilters() {
@@ -135,27 +150,38 @@ class Dashboard extends AsyncFilteredList {
     ).toFixed(Constants.DECIMAL);
 
     return <div className="body-content">
-      <Media
-        left={<Head className="has-text-centered">
-          {this.state.decide?.date}
-        </Head>}
-        content={<Button
-          className="has-text-weight-bold"
-          type="themed"
-          // href="/stocks/advance"
-          icon={<Icon size="small" icon="arrow-right" />}
-          label="Avancer d'un mois"
-          onClick={this.handleAdvance}
-        />}
-        right={<Button
-          className="has-text-weight-bold"
-          type="themed"
-          // href="/stocks/advance"
-          icon={<Icon size="small" icon="arrow-right" />}
-          label="Reset"
-          onClick={this.handleReset}
-        />}
-      />
+      <Head className="has-text-centered">
+        {this.state.decide?.date}
+      </Head>
+      <Columns>
+        <Column>
+          <Button
+            className="has-text-weight-bold"
+            type="themed"
+            icon={<Icon size="small" icon="arrow-right" />}
+            label="Avancer d'un mois"
+            onClick={this.handleAdvance}
+          />
+        </Column>
+        <Column>
+          <Button
+            className="has-text-weight-bold"
+            type="themed"
+            icon={<Icon size="small" icon="arrow-right" />}
+            label="Actualiser les prix"
+            onClick={this.handleRefreshPrice}
+          />
+        </Column>
+        <Column>
+          <Button
+            className="has-text-weight-bold"
+            type="themed"
+            icon={<Icon size="small" icon="arrow-right" />}
+            label="Reset"
+            onClick={this.handleReset}
+          />
+        </Column>
+      </Columns>
       {this._renderFilters()}
       <hr />
       <Columns>
@@ -183,7 +209,7 @@ class Dashboard extends AsyncFilteredList {
           <br />
           <ul>
             {this.state.decide.secondaryCandidates.map(action => <li key={action.ticker}>
-              {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {action.quantity * action.currentPrice}, vous aurez {action.remainingCashNextMonth} € le mois prochain
+              {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {new Decimal(action.quantity * action.currentPrice).toFixed(Constants.DECIMAL)} €, vous aurez {new Decimal(action.remainingCashNextMonth).toFixed(Constants.DECIMAL)} € le mois prochain
             </li>)}
           </ul>
         </div>

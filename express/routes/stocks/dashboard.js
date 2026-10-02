@@ -45,13 +45,40 @@ router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res
   res.json(data);
 });
 
-router.get("/advance", async (req, res, next) => {
-  const data = stockSrv.advance();
+router.get("/advance", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
+  let portfolios = await stockSrv.advance();
+  const data = {};
+  if (req.query.portfolio) {
+    if (portfolios.rows[0].needDecide) {
+      const stocks = await stockSrv.get(req.user.id, portfolios.rows[0].id);
+      data.decide = await stockSrv.getData(
+        portfolios.rows[0],
+        stocks.rows,
+      );
+    }
+  } else {
+    portfolios = await portfolioSrv.getAll(req.user.id);
+  }
+  data.portfolios = portfolios;
+  data.stocks = await stockSrv.get(req.user.id, req.parsedQuery.portfolio);
   res.json(data);
 });
 
-router.get("/reset", async (req, res, next) => {
-  const data = stockSrv.reset();
+router.get("/reset", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
+  let {stocks, portfolios} = await stockSrv.reset();
+  const data = {};
+  if (req.query.portfolio) {
+    if (portfolios.rows[0].needDecide) {
+      data.decide = await stockSrv.getData(
+        portfolios.rows[0],
+        stocks.rows,
+      );
+    }
+  } else {
+    portfolios = await portfolioSrv.getAll(req.user.id);
+  }
+  data.portfolios = portfolios;
+  data.stocks = await stockSrv.get(req.user.id, req.parsedQuery.portfolio);
   res.json(data);
 });
 

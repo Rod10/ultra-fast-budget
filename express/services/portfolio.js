@@ -8,6 +8,11 @@ const {logger} = require("./logger.js");
 
 const portfolioSrv = {};
 
+const getNewStocksTotalValue = stocks => stocks.reduce(
+  (total, stock) => total.add(stock.total),
+  new Decimal(0),
+);
+
 portfolioSrv.create = account => {
   logger.debug("Creating portfolio for account=[%s]", account.id);
   return Portfolio.create({
@@ -38,6 +43,14 @@ portfolioSrv.getById = (userId, portfolioId) => {
       },
     }],
   });
+};
+
+portfolioSrv.updateBalance = async (userId, portfolioId, stocks) => {
+  logger.debug("Update balance for portfolio=[%s] for user=[%s] with=[%s]", portfolioId, userId, stocks);
+  const newStocksTotalValue = getNewStocksTotalValue(stocks);
+  const portfolio = await portfolioSrv.getById(userId, portfolioId);
+  portfolio.rows[0].account.balance -= newStocksTotalValue;
+  portfolio.rows[0].account.save();
 };
 
 module.exports = portfolioSrv;

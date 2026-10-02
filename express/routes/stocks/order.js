@@ -21,7 +21,6 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/get-portfolio-data", async (req, res, next) => {
-  const stocksToBought = req.query.stocksToBought;
   const portfolio = await portfolioSrv.getById(req.user.id, req.query.id);
   const stocks = await stockSrv.get(req.user.id, portfolio.rows[0].id);
   const decide = portfolio.rows[0].needDecide ? await stockSrv.getData(portfolio.rows[0], stocks.rows) : {};
@@ -32,9 +31,20 @@ router.get("/get-simulation", async (req, res, next) => {
   const portfolio = await portfolioSrv.getById(req.user.id, req.query.portfolioId);
   const stocks = await stockSrv.get(req.user.id, portfolio.rows[0].id);
   const stocksToBought = req.query.stocksToBought;
-  console.log(req.query);
   const simulation = await stockSrv.simulate(portfolio.rows[0], stocks.rows, stocksToBought);
   res.json({simulation});
+});
+
+router.get("/refresh-price", async (req, res, next) => {
+  await stockSrv.refreshPrice(req.user.id);
+  const stocks = await stockSrv.get(req.user.id);
+  res.json({stocks});
+});
+
+router.post("/new", async (req, res, next) => {
+  await stockSrv.createBatch(req.user.id, req.body.portfolioId, req.body.stocksToBought);
+  await portfolioSrv.updateBalance(req.user.id, req.body.portfolioId, req.body.stocksToBought);
+  res.redirect("/stocks/dashboard");
 });
 
 module.exports = router;
