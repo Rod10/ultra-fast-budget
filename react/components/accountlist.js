@@ -3,6 +3,7 @@ const PropTypes = require("prop-types");
 const React = require("react");
 
 const {getElFromDataset} = require("../utils/html.js");
+const Constants = require("../../express/constants/constants.js");
 const Button = require("./bulma/button.js");
 const Icon = require("./bulma/icon.js");
 const Title = require("./bulma/title.js");
@@ -139,7 +140,8 @@ class AccountList extends React.Component {
       <Columns>
         <Column size={Column.Sizes.oneThird}>
           <Title size={4} className="mb-2">Mes Comptes</Title>
-          <Title size={6} className="mb-2">Total: {new Decimal(totalAmount).toFixed(Constants.DECIMAL)}€</Title>
+          <Title size={6} className="mb-2">Total:
+            {new Decimal(totalAmount).toFixed(Constants.DECIMAL)}€</Title>
         </Column>
         <Column>
           <div className="has-text-right">

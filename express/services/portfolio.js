@@ -35,6 +35,14 @@ portfolioSrv.getAll = userId => {
 portfolioSrv.getById = (userId, portfolioId) => {
   logger.debug("Get portofio by id=[%s] and for user=[%s]", portfolioId, userId);
   return Portfolio.findAndCountAll({
+    where: {id: portfolioId},
+    include: [{
+      association: Portfolio.Account,
+      where: {userId},
+    }],
+  });
+
+  /* return Portfolio.findAndCountAll({
     include: [{
       association: Portfolio.Account,
       where: {
@@ -42,7 +50,7 @@ portfolioSrv.getById = (userId, portfolioId) => {
         id: portfolioId,
       },
     }],
-  });
+  }); */
 };
 
 portfolioSrv.updateBalance = async (userId, portfolioId, stocks) => {
