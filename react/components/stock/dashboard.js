@@ -41,7 +41,7 @@ class Dashboard extends AsyncFilteredList {
   }
 
   handleAdvance() {
-    axios.get("/stocks/dashboard/advance", {params: {portfolio: this.state.portfolio}})
+    axios.get("/stocks/dashboard/advance", {params: {portfolio: this.state.selectedPortfolio.id}})
       .then(response => {
         if (response.status === OK) {
           this.setState({
@@ -92,8 +92,11 @@ class Dashboard extends AsyncFilteredList {
     </form>;
   }
 
-  _renderRow(stock) {
-    return <tr key={stock.isin}>
+  _renderRow(stock, index) {
+    const style = this.state.selectedPortfolio?.id
+      ? {}
+      : {backgroundColor: stock.portfolio.account.accountType.color};
+    return <tr key={`${index} - ${stock.isin}`} style={style}>
       <td className="has-text-centered">{stock.isin}</td>
       <td className="has-text-centered">{stock.name}</td>
       <td className="has-text-centered">{stock.currentPrice} €</td>
@@ -123,7 +126,7 @@ class Dashboard extends AsyncFilteredList {
           </tr>
         </thead>
         <tbody>
-          {this.state.stocks.map(stock => this._renderRow(stock))}
+          {this.state.stocks.map((stock, index) => this._renderRow(stock, index))}
         </tbody>
       </table>
     );
@@ -144,10 +147,12 @@ class Dashboard extends AsyncFilteredList {
       (acc, val) => acc.plus(val.dividendsReceived),
       new Decimal(0),
     ).toFixed(Constants.DECIMAL);
-    const liquidities = this.state.portfolios.reduce(
-      (acc, val) => acc.plus(val.account.balance),
-      new Decimal(0),
-    ).toFixed(Constants.DECIMAL);
+    const liquidities = this.state.selectedPortfolio === undefined
+      ? this.state.portfolios.reduce(
+        (acc, val) => acc.plus(val.account.balance),
+        new Decimal(0),
+      ).toFixed(Constants.DECIMAL)
+      : this.state.selectedPortfolio.account.balance;
 
     return <div className="body-content">
       <Head className="has-text-centered">
@@ -187,7 +192,7 @@ class Dashboard extends AsyncFilteredList {
       <Columns>
         <Column>
           <p>Liquiditées disponible: {liquidities} €</p>
-          {this.state.portfolios.length <= 1 && <p>Versement Mensuel: {this.state.portfolios.monthlyContribution}€</p>}
+          {this.state.selectedPortfolio && <p>Versement Mensuel: {this.state.selectedPortfolio.monthlyContribution} €</p>}
         </Column>
         <Column>
           <p>Investissement Total: {totalInvestments} €</p>
@@ -208,7 +213,7 @@ class Dashboard extends AsyncFilteredList {
           <p>Simulation</p>
           <br />
           <ul>
-            {this.state.decide.secondaryCandidates.map(action => <li key={action.ticker}>
+            {this.state.decide.secondaryCandidates.map(action => <li key={`${this.state.selectedPortfolio.id} - ${action.ticker}`}>
               {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {new Decimal(action.quantity * action.currentPrice).toFixed(Constants.DECIMAL)} €, vous aurez {new Decimal(action.remainingCashNextMonth).toFixed(Constants.DECIMAL)} € le mois prochain
             </li>)}
           </ul>

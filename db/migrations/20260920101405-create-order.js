@@ -19,10 +19,10 @@ module.exports = {
     TYPE: {
       allowNull: false,
       defaultValue: "ORDER",
-      type: Sequelize.ENUM("ORDER", "DIVIDEND", "INTEREST"),
+      type: Sequelize.ENUM("ORDER", "DIVIDEND", "INTEREST", "DEPOSIT", "WITHDRAW"),
     },
     QUANTITY: {
-      allowNull: false,
+      allowNull: true,
       type: Sequelize.DECIMAL(15, 2),
     },
     ISIN: {
@@ -30,7 +30,7 @@ module.exports = {
       type: Sequelize.STRING(45),
     },
     PRICE: {
-      allowNull: false,
+      allowNull: true,
       type: Sequelize.DECIMAL(15, 2),
     },
     FEES: {
@@ -38,8 +38,12 @@ module.exports = {
       type: Sequelize.DECIMAL(15, 2),
     },
     INVESTED_AMOUNT: {
-      allowNull: false,
+      allowNull: true,
       type: Sequelize.DECIMAL(15, 2),
+    },
+    RECEIVED_AT: {
+      allowNull: false,
+      type: Sequelize.DATE,
     },
     CREATION_DATE: {
       allowNull: false,

@@ -1,44 +1,27 @@
 /* eslint-disable no-magic-numbers, max-lines-per-function */
 module.exports = (sequelize, DataTypes) => {
-  const Order = sequelize.define("Order", {
+  const LastReference = sequelize.define("LastReference", {
     id: {
       type: DataTypes.INTEGER(20),
       allowNull: false,
       primaryKey: true,
       autoIncrement: true,
     },
-    portfolioId: {
+    userId: {
       type: DataTypes.INTEGER(20),
       allowNull: false,
     },
-    type: {
-      type: DataTypes.ENUM,
-      values: ["ORDER", "DIVIDEND", "INTEREST", "DEPOSIT", "WITHDRAW"],
-      allowNull: false,
-    },
-    quantity: {
-      allowNull: true,
-      type: DataTypes.DECIMAL(15, 2),
-    },
-    isin: {
+    dividend: {
       allowNull: true,
       type: DataTypes.STRING(45),
     },
-    price: {
+    order: {
       allowNull: true,
-      type: DataTypes.DECIMAL(15, 2),
+      type: DataTypes.STRING(45),
     },
-    fees: {
+    transaction: {
       allowNull: true,
-      type: DataTypes.DECIMAL(15, 2),
-    },
-    investedAmount: {
-      allowNull: false,
-      type: DataTypes.DECIMAL(15, 2),
-    },
-    receivedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
+      type: DataTypes.STRING(45),
     },
     creationDate: {
       type: DataTypes.DATE,
@@ -50,20 +33,20 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     freezeTableName: true,
-    tableName: "ORDER",
+    tableName: "LAST_REFERENCE",
     createdAt: "creationDate",
     updatedAt: "modificationDate",
   });
-  Order.associate = models => {
-    Order.Portfolio = Order.belongsTo(models.Portfolio, {
-      as: "portfolio",
+  LastReference.associate = models => {
+    LastReference.User = LastReference.belongsTo(models.User, {
+      as: "user",
       foreignKey: {
-        name: "portfolioId",
+        name: "userId",
         allowNull: false,
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
     });
   };
-  return Order;
+  return LastReference;
 };

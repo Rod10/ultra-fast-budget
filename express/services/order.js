@@ -1,27 +1,66 @@
 const Decimal = require("decimal.js");
-const config = require("../utils/config.js");
 const {
   Order,
   Portfolio,
-  Stock,
-  Op,
 } = require("../models/index.js");
 const Constants = require("../constants/constants.js");
 const {logger} = require("./logger.js");
+const {Account} = require("../models");
+const OrderDirection = require("../constants/orderdirection");
 
 const orderSrv = {};
 
 orderSrv.create = (portfolioId, order, type) => {
   logger.debug("Create order for portfolio=[%s] with data=[%s]", portfolioId, order);
-  // TODO: Add Fees
+
   return Order.create({
     portfolioId,
     type,
     quantity: order.quantity,
     isin: order.isin,
-    price: new Decimal(order.price).toFixed(Constants.DECIMAL),
-    fees: 0,
-    investedAmount: new Decimal(order.total).toFixed(Constants.DECIMAL),
+    price: order.price ? new Decimal(order.price).toFixed(Constants.DECIMAL) : null,
+    fees: order.fees ? new Decimal(order.fees).toFixed(Constants.DECIMAL) : null,
+    investedAmount: new Decimal(order.investedAmount).toFixed(Constants.DECIMAL),
+    receivedAt: order.receivedAt,
+  });
+};
+
+orderSrv.getAll = (userId, query) => {
+  logger.debug("Get all order from user=[%s] with query=[%s]", userId, query);
+
+  return Order.findAndCountAll({
+    include: [
+      {
+        association: Order.Portfolio,
+        include: [
+          {
+            association: Portfolio.Account,
+            where: {userId},
+          },
+        ],
+      },
+    ],
+    order: [["receivedAt", OrderDirection.DESC]],
+    offset: (query.limit && query.page) ? query.limit * query.page : 0,
+    limit: query.limit,
+    subQuery: false,
+  });
+};
+
+orderSrv.getAllByPortfolion = (userId, portfolioId, query) => {
+  logger.debug("Get all order from user=[%s]", userId);
+
+  return Order.findAndCountAll({
+    were: {portfolioId},
+    include: [
+      {
+        association: Portfolio.Account,
+        where: {userId},
+      },
+    ],
+    offset: (query.limit && query.page) ? query.limit * query.page : 0,
+    limit: query.limit,
+    subQuery: false,
   });
 };
 

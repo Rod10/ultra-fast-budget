@@ -99,7 +99,7 @@ stockSrv.createBatch = async (userId, portfolioId, ordersToCreate) => {
     if (stock.currentPrice >= 100) stock.boughtThisYear = true;
     stock.save();
   }
-  const stocks = await stockSrv.get(userId, portfolioId);
+  const stocks = await stockSrv.getAll(userId, portfolioId);
   const portfolioValue = getCurrentPortfolioValue(stocks.rows);
   for (const stock of stocks.rows) {
     stock.weight = portfolioValue.isZero()

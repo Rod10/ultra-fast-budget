@@ -1,17 +1,20 @@
 const axios = require("axios");
 const Decimal = require("decimal.js");
 
+const moment = require("moment/moment");
 const config = require("../utils/config.js");
 const {
+  Account,
   Portfolio,
   Stock,
 } = require("../models/index.js");
 const Constants = require("../constants/constants.js");
-const OrderType = require("../constants/order.js");
+const OrderType = require("../constants/ordertype.js");
 
 const {logger} = require("./logger.js");
 const orderSrv = require("./order.js");
-const portfolioSrv = require("./portfolio");
+const portfolioSrv = require("./portfolio.js");
+const lastReferenceSrv = require("./lastreference.js");
 
 // -----------------------------------------------------------------------------
 // Constants
@@ -279,7 +282,7 @@ stockSrv.getData = (portfolio, stocks) => {
 // Database
 // -----------------------------------------------------------------------------
 
-stockSrv.get = (userId, portfolioId) => {
+stockSrv.getAll = (userId, portfolioId) => {
   logger.debug(
     "Get stocks for portfolio=[%s] for user=[%s]",
     portfolioId,
@@ -301,6 +304,7 @@ stockSrv.get = (userId, portfolioId) => {
           {
             association: Portfolio.Account,
             where: {userId},
+            include: [{association: Account.AccountType}],
           },
         ],
       },
@@ -308,7 +312,7 @@ stockSrv.get = (userId, portfolioId) => {
   });
 };
 
-stockSrv.getByIsin = (userId, isin) => {
+stockSrv.getByIsin = (userId, portfolioId, isin) => {
   logger.debug(
     "Get stock=[%s] of user=[%s]",
     isin,
@@ -316,7 +320,10 @@ stockSrv.getByIsin = (userId, isin) => {
   );
 
   return Stock.findOne({
-    where: {isin},
+    where: {
+      isin,
+      portfolioId,
+    },
     include: [
       {
         association: Stock.Portfolio,
@@ -352,6 +359,12 @@ const fetchTrading212Positions = async () => {
 
   return response.data;
 };
+
+const fetchTrading212Transaction = async url => axios.get(url, {
+  timeout: TRADING_212_TIMEOUT,
+  headers: getTrading212AuthHeader(),
+  validateStatus: () => true,
+});
 
 const getImplicitFxRate = (
   quantity,
@@ -396,32 +409,295 @@ const buildImportedStock = data => {
     investedAmount: 0,
     dividendsReceived: 0,
     boughtThisYear: false,
-    portfolioId: isPriorityStock ? 1 : 2,
+    portfolioId: 2,
   };
 
-  if (!isPriorityStock) {
-    stock.quantity = data.quantity;
-    stock.investedAmount = data.walletImpact.totalCost;
-    stock.average
+  // if (!isPriorityStock) {
+  stock.quantity = data.quantity;
+  stock.investedAmount = data.walletImpact.totalCost;
+  stock.average
       = data.quantity === 0
-        ? 0
-        : data.walletImpact.totalCost / data.quantity;
-  }
+      ? 0
+      : data.walletImpact.totalCost / data.quantity;
+  // }
 
   return stock;
 };
 
-stockSrv.importTrading212 = async () => {
+/*
+  Transaction: "items": [
+    {
+      "type": "INTEREST_ON_FREE_CASH",
+      "amount": 0.09,
+      "currency": "EUR",
+      "reference": "01a0bc59-9834-7df7-a4c8-6e11408a1f51",
+      "dateTime": "2026-09-20T01:06:23.398Z"
+    },
+    {
+      "type": "INTEREST_ON_FREE_CASH",
+      "amount": 0.08,
+      "currency": "EUR",
+      "reference": "01a0b733-4c40-79f1-8bea-3bd89042cdd6",
+      "dateTime": "2026-09-19T01:06:27.507Z"
+    },
+  ]
+
+  Order:
+  "items": [
+    {
+      "order": {
+        "id": 58303428456,
+        "strategy": "VALUE",
+        "type": "MARKET",
+        "ticker": "LGENl_EQ",
+        "status": "FILLED",
+        "value": 6.77,
+        "filledValue": 6.77,
+        "currency": "EUR",
+        "extendedHours": false,
+        "initiatedFrom": "AUTOINVEST",
+        "side": "BUY",
+        "createdAt": "2026-10-05T06:01:05.000Z",
+        "instrument": {
+          "ticker": "LGENl_EQ",
+          "name": "Legal & General",
+          "isin": "GB0005603997",
+          "currency": "GBX"
+        }
+      },
+      "fill": {
+        "id": 58304175617,
+        "quantity": 1.97163384,
+        "price": 289,
+        "type": "TRADE",
+        "tradingMethod": "OTC",
+        "filledAt": "2026-10-05T07:00:32.000Z",
+        "walletImpact": {
+          "currency": "EUR",
+          "netValue": 6.77,
+          "fxRate": 84.66599996,
+          "taxes": [
+            {
+              "name": "STAMP_DUTY_RESERVE_TAX",
+              "quantity": -0.03,
+              "currency": "EUR",
+              "chargedAt": "2026-10-05T07:02:16.092Z"
+            },
+            {
+              "name": "CURRENCY_CONVERSION_FEE",
+              "quantity": -0.01,
+              "currency": "EUR",
+              "chargedAt": "2026-10-05T07:02:16.065Z"
+            }
+          ]
+        }
+      }
+    },
+
+    dividend: "items": [
+    {
+      "ticker": "CNQ_US_EQ",
+      "instrument": {
+        "ticker": "CNQ_US_EQ",
+        "name": "Canadian Natural Resources",
+        "isin": "CA1363851017",
+        "currency": "USD"
+      },
+      "reference": "da90cdf6-de06-4d27-8182-ad1c9a1782f5",
+      "quantity": 8.54570173,
+      "amount": 2.84,
+      "currency": "EUR",
+      "grossAmountPerShare": 0.4395650767,
+      "amountInEuro": 2.84,
+      "paidOn": "2026-10-02T14:09:16.000+03:00",
+      "type": "DIVIDEND"
+    },
+ */
+
+const timeout = ms => new Promise(resolve => setTimeout(resolve, ms));
+const importTransactionData = async () => {
+  const orders = [];
+  let url = "https://live.trading212.com/api/v0/equity/history/transactions?limit=50";
+  let response;
+  do {
+    response = await fetchTrading212Transaction(url);
+
+    if (response.status !== 200) {
+      break;
+    }
+
+    const tradingTransactions = response.data;
+
+    for (const item of tradingTransactions.items) {
+      const type = {
+        "INTEREST_ON_FREE_CASH": OrderType.INTEREST,
+        "LENDING_INTEREST": OrderType.INTEREST,
+        "DEPOSIT": OrderType.DEPOSIT,
+        "WITHDRAW": OrderType.WITHDRAW,
+      };
+      orders.push({
+        portfolioId: 2,
+        type: type[item.type],
+        investedAmount: item.amount,
+        reference: item.reference,
+        receivedAt: new moment(item.dateTime),
+      });
+    }
+
+    // S'il n'y a pas de page suivante, on s'arrête
+    if (!tradingTransactions.nextPagePath) {
+      break;
+    }
+
+    url = `https://live.trading212.com/${tradingTransactions.nextPagePath}`;
+
+    await timeout(5000);
+  } while (response.status === 200);
+  console.log("Transaction Finished");
+  return {
+    orders,
+    lastTransactionReference: orders.length
+      ? orders[0].reference
+      : undefined,
+  };
+};
+
+const importOrderData = async () => {
+  const orders = [];
+  let url = "https://live.trading212.com/api/v0/equity/history/orders?limit=50";
+
+  let response;
+
+  do {
+    response = await fetchTrading212Transaction(url);
+
+    if (response.status !== 200) {
+      break;
+    }
+
+    const tradingOrder = response.data;
+
+    for (const item of tradingOrder.items) {
+      if (item.order.status !== "CANCELLED" && item.fill) {
+        orders.push({
+          portfolioId: 2,
+          type: OrderType.ORDER,
+          quantity: item.fill.quantity,
+          isin: item.order.instrument.isin,
+          price: new Decimal(item.fill.walletImpact.netValue)
+            .div(item.fill.quantity),
+          fees: item.fill.walletImpact.taxes.reduce(
+            (total, value) => total.add(value.quantity),
+            new Decimal(0),
+          ),
+          investedAmount: new Decimal(item.fill.walletImpact.netValue),
+          receivedAt: new moment(item.fill.filledAt),
+          reference: item.fill.id,
+        });
+      }
+    }
+
+    // S'il n'y a pas de page suivante, on s'arrête
+    if (!tradingOrder.nextPagePath) {
+      break;
+    }
+
+    url = `https://live.trading212.com/${tradingOrder.nextPagePath}`;
+
+    await timeout(5000);
+  } while (response.status === 200);
+  console.log("Order Finished");
+  return {
+    orders,
+    lastOrderReference: orders.length
+      ? orders[0].reference
+      : undefined,
+  };
+};
+
+const importDividendData = async () => {
+  const orders = [];
+  let url = "https://live.trading212.com/api/v0/equity/history/dividends?limit=50";
+
+  let response;
+
+  do {
+    response = await fetchTrading212Transaction(url);
+
+    if (response.status !== 200) {
+      break;
+    }
+
+    const tradingDividend = response.data;
+
+    for (const item of tradingDividend.items) {
+      orders.push({
+        portfolioId: 2,
+        type: OrderType.DIVIDEND,
+        quantity: item.quantity,
+        isin: item.instrument.isin,
+        price: item.grossAmountPerShare,
+        investedAmount: item.amount,
+        receivedAt: item.paidOn,
+        reference: item.reference,
+      });
+    }
+    // S'il n'y a pas de page suivante, on s'arrête
+    if (!tradingDividend.nextPagePath) {
+      break;
+    }
+
+    url = `https://live.trading212.com/${tradingDividend.nextPagePath}`;
+
+    await timeout(5000);
+  } while (response.status === 200);
+  console.log("Dividend Finished");
+  return {
+    orders,
+    lastDividendReference: orders.length
+      ? orders[0].reference
+      : undefined,
+  };
+};
+
+stockSrv.importTrading212 = async userId => {
   logger.debug("Import data from Trading 212");
 
   const tradingInstruments
-    = await fetchTrading212Positions();
+    = await fetchTrading212Positions(TRADING_212_POSITIONS_URL);
 
   await Promise.all(
     tradingInstruments.map(data => Stock.create(buildImportedStock(data))),
   );
+
+  const transactionData = await importTransactionData();
+  const orderData = await importOrderData();
+  const dividendData = await importDividendData();
+  const orders = [].concat(transactionData.orders)
+    .concat(orderData.orders)
+    .concat(dividendData.orders)
+    .sort((a, b) => new moment(a.receivedAt) - new moment(b.receivedAt));
+
+  for (const order of orders) {
+    await orderSrv.create(2, order, order.type);
+    if (order.type === "DIVIDEND") {
+      const stock = await stockSrv.getByIsin(userId, 2, order.isin);
+      if (stock) {
+        stock.dividendsReceived = new Decimal(stock.dividendsReceived).add(order.investedAmount);
+        stock.save();
+      }
+    }
+  }
+
+  await lastReferenceSrv.create(userId, {
+    lastDividendReference: dividendData.lastDividendReference,
+    lastOrderReference: orderData.lastOrderReference,
+    lastTransactionReference: transactionData.lastTransactionReference,
+  });
+  console.log("DONE");
 };
 
+/* TODO: Refresh with looping from stocks and find */
 stockSrv.refreshPrice = async userId => {
   logger.debug("Refresh price from Trading 212");
 
@@ -717,15 +993,15 @@ stockSrv.advance = async () => {
     CURRENT_YEAR++;
   }
   const portfolio = await portfolioSrv.getById(1, 1);
-  portfolio.rows[0].account.balance = new Decimal(portfolio.rows[0].account.balance)
-    .add(portfolio.rows[0].monthlyContribution);
-  portfolio.rows[0].account.save();
-  portfolio.rows[0].save();
+  portfolio.account.balance = new Decimal(portfolio.account.balance)
+    .add(portfolio.monthlyContribution);
+  portfolio.account.save();
+  portfolio.save();
   return portfolio;
 };
 
 stockSrv.reset = async () => {
-  const stocks = await stockSrv.get(1, 1);
+  const stocks = await stockSrv.getAll(1, 1);
   for (const stock of stocks.rows) {
     stock.average = 0;
     stock.quantity = 0;
@@ -735,9 +1011,9 @@ stockSrv.reset = async () => {
     stock.save();
   }
   const portfolios = await portfolioSrv.getById(1, 1);
-  portfolios.rows[0].account.balance = portfolios.rows[0].account.initialBalance;
-  portfolios.rows[0].account.save();
-  portfolios.rows[0].save();
+  portfolios.account.balance = portfolios.account.initialBalance;
+  portfolios.account.save();
+  portfolios.save();
   CURRENT_MONTH = 0;
   CURRENT_YEAR = 2027;
   return {
@@ -765,12 +1041,13 @@ stockSrv.createBatch = async (
   const portfolio = await portfolioSrv.getById(userId, portfolioId);
   // On conserve volontairement l'ordre d'exécution.
   for (const order of ordersToCreate) {
+    order.receivedAt = new moment();
     await orderSrv.create(
       portfolio.id,
       order,
       OrderType.ORDER,
     );
-    const stock = await stockSrv.getByIsin(userId, order.isin);
+    const stock = await stockSrv.getByIsin(userId, portfolio.id, order.isin);
     stock.average = calculateNewAverage({
       oldAverage: stock.average,
       oldQuantity: stock.quantity,
@@ -778,11 +1055,11 @@ stockSrv.createBatch = async (
       newQuantity: order.quantity,
     });
     stock.quantity = new Decimal(stock.quantity).add(order.quantity);
-    stock.investedAmount = new Decimal(stock.investedAmount).add(order.total);
+    stock.investedAmount = new Decimal(stock.investedAmount).add(order.investedAmount);
     if (stock.currentPrice >= portfolio.monthlyContribution) stock.boughtThisYear = true;
     await stock.save();
   }
-  const stocks = await stockSrv.get(userId, portfolio.id);
+  const stocks = await stockSrv.getAll(userId, portfolio.id);
   const portfolioValue = getCurrentPortfolioValue(stocks.rows);
   for (const stock of stocks.rows) {
     stock.weight = portfolioValue.isZero()

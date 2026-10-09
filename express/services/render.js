@@ -19,6 +19,7 @@ const PlannedTransferList = require("../../react/components/plannedtransferlist.
 const AccountTypeList = require("../../react/components/accounttype/accounttypelist.js");
 const Dashboard = require("../../react/components/stock/dashboard.js");
 const Order = require("../../react/components/stock/order.js");
+const OrderList = require("../../react/components/stock/orderlist.js");
 
 const render = [
   {name: "userLogin", component: UserLogin},
@@ -39,6 +40,7 @@ const render = [
   {name: "accountTypeList", component: AccountTypeList},
   {name: "stockDashboard", component: Dashboard},
   {name: "stockOrder", component: Order},
+  {name: "orderList", component: OrderList},
 ].reduce((acc, cur) => {
   acc[cur.name] = props => {
         // this is to reset react-beautiful-dnd context

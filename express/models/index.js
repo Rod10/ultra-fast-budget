@@ -13,6 +13,7 @@ const Account = require("./account.js");
 const AccountType = require("./accounttype.js");
 const Budget = require("./budget.js");
 const Category = require("./category.js");
+const LastReference = require("./lastreference.js");
 const Order = require("./order.js");
 const PlannedTransaction = require("./plannedtransaction.js");
 const PlannedTransfer = require("./plannedtransfer.js");
@@ -45,6 +46,7 @@ const db = {};
   AccountType,
   Budget,
   Category,
+  LastReference,
   Order,
   PlannedTransaction,
   PlannedTransfer,

@@ -42,7 +42,8 @@ class AsyncFilteredList extends React.Component {
             rows: response.data?.rows,
             portfolios: response.data?.portfolios.rows,
             stocks: response.data?.stocks.rows,
-            decide: response.data?.decide
+            decide: response.data?.decide,
+            selectedPortfolio: response.data.selectedPortfolio,
           });
         }
       });

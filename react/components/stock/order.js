@@ -431,7 +431,7 @@ class Order extends React.Component {
                       className="input"
                       placeholder="Total"
                       type="text"
-                      name={`stocksToBought[${index}][total]`}
+                      name={`stocksToBought[${index}][investedAmount]`}
                       value={`${stock.price * stock.quantity}`}
                       readOnly
                       label={index === 0 ? "Total (€)" : ""}
