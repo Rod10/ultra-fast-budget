@@ -31,7 +31,7 @@ router.get("/get-simulation", async (req, res, next) => {
   const portfolio = await portfolioSrv.getById(req.user.id, req.query.portfolioId);
   const stocks = await stockSrv.getAll(req.user.id, portfolio.id);
   const stocksToBought = req.query.stocksToBought;
-  const simulation = await stockSrv.simulate(portfolio, stocks.rows, stocksToBought);
+  const simulation = await stockSrv.simulateOrder(portfolio, stocks.rows, stocksToBought);
   res.json({simulation});
 });
 
@@ -42,7 +42,6 @@ router.get("/refresh-price", async (req, res, next) => {
 });
 
 router.post("/new", async (req, res, next) => {
-  console.log(req.body);
   await stockSrv.createBatch(req.user.id, req.body.portfolioId, req.body.stocksToBought);
   await portfolioSrv.updateBalance(req.user.id, req.body.portfolioId, req.body.stocksToBought);
   res.redirect("/stocks/dashboard");

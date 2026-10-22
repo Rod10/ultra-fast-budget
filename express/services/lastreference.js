@@ -13,4 +13,21 @@ lastReferenceSrv.create = (userId, lastReference) => {
   });
 };
 
+lastReferenceSrv.get = userId => {
+  logger.debug("Get last References for user=[%s]", userId);
+  return LastReference.findOne({where: {userId}});
+};
+
+lastReferenceSrv.update = (userId, data) => {
+  logger.debug("Update last Reference for userId=[%s] with data=[%s]", userId, data);
+  return LastReference.update(
+    {
+      dividend: data.lastDividendReference,
+      order: data.lastOrderReference,
+      transaction: data.lastTransactionReference,
+    },
+    {where: {userId}},
+  );
+};
+
 module.exports = lastReferenceSrv;

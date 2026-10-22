@@ -7,5 +7,6 @@ router.use(authMid.strict);
 router.use("/dashboard", require("./dashboard.js"));
 router.use("/order", require("./order.js"));
 router.use("/history", require("./history.js"));
+router.use("/simulation", require("./simulation.js"));
 
 module.exports = router;

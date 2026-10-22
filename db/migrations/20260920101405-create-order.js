@@ -21,6 +21,11 @@ module.exports = {
       defaultValue: "ORDER",
       type: Sequelize.ENUM("ORDER", "DIVIDEND", "INTEREST", "DEPOSIT", "WITHDRAW"),
     },
+    SIDE: {
+      allowNull: true,
+      defaultValue: null,
+      type: Sequelize.ENUM("BUY", "SELL"),
+    },
     QUANTITY: {
       allowNull: true,
       type: Sequelize.DECIMAL(15, 2),

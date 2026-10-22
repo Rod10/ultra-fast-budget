@@ -58,7 +58,7 @@ class OrderBlock extends React.Component {
       return this._renderOrderBody();
     }
     return <>
-      <Column size="is-2">
+      <Column>
         <div>
           <p>{df(order.receivedAt, "dd/mm/yyyy - hh:MM")} •&nbsp;</p>
           <p>{order.portfolio.account.name}</p>

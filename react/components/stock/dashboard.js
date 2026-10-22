@@ -50,6 +50,7 @@ class Dashboard extends AsyncFilteredList {
             transactions: response.data.transactions,
             decide: response.data?.decide,
             date: response.data.date,
+            selectedPortfolio: response.data.selectedPortfolio,
           });
         }
       });
@@ -65,6 +66,7 @@ class Dashboard extends AsyncFilteredList {
             transactions: response.data.transactions,
             decide: response.data?.decide,
             date: response.data.date,
+            selectedPortfolio: response.data.selectedPortfolio,
           });
         }
       });
@@ -132,12 +134,82 @@ class Dashboard extends AsyncFilteredList {
     );
   }
 
+/*
+NO_PRIORITY
+BUY_PRIORITY
+BUY_SECONDARY
+INFEASIBLE
+NO_TARGET
+BUY_REBALANCE
+ALREADY_BALANCED
+*/
+  _renderDecide() {
+    if (this.state.decide.type === "BUY_PRIORITY") {
+      return <div>
+        <p>Actions prioritaire</p>
+        <p>L'action prioritaire est: {this.state.decide.priority.name} avec un prix unité de: {this.state.decide.priority.currentPrice} € peut être acheter ce mois ci</p>
+      </div>;
+    } else if (this.state.decide.type === "BUY_SECONDARY") {
+      return <>
+        {this.state.decide.priority !== null
+          ? <div>
+            <p>Actions prioritaire</p>
+            <p>L'action prioritaire est: {this.state.decide.priority.name} avec un prix unité de: {this.state.decide.priority.currentPrice} €</p>
+          </div>
+          : <div>
+            <p>Il y a plus aucune action prioritaire, il reste maintenant a acheter au minimum une action de chaque action</p>
+          </div>}
+        <hr />
+        <div>
+          <p>Simulation</p>
+          <br />
+          <ul>
+            {this.state.decide.secondaryCandidates.map(action => <li key={`${this.state.selectedPortfolio.id} - ${action.ticker}`}>
+              {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {new Decimal(action.quantity * action.currentPrice).toFixed(Constants.DECIMAL)} €, vous aurez {new Decimal(action.remainingCashNextMonth).toFixed(Constants.DECIMAL)} € le mois prochain
+            </li>)}
+          </ul>
+        </div>
+      </>;
+    } else if (this.state.decide.type === "BUY_REMAINING") {
+      return <>
+        <div>
+          <p>Il y a plus aucune action prioritaire, il reste maintenant a acheter au minimum une action de chaque action</p>
+        </div>
+        <div>
+          <p>Actions a acheter ce mois ci:</p>
+          <ul>
+            {this.state.decide.stocksToBuy.map(action => <li key={`${this.state.selectedPortfolio.id} - ${action.ticker}`}>
+              1 actions de {action.name} a {action.currentPrice} €
+            </li>)}
+          </ul>
+          <p>Il restera {this.state.decide.remainingAfterPurchase} actions a acheter</p>
+        </div>
+      </>;
+    } else if (this.state.decide.type === "INFEASIBLE") {
+      return null;
+    } else if (this.state.decide.type === "BUY_REBALANCE") {
+      return <div>
+        <p>Équilibrage de la pondération:</p>
+        <ul>
+          {this.state.decide.purchases.map(action => <li key={`${this.state.selectedPortfolio.id} - ${action.ticker}`}>
+            {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {new Decimal(action.quantity * action.price).toFixed(Constants.DECIMAL)} €
+          </li>)}
+        </ul>
+        <p>Il vous restera: {this.state.decide.remainingBudget} €</p>
+      </div>;
+    }
+  }
+
   render() {
     const totalInvestments = this.state.stocks.reduce(
       (acc, val) => acc.plus(val.investedAmount),
       new Decimal(0),
     ).toFixed(Constants.DECIMAL);
-    const totalGains = this.state.stocks.map(stock => new Decimal((stock.quantity * stock.currentPrice) - stock.investedAmount).toFixed(Constants.DECIMAL))
+    const totalGains = this.state.stocks
+      .map(stock => new Decimal(
+        (stock.quantity * stock.currentPrice) - stock.investedAmount,
+      )
+        .toFixed(Constants.DECIMAL))
       .reduce(
         (acc, val) => acc.plus(val),
         new Decimal(0),
@@ -203,22 +275,7 @@ class Dashboard extends AsyncFilteredList {
           <p>Rendement annuel Dividendes: 0€</p></Column>
       </Columns>
       <hr />
-      {this.state.decide && <>
-        <div>
-          <p>Actions prioritaire</p>
-          <p>L'action prioritaire est: {this.state.decide.priority.name} avec un prix unité de: {this.state.decide.priority.currentPrice} €</p>
-        </div>
-        <hr />
-        <div>
-          <p>Simulation</p>
-          <br />
-          <ul>
-            {this.state.decide.secondaryCandidates.map(action => <li key={`${this.state.selectedPortfolio.id} - ${action.ticker}`}>
-              {action.margin} - {action.quantity} action{action.quantity > 1 ? "s" : ""} de {action.name} pour un total de {new Decimal(action.quantity * action.currentPrice).toFixed(Constants.DECIMAL)} €, vous aurez {new Decimal(action.remainingCashNextMonth).toFixed(Constants.DECIMAL)} € le mois prochain
-            </li>)}
-          </ul>
-        </div>
-      </>}
+      {this.state.decide && this._renderDecide()}
       <hr />
       <div>
         {this._renderTable()}

@@ -190,9 +190,8 @@ const decidePriorityMode = state => {
   // 1. Peut-on acheter la priorité maintenant ?
   // ---------------------------------------------------------------------------
 
-  const currentCash = toDecimal(state.portfolio.cash);
+  const currentCash = toDecimal(state.portfolio.account.balance);
   const priorityPrice = toDecimal(currentPriority.currentPrice);
-
   if (currentCash.gte(priorityPrice)) {
     const cashAfterPurchase = currentCash.sub(priorityPrice);
 
@@ -247,14 +246,219 @@ const decidePriorityMode = state => {
   };
 };
 
-const decide = state => {
-  const priorityStocks = getPriorityStocks(state);
-  if (priorityStocks.length === 0) {
+const checkAllStocksBough = stocks => stocks.filter(stock => new Decimal(stock.quantity).eq(0));
+
+const decideRemainingStocksMode = state => {
+  const remainingStocks = state.stocks
+    .filter(stock => toDecimal(stock.quantity).isZero())
+    .filter(stock => toDecimal(stock.currentPrice).gt(0))
+    .sort((a, b) => (
+      toDecimal(a.currentPrice).cmp(toDecimal(b.currentPrice))
+    ));
+
+  let availableBudget = toDecimal(state.portfolio.account.balance);
+
+  const stocksToBuy = [];
+  const secondaryCandidates = [];
+
+  for (const stock of remainingStocks) {
+    const price = toDecimal(stock.currentPrice);
+
+    if (availableBudget.gte(price)) {
+      stocksToBuy.push({
+        isin: stock.isin,
+        ticker: stock.ticker,
+        name: stock.name,
+        currentPrice: stock.currentPrice,
+        quantity: 1,
+      });
+
+      availableBudget = availableBudget.sub(price);
+    } else {
+      secondaryCandidates.push({
+        isin: stock.isin,
+        ticker: stock.ticker,
+        name: stock.name,
+        currentPrice: stock.currentPrice,
+        quantity: 1,
+        remainingCashNextMonth: availableBudget
+          .add(state.portfolio.monthlyContribution)
+          .toFixed(2),
+      });
+    }
+  }
+
+  return {
+    type: stocksToBuy.length > 0
+      ? "BUY_REMAINING"
+      : "WAIT_REMAINING",
+    stocksToBuy,
+    secondaryCandidates,
+    remainingStocks: remainingStocks.length,
+    remainingAfterPurchase:
+      remainingStocks.length - stocksToBuy.length,
+    remainingCash: availableBudget.toFixed(2),
+  };
+};
+
+const decideTargetWeightMode = state => {
+  const stocks = state.stocks
+    .filter(stock => stock.targetWeight !== null
+      && stock.targetWeight !== undefined
+      && toDecimal(stock.targetWeight).gte(0)
+      && toDecimal(stock.currentPrice).gt(0));
+
+  if (stocks.length === 0) {
     return {
-      type: "NO_PRIORITY",
+      type: "NO_TARGET",
       priorities: [],
       secondaryCandidates: [],
+      purchases: [],
     };
+  }
+
+  const totalTargetWeight = stocks.reduce(
+    (total, stock) => total.add(stock.targetWeight),
+    new Decimal(0),
+  );
+
+  if (totalTargetWeight.isZero()) {
+    return {
+      type: "NO_TARGET",
+      priorities: [],
+      secondaryCandidates: [],
+      purchases: [],
+    };
+  }
+
+  // Budget réellement disponible pour les achats.
+  let remainingBudget = toDecimal(
+    state.portfolio.account.balance,
+  );
+
+  // Valeur investie dans les positions existantes.
+  let totalValue = state.stocks.reduce(
+    (total, stock) => total.add(
+      getStockValue(stock),
+    ),
+    new Decimal(0),
+  );
+
+  const quantities = new Map(
+    stocks.map(stock => [stock.isin, 0]),
+  );
+
+  // Les actions sans targetWeight restent dans le portefeuille,
+  // mais ne sont pas des candidates à l'achat.
+  const getScore = currentTotalValue => {
+    if (currentTotalValue.isZero()) {
+      return new Decimal(0);
+    }
+
+    return stocks.reduce((score, stock) => {
+      const target = toDecimal(stock.targetWeight)
+        .div(totalTargetWeight);
+
+      const currentValue = getStockValue(stock).add(
+        toDecimal(quantities.get(stock.isin))
+          .mul(stock.currentPrice),
+      );
+
+      const targetValue = currentTotalValue.mul(target);
+      const difference = currentValue.sub(targetValue);
+
+      return score.add(difference.pow(2));
+    }, new Decimal(0));
+  };
+
+  let score = getScore(totalValue);
+
+  while (true) {
+    let bestStock = null;
+    let bestScore = score;
+    let bestValue = totalValue;
+
+    for (const stock of stocks) {
+      const price = toDecimal(stock.currentPrice);
+
+      if (remainingBudget.lt(price)) {
+        continue;
+      }
+
+      // On simule l'achat d'une action supplémentaire.
+      quantities.set(
+        stock.isin,
+        quantities.get(stock.isin) + 1,
+      );
+
+      const candidateValue = totalValue.add(price);
+      const candidateScore = getScore(candidateValue);
+
+      quantities.set(
+        stock.isin,
+        quantities.get(stock.isin) - 1,
+      );
+
+      if (candidateScore.lt(bestScore)) {
+        bestStock = stock;
+        bestScore = candidateScore;
+        bestValue = candidateValue;
+      }
+    }
+
+    // Aucun achat supplémentaire n'améliore l'équilibrage.
+    if (!bestStock) {
+      break;
+    }
+
+    quantities.set(
+      bestStock.isin,
+      quantities.get(bestStock.isin) + 1,
+    );
+
+    remainingBudget = remainingBudget.sub(
+      toDecimal(bestStock.currentPrice),
+    );
+
+    totalValue = bestValue;
+    score = bestScore;
+  }
+
+  const purchases = stocks
+    .filter(stock => quantities.get(stock.isin) > 0)
+    .map(stock => ({
+      isin: stock.isin,
+      ticker: stock.ticker,
+      name: stock.name,
+      price: toDecimal(stock.currentPrice).toNumber(),
+      quantity: quantities.get(stock.isin),
+      investedAmount: toDecimal(stock.currentPrice)
+        .mul(quantities.get(stock.isin))
+        .toNumber(),
+    }));
+
+  return {
+    type: purchases.length > 0
+      ? "BUY_REBALANCE"
+      : "ALREADY_BALANCED",
+    priorities: [],
+    secondaryCandidates: [],
+    purchases,
+    remainingBudget: remainingBudget.toFixed(2),
+    score: score.toString(),
+  };
+};
+
+const decide = state => {
+  const priorityStocks = getPriorityStocks(state);
+  const allStocksBough = checkAllStocksBough(state.stocks);
+  if (
+    priorityStocks.length === 0
+    && allStocksBough.length > 0
+  ) {
+    return decideRemainingStocksMode(state);
+  } else if (priorityStocks.length === 0 && allStocksBough.lenght !== 0) {
+    return decideTargetWeightMode(state);
   }
   return decidePriorityMode(state);
 };
@@ -268,12 +472,10 @@ stockSrv.getData = (portfolio, stocks) => {
     portfolio,
     stocks,
     transactions,
-    date: getCurrentDateLabel(),
   });
-
+  actions.priority = actions.priorities?.[0] ?? null;
   return {
-    priority: actions.priorities?.[0] ?? null,
-    secondaryCandidates: actions.secondaryCandidates ?? [],
+    ...actions,
     date: getCurrentDateLabel(),
   };
 };
@@ -593,6 +795,7 @@ const importOrderData = async () => {
           investedAmount: new Decimal(item.fill.walletImpact.netValue),
           receivedAt: new moment(item.fill.filledAt),
           reference: item.fill.id,
+          side: item.order.side,
         });
       }
     }
@@ -663,6 +866,7 @@ const importDividendData = async () => {
 stockSrv.importTrading212 = async userId => {
   logger.debug("Import data from Trading 212");
 
+  const portfolio = await portfolioSrv.getById(1, 2);
   const tradingInstruments
     = await fetchTrading212Positions(TRADING_212_POSITIONS_URL);
 
@@ -687,6 +891,18 @@ stockSrv.importTrading212 = async userId => {
         stock.save();
       }
     }
+    if (order.type === OrderType.INTEREST
+      || order.type === OrderType.DIVIDEND
+      || order.type === OrderType.DEPOSIT
+      || order.type === OrderType.WITHDRAW
+      || (order.type === OrderType.ORDER && order.side === "SELL")) {
+      portfolio.account.balance = new Decimal(portfolio.account.balance)
+        .add(order.investedAmount);
+    } else if (order.type === OrderType.ORDER && order.side === "BUY") {
+      portfolio.account.balance = new Decimal(portfolio.account.balance)
+        .sub(order.investedAmount);
+    }
+    portfolio.account.save();
   }
 
   await lastReferenceSrv.create(userId, {
@@ -697,38 +913,30 @@ stockSrv.importTrading212 = async userId => {
   console.log("DONE");
 };
 
-/* TODO: Refresh with looping from stocks and find */
 stockSrv.refreshPrice = async userId => {
   logger.debug("Refresh price from Trading 212");
 
   const tradingInstruments
     = await fetchTrading212Positions();
 
-  const stocks = await Promise.all(
-    tradingInstruments.map(data => stockSrv.getByIsin(
-      userId,
-      data.instrument.isin,
-    )),
-  );
+  const stocks = await stockSrv.getAll(userId);
 
-  await Promise.all(
-    tradingInstruments.map(async (data, index) => {
-      const stock = stocks[index];
+  for (const stock of stocks.rows) {
+    const data = tradingInstruments
+      .find(tradingInstrument => tradingInstrument.instrument.isin === stock.isin);
+    if (!stock) {
+      logger.warn(
+        "Unable to refresh stock=[%s]: stock not found",
+        data.instrument.isin,
+      );
+      return;
+    }
 
-      if (!stock) {
-        logger.warn(
-          "Unable to refresh stock=[%s]: stock not found",
-          data.instrument.isin,
-        );
-        return;
-      }
+    stock.currentPrice
+      = getPriceInPortfolioCurrency(data).toNumber();
 
-      stock.currentPrice
-        = getPriceInPortfolioCurrency(data).toNumber();
-
-      await stock.save();
-    }),
-  );
+    await stock.save();
+  }
 };
 
 // -----------------------------------------------------------------------------
@@ -894,7 +1102,7 @@ const buildSecondaryCandidates = ({
 // Simulation
 // -----------------------------------------------------------------------------
 
-stockSrv.simulate = (
+stockSrv.simulateOrder = (
   portfolio,
   stocks,
   stocksToBuy,
@@ -1056,7 +1264,8 @@ stockSrv.createBatch = async (
     });
     stock.quantity = new Decimal(stock.quantity).add(order.quantity);
     stock.investedAmount = new Decimal(stock.investedAmount).add(order.investedAmount);
-    if (stock.currentPrice >= portfolio.monthlyContribution) stock.boughtThisYear = true;
+    if (new Decimal(stock.currentPrice)
+      .gte(portfolio.monthlyContribution)) stock.boughtThisYear = true;
     await stock.save();
   }
   const stocks = await stockSrv.getAll(userId, portfolio.id);

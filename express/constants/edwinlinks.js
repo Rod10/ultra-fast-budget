@@ -73,6 +73,10 @@ const stock = {
       label: "Historique",
       href: "/stocks/history",
     },
+    {
+      label: "Simulation",
+      href: "/stocks/simulation",
+    },
   ],
 };
 

@@ -22,6 +22,7 @@ orderSrv.create = (portfolioId, order, type) => {
     fees: order.fees ? new Decimal(order.fees).toFixed(Constants.DECIMAL) : null,
     investedAmount: new Decimal(order.investedAmount).toFixed(Constants.DECIMAL),
     receivedAt: order.receivedAt,
+    side: order.side ?? null,
   });
 };
 

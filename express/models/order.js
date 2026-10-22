@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
       values: ["ORDER", "DIVIDEND", "INTEREST", "DEPOSIT", "WITHDRAW"],
       allowNull: false,
     },
+    side: {
+      type: DataTypes.ENUM,
+      values: ["BUY", "SELL"],
+      allowNull: true,
+    },
     quantity: {
       allowNull: true,
       type: DataTypes.DECIMAL(15, 2),

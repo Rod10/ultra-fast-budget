@@ -45,6 +45,7 @@ router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res
 });
 
 router.get("/advance", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
+  await stockSrv.advance();
   const portfolios = await portfolioSrv.getAll(req.user.id);
   const data = {};
   if (req.query.portfolio) {
@@ -64,17 +65,19 @@ router.get("/advance", searchMid.getPagination, searchMid.cookie, async (req, re
 });
 
 router.get("/reset", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
-  let {stocks, portfolios} = await stockSrv.reset();
+  await stockSrv.reset();
+  const portfolios = await portfolioSrv.getAll(req.user.id);
   const data = {};
   if (req.query.portfolio) {
-    if (portfolios.needDecide) {
+    const portfolio = await portfolioSrv.getById(req.user.id, req.query.portfolio);
+    if (portfolio.needDecide) {
+      const stocks = await stockSrv.getAll(req.user.id, portfolio.id);
       data.decide = await stockSrv.getData(
-        portfolios,
+        portfolio,
         stocks.rows,
       );
     }
-  } else {
-    portfolios = await portfolioSrv.getAll(req.user.id);
+    data.selectedPortfolio = portfolio;
   }
   data.portfolios = portfolios;
   data.stocks = await stockSrv.getAll(req.user.id, req.parsedQuery.portfolio);
