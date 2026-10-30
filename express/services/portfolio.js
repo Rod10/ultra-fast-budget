@@ -1,11 +1,12 @@
 const assert = require("assert");
 const Decimal = require("decimal.js");
 const {
+  Account,
   Portfolio,
   Op,
 } = require("../models/index.js");
 const {logger} = require("./logger.js");
-const {Account} = require("../models");
+const {} = require("../models");
 
 const portfolioSrv = {};
 
@@ -23,7 +24,17 @@ portfolioSrv.create = account => {
   });
 };
 
-portfolioSrv.getAll = userId => {
+portfolioSrv.getAll = () => {
+  logger.debug("Get All portfolios");
+  return Portfolio.findAndCountAll({
+    include: [{
+      association: Portfolio.Account,
+      include: [{association: Account.AccountType}],
+    }],
+  });
+};
+
+portfolioSrv.getAllByUser = userId => {
   logger.debug("Get All portfolio for user=[%s]", userId);
   return Portfolio.findAndCountAll({
     include: [{

@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.use(authMid.strict);
 router.get("/", async (req, res, next) => {
-  const portfolios = await portfolioSrv.getAll(req.user.id);
+  const portfolios = await portfolioSrv.getAllByUser(req.user.id);
   const stocks = await stockSrv.getAll(req.user.id);
   const data = {
     portfolios,

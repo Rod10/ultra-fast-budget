@@ -33,6 +33,7 @@ const config = {
     "dashboard": `${VIEWS}/dashboard.js`,
     "order": `${VIEWS}/order.js`,
     "orderlist": `${VIEWS}/orderlist.js`,
+    "simulation": `${VIEWS}/simulation.js`,
   },
   output: {
     path: path.resolve(__dirname, "dist", "public", "js"),

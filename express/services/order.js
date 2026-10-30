@@ -1,12 +1,14 @@
 const Decimal = require("decimal.js");
+const moment = require("moment");
 const {
+  Account,
   Order,
+  Op,
   Portfolio,
 } = require("../models/index.js");
 const Constants = require("../constants/constants.js");
+const OrderDirection = require("../constants/orderdirection.js");
 const {logger} = require("./logger.js");
-const {Account} = require("../models");
-const OrderDirection = require("../constants/orderdirection");
 
 const orderSrv = {};
 
@@ -52,7 +54,7 @@ orderSrv.getAllByPortfolion = (userId, portfolioId, query) => {
   logger.debug("Get all order from user=[%s]", userId);
 
   return Order.findAndCountAll({
-    were: {portfolioId},
+    where: {portfolioId},
     include: [
       {
         association: Portfolio.Account,
@@ -62,6 +64,39 @@ orderSrv.getAllByPortfolion = (userId, portfolioId, query) => {
     offset: (query.limit && query.page) ? query.limit * query.page : 0,
     limit: query.limit,
     subQuery: false,
+  });
+};
+
+orderSrv.getAllByPortfolioForSnapshot = (userId, portfolioId, year) => {
+  logger.debug("Get all order from user=[%s] and portfolio=[%s]", userId, portfolioId);
+  const where = {[Op.and]: [{portfolioId}]};
+  const condition = where[Op.and][0];
+
+  if (year) {
+    condition.receivedAt = {
+      [Op.between]: [
+        new moment(year).startOf("year"),
+        new moment(year).endOf("year"),
+      ],
+    };
+  }
+
+  return Order.findAndCountAll({
+    where,
+    include: [
+      {
+        association: Order.Portfolio,
+        include: [
+          {
+            association: Portfolio.Account,
+            where: {userId},
+            required: true,
+          },
+        ],
+        required: true,
+      },
+    ],
+    order: [["receivedAt", OrderDirection.ASC]],
   });
 };
 

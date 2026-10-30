@@ -18,6 +18,7 @@ const Order = require("./order.js");
 const PlannedTransaction = require("./plannedtransaction.js");
 const PlannedTransfer = require("./plannedtransfer.js");
 const Portfolio = require("./portfolio.js");
+const Snapshot = require("./snapshot.js");
 const Stock = require("./stock.js");
 const SubCategory = require("./subcategory.js");
 const Transaction = require("./transaction.js");
@@ -51,6 +52,7 @@ const db = {};
   PlannedTransaction,
   PlannedTransfer,
   Portfolio,
+  Snapshot,
   Stock,
   SubCategory,
   Transaction,

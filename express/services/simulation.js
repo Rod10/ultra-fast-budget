@@ -17,7 +17,6 @@ const portfolioSrv = require("./portfolio.js");
 const lastReferenceSrv = require("./lastreference.js");
 
 let simulation = {
-  start:
 }
 
 const simulationSrv = {};

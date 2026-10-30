@@ -12,7 +12,7 @@ const router = express.Router();
 router.use(authMid.strict);
 router.get("/", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   const query = req.parsedQuery || {};
-  const portfolios = await portfolioSrv.getAll(req.user.id);
+  const portfolios = await portfolioSrv.getAllByUser(req.user.id);
   const stocks = await stockSrv.getAll(req.user.id);
   const orders = await orderSrv.getAll(req.user.id, query);
   const data = {
