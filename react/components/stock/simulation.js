@@ -61,6 +61,7 @@ class Simulation extends AsyncFilteredList {
   }
 
   render() {
+    const test = 
     return <div className="body-content">
       <Head className="has-text-centered">
         Simulation/Prévision
@@ -101,14 +102,17 @@ class Simulation extends AsyncFilteredList {
             <div className="columns is-flex">
               <Column>
                 <b>Gain Intérêts: </b>
+                <br />
                 <b>Gain Dividendes: </b>
               </Column>
               <Column>
                 <b>{this.props.simulation.interestGain} €</b>
+                <br />
                 <b>{this.props.simulation.dividendGain} €</b>
               </Column>
             </div>
-          </div></Column>
+          </div>
+        </Column>
       </Columns>
     </div>;
   }
