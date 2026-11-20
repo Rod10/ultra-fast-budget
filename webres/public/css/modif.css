@@ -699,3 +699,12 @@ table {
     margin: 1.5rem 0;
     height: auto;
 }
+
+.hr-vertical-dark {
+    background-color: hsl(0 0% 50%);
+    border: none;
+    display: block;
+    width: 2px;
+    margin: 1.5rem 0;
+    height: auto;
+}

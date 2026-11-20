@@ -49,7 +49,6 @@ snapshotSrv.getByYear = query => {
 
 snapshotSrv.simulate = async (userId, data, query) => {
   logger.debug("Snapshot simulate with data=[%s]", data);
-
   const header = {
     startBalance: 0,
     endBalance: 0,
@@ -62,6 +61,10 @@ snapshotSrv.simulate = async (userId, data, query) => {
   const year = new Date(query.year).getFullYear();
   const currentYear = new Date().getFullYear();
 
+  console.log("query", query);
+  console.log("year", year);
+  console.log(currentYear);
+
   // On conserve les 12 mois, même lorsqu'ils sont vides.
   const monthsData = Array.from({length: 12}, () => []);
 
@@ -69,6 +72,19 @@ snapshotSrv.simulate = async (userId, data, query) => {
   if (year < currentYear) {
     let balance = new Decimal(header.startBalance);
     for (const row of data.rows) {
+      header.startBalance = new Decimal(header.startBalance).add(row.startBalance)
+        .toFixed(Constants.DECIMAL);
+      header.endBalance = new Decimal(header.endBalance).add(row.endBalance)
+        .toFixed(Constants.DECIMAL);
+      header.totalGain = new Decimal(header.totalGain).add(row.totalGain)
+        .toFixed(Constants.DECIMAL);
+      header.netGain = new Decimal(header.netGain).add(row.netGain)
+        .toFixed(Constants.DECIMAL);
+      header.interestGain = new Decimal(header.interestGain).add(row.interestGain)
+        .toFixed(Constants.DECIMAL);
+      header.dividendGain = new Decimal(header.dividendGain).add(row.dividendGain)
+        .toFixed(Constants.DECIMAL);
+
       const orders = await orderSrv.getAllByPortfolioForSnapshot(
         userId,
         row.portfolioId,
@@ -117,17 +133,20 @@ snapshotSrv.simulate = async (userId, data, query) => {
           || (order.type === OrderType.ORDER && order.side === "SELL")) {
           balance = new Decimal(balance)
             .add(order.investedAmount);
-          dayData.gains = new Decimal(dayData.gains).add(order.investedAmount);
+          dayData.gains = new Decimal(dayData.gains).add(order.investedAmount)
+            .toFixed(Constants.DECIMAL);
         } else if (order.type === OrderType.ORDER && order.side === "BUY") {
           balance = new Decimal(balance)
             .sub(order.investedAmount);
-          dayData.gains = new Decimal(dayData.gains).sub(order.investedAmount);
+          dayData.gains = new Decimal(dayData.gains).sub(order.investedAmount)
+            .toFixed(Constants.DECIMAL);
         }
         dayData.liquidity = new Decimal(balance)
           .toFixed(Constants.DECIMAL);
         dayData.events.push({
+          portfolioId: order.portfolioId,
           type: order.type,
-          data: order.isin,
+          isin: order.isin,
           side: order.side,
           amount: order.investedAmount,
         });
@@ -144,7 +163,7 @@ snapshotSrv.simulate = async (userId, data, query) => {
   }
 
   logger.debug("Snapshot monthsData=[%s]", JSON.stringify(monthsData));
-  console.log(monthsData);
+
   return {
     header,
     monthsData,

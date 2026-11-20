@@ -13,9 +13,10 @@ router.use(authMid.strict);
 
 router.get("/", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
   const query = req.parsedQuery || {};
-  query.year = new moment().year(2024).toString();
+  query.year = new Date().toString();
   const portfolios = await portfolioSrv.getAllByUser(req.user.id);
   const snapshot = await snapshotSrv.getByYear(query);
+  console.log(snapshot);
   const simulation = await snapshotSrv.simulate(req.user.id, snapshot, query);
   const data = {
     query,
@@ -25,6 +26,20 @@ router.get("/", searchMid.getPagination, searchMid.cookie, async (req, res, next
   const navbar = renderSrv.navbar(res.locals);
   const content = renderSrv.simulation(data);
   res.render("generic", {navbar, data, content, components: ["simulation"]});
+});
+
+router.get("/search", searchMid.getPagination, searchMid.cookie, async (req, res, next) => {
+  const query = req.parsedQuery || {};
+  const portfolios = await portfolioSrv.getAllByUser(req.user.id);
+  const snapshot = await snapshotSrv.getByYear(query);
+  const simulation = await snapshotSrv.simulate(req.user.id, snapshot, query);
+  const data = {
+    query,
+    portfolios,
+    simulation,
+  };
+  console.log(data);
+  res.json(data);
 });
 
 module.exports = router;

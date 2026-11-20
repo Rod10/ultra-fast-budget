@@ -2,6 +2,8 @@
 const React = require("react");
 const PropTypes = require("prop-types");
 const Decimal = require("decimal.js");
+const {format, getDaysInMonth} = require("date-fns");
+const {fr} = require("date-fns/locale");
 const Head = require("../helpers/head.js");
 const Columns = require("../bulma/columns.js");
 const Column = require("../bulma/column.js");
@@ -13,9 +15,13 @@ const AsyncFilteredList = require("../asyncfilteredlist.js");
 const Constants = require("../../../express/constants/constants.js");
 const DatePicker = require("../datepicker.js");
 const OrderTypeFull = require("../../../express/constants/ordertypefull.js");
-const moment = require("moment/moment");
+const OrderDirection = require("../../../express/constants/orderdirection.js");
+const {preventDefault} = require("../../utils/html.js");
+const DEFAULT_LIMIT = 15;
+const INPUT_TIMEOUT = 500;
+const MONTHS_PER_COLUMN = 4;
 
-class Simulation extends AsyncFilteredList {
+class Simulation extends React.Component {
   constructor(props) {
     super(props);
 
@@ -32,10 +38,148 @@ class Simulation extends AsyncFilteredList {
 
     this.state = {
       ...this.defaultState(),
-      ...props.query,
       simulation: this.props.simulation,
-      year: new moment().year(2024).toString(),
+      year: new Date(),
     };
+    this.handleChange = this.handleChange.bind(this);
+    this.handleRefresh = this.handleRefresh.bind(this);
+    this.getQueryObject = this.getQueryObject.bind(this);
+  }
+
+  componentDidMount() {
+    AsyncFilteredList._updateUriSearch(this._getQueryString());
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.qId === this.state.qId) return;
+
+    const queryStr = this._getQueryString();
+    AsyncFilteredList._updateUriSearch(queryStr);
+
+    const doSearch = () => axios.get(`${this.searchUri + queryStr}&t=${Date.now()}`)
+      .then(response => {
+        if (response.status === OK) {
+          this.setState({
+            portfolios: response.data?.portfolios,
+            simulation: response.data?.simulation,
+          });
+        }
+      });
+    if (this.delaiLastSearch) {
+      clearTimeout(this.delaiTimeout);
+      this.delaiTimeout = setTimeout(doSearch, INPUT_TIMEOUT);
+    } else {
+      doSearch();
+    }
+  }
+
+  defaultState() {
+    return {
+      qId: 0,
+      orderBy: "id",
+      orderDirection: OrderDirection.DESC,
+      year: new Date(),
+    };
+  }
+
+  getQueryObject(withTime) {
+    const query = {};
+    this.s.forEach(cur => {
+      if (!this.state[cur.key] && !cur.keepNull) return;
+      const value = cur.format
+        ? cur.format(this.state[cur.key])
+        : this.state[cur.key];
+      query[cur.replace || cur.key] = value;
+    });
+    if (withTime) {
+      query.append("t", Date.now());
+    }
+    return query;
+  }
+
+  _getQueryString(withTime) {
+    const query = new URLSearchParams();
+    this.s.forEach(cur => {
+      if (!this.state[cur.key] && !cur.keepNull) return;
+      const value = cur.format
+        ? cur.format(this.state[cur.key])
+        : this.state[cur.key];
+      if (Array.isArray(value)) {
+        value.forEach(entry => {
+          query.append(cur.replace || cur.key, entry);
+        });
+      } else {
+        query.append(cur.replace || cur.key, value);
+      }
+    });
+    if (withTime) {
+      query.append("t", Date.now());
+    }
+    return `?${new URLSearchParams(query).toString()}`;
+  }
+
+  handleChange(evt, key) {
+    if (evt?.target && evt.preventDefault) preventDefault(evt);
+    let _key = key;
+    let value = evt;
+    if (evt?.target) {
+      if (!_key) _key = evt.target.name;
+      value = evt.target.value;
+      this.delaiLastSearch = Boolean(evt.target.tagName === "INPUT"
+        && evt.target.type === "text");
+    }
+    this.setState(prevState => ({
+      page: 0,
+      [_key]: value,
+      qId: prevState.qId + 1,
+    }));
+  }
+
+  handleRefresh() {
+    this.setState(prevState => ({qId: prevState.qId + 1}));
+  }
+
+  /* eslint-disable-next-line class-methods-use-this */
+  _renderFilterWrapper(label, childs) {
+    return <div className="field">
+      <label className="label">{label}</label>
+      {childs}
+    </div>;
+  }
+
+  _renderFilterText(key, label) {
+    return this._renderFilterWrapper(
+      label,
+      <div className="control">
+        <input
+          className="input"
+          name={key}
+          value={this.state[key]}
+          onChange={this.handleChange}
+        />
+      </div>,
+    );
+  }
+
+  _renderFilterSelect(key, label, options, all = true) {
+    return this._renderFilterWrapper(
+      label,
+      <div className="control">
+        <div className="select is-fullwidth">
+          <select
+            name={key}
+            value={this.state[key]}
+            onChange={this.handleChange}
+          >
+            {all && <option value="">Tout</option>}
+            {options.map(e => <option
+              key={label + (e.value || e.label)}
+              value={e.value || e.label}
+            >{e.label}</option>)}
+          </select>
+        </div>
+      </div>,
+    );
   }
 
   _renderFilters() {
@@ -60,9 +204,48 @@ class Simulation extends AsyncFilteredList {
     </form>;
   }
 
+  _renderMonth(month, index) {
+    const date = new Date(this.state.year.getFullYear(), index, 1);
+    const days = [];
+    const liquidity = [];
+    const gains = [];
+    for (let i = 0; i < getDaysInMonth(date); i++) {
+      if (!month[i] && month[i - 1]) {
+        month[i] = month[i - 1];
+        month[i].events = [];
+        month[i].gains = 0;
+      }
+
+      days.push(<div className="has-text-centered"><p>{i + 1}</p></div>);
+      liquidity.push(<div className="has-text-centered"><p>{month[i]?.liquidity ?? 0}</p></div>);
+      gains.push(<div className="has-text-centered"><p>{month[i]?.gains ?? 0}</p></div>);
+    }
+    return <Column size={Column.Sizes.oneQuarter}>
+      <div className="box">
+        <div className="has-text-centered">
+          {format(date, "MMMM", {locale: fr})}
+        </div>
+        <hr className="hr-homepage" />
+        <Columns>
+          <Column>
+            {days}
+          </Column>
+          <hr className="hr-vertical-dark" />
+          <Column>
+            {liquidity}
+          </Column>
+          <hr className="hr-vertical-dark" />
+          <Column>
+            {gains}
+          </Column>
+        </Columns>
+      </div>
+    </Column>;
+  }
+
   render() {
-    const test = 
-    return <div className="body-content">
+    const totalMonths = new Decimal(this.state.simulation.monthsData.filter(month => month.length !== 0).length);
+    return <div className="container is-fluid">
       <Head className="has-text-centered">
         Simulation/Prévision
       </Head>
@@ -74,11 +257,13 @@ class Simulation extends AsyncFilteredList {
             <div className="columns is-flex">
               <Column>
                 <b>Début: </b>
+                <br />
                 <b>Fin: </b>
               </Column>
               <Column>
-                <b>{this.props.simulation.startBalance} €</b>
-                <b>{this.props.simulation.endBalance} €</b>
+                <b>{this.state.simulation.header.startBalance} €</b>
+                <br />
+                <b>{this.state.simulation.header.endBalance} €</b>
               </Column>
             </div>
           </div>
@@ -88,11 +273,13 @@ class Simulation extends AsyncFilteredList {
             <div className="columns is-flex">
               <Column>
                 <b>Gain Total: </b>
+                <br />
                 <b>Gain Net: </b>
               </Column>
               <Column>
-                <b>{this.props.simulation.totalGain} €</b>
-                <b>{this.props.simulation.netGain} €</b>
+                <b>{this.state.simulation.header.totalGain} €</b>
+                <br />
+                <b>{this.state.simulation.header.netGain} €</b>
               </Column>
             </div>
           </div>
@@ -106,13 +293,22 @@ class Simulation extends AsyncFilteredList {
                 <b>Gain Dividendes: </b>
               </Column>
               <Column>
-                <b>{this.props.simulation.interestGain} €</b>
+                <b>{this.state.simulation.header.interestGain} €</b>
                 <br />
-                <b>{this.props.simulation.dividendGain} €</b>
+                <b>{this.state.simulation.header.dividendGain} €</b>
               </Column>
             </div>
           </div>
         </Column>
+      </Columns>
+      <Columns>
+        {this.state.simulation.monthsData.slice(0, 4).map((month, index) => this._renderMonth(month, index))}
+      </Columns>
+      <Columns>
+        {this.state.simulation.monthsData.slice(5, 9).map((month, index) => this._renderMonth(month, index + 4))}
+      </Columns>
+      <Columns>
+        {this.state.simulation.monthsData.slice(5, 9).map((month, index) => this._renderMonth(month, index + 8))}
       </Columns>
     </div>;
   }
@@ -121,7 +317,7 @@ class Simulation extends AsyncFilteredList {
 Simulation.displayName = "Simulation";
 Simulation.propTypes = {
   simulation: PropTypes.object,
-  portfolio: PropTypes.array,
+  portfolios: PropTypes.array,
 };
 Simulation.defaultProps = {};
 
